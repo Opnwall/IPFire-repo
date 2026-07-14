@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-BASE_URL="${OPNWALL_BASE_URL:-https://opnwall.github.io/IPFire-repo}"
+BASE_URL="${IPFREPO_BASE_URL:-https://opnwall.github.io/IPFire-repo}"
 
 [ "$(id -u)" -eq 0 ] || {
     echo "error: this installer must be run as root" >&2
@@ -19,16 +19,25 @@ fetch_file() {
     fi
 }
 
-tmp="$(mktemp /tmp/opnwall.XXXXXX)"
+tmp="$(mktemp /tmp/ipfrepo.XXXXXX)"
 trap 'rm -f "$tmp"' EXIT HUP INT TERM
-fetch_file "$BASE_URL/opnwall" "$tmp"
+fetch_file "$BASE_URL/ipfrepo" "$tmp"
 grep -q '^BASE_URL=' "$tmp" || {
-    echo "error: invalid Opnwall manager download" >&2
+    echo "error: invalid ipfrepo manager download" >&2
     exit 1
 }
-install -m 0755 "$tmp" /usr/local/bin/opnwall
-ln -sfn /usr/local/bin/opnwall /usr/bin/opnwall
-mkdir -p /opt/opnwall/db/installed /opt/opnwall/cache
-/usr/local/bin/opnwall update
+if [ -d /opt/opnwall ]; then
+    if [ -e /opt/ipfrepo ]; then
+        cp -a /opt/opnwall/. /opt/ipfrepo/
+        rm -rf /opt/opnwall
+    else
+        mv /opt/opnwall /opt/ipfrepo
+    fi
+fi
+rm -f /usr/local/bin/opnwall /usr/bin/opnwall
+install -m 0755 "$tmp" /usr/local/bin/ipfrepo
+ln -sfn /usr/local/bin/ipfrepo /usr/bin/ipfrepo
+mkdir -p /opt/ipfrepo/db/installed /opt/ipfrepo/cache
+/usr/local/bin/ipfrepo update
 echo "Opnwall IPFire community repository installed."
-echo "Run: opnwall list"
+echo "Run: ipfrepo list"

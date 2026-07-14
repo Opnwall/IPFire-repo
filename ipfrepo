@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eu
 
-BASE_URL="${OPNWALL_BASE_URL:-https://opnwall.github.io/IPFire-repo}"
+BASE_URL="${IPFREPO_BASE_URL:-https://opnwall.github.io/IPFire-repo}"
 ARCH="$(uname -m)"
-STATE_DIR="/opt/opnwall"
+STATE_DIR="/opt/ipfrepo"
 DB_DIR="$STATE_DIR/db"
 CACHE_DIR="$STATE_DIR/cache"
 INSTALLED_DIR="$DB_DIR/installed"
@@ -120,7 +120,7 @@ install_package() {
     file="$(field "$record" 3)"
     sha="$(field "$record" 4)"
     package="$(download_package "$record" | tail -n 1)"
-    tmp="$(mktemp -d /tmp/opnwall-install.XXXXXX)"
+    tmp="$(mktemp -d /tmp/ipfrepo-install.XXXXXX)"
     trap 'rm -rf "$tmp"' EXIT HUP INT TERM
     tar -xzf "$package" -C "$tmp"
     [ -f "$tmp/$name/install.sh" ] || die "install.sh is missing from $file"
@@ -145,7 +145,7 @@ remove_package() {
         fetch_file "$BASE_URL/repo/$ARCH/All/$file" "$package"
     fi
     [ "$(sha256sum "$package" | awk '{print $1}')" = "$sha" ] || die "checksum mismatch for $file"
-    tmp="$(mktemp -d /tmp/opnwall-remove.XXXXXX)"
+    tmp="$(mktemp -d /tmp/ipfrepo-remove.XXXXXX)"
     trap 'rm -rf "$tmp"' EXIT HUP INT TERM
     tar -xzf "$package" -C "$tmp"
     [ -f "$tmp/$name/uninstall.sh" ] || die "uninstall.sh is missing from $file"
@@ -178,7 +178,7 @@ upgrade_packages() {
 
 usage() {
     cat <<'EOF'
-Usage: opnwall COMMAND [PACKAGE]
+Usage: ipfrepo COMMAND [PACKAGE]
 
 Commands:
   update             Refresh the repository catalog

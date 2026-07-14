@@ -1,6 +1,6 @@
 # IPFire Community Repository
 
-**IPFire 2.29 x86_64** 的非官方社区插件仓库。它使用独立的 `opnwall` 管理器，不替换、不修改 IPFire 官方 Pakfire 仓库及其 GPG 信任链。
+**IPFire 2.29 x86_64** 的非官方社区插件仓库。它使用独立的 `ipfrepo` 管理器，不替换、不修改 IPFire 官方 Pakfire 仓库及其 GPG 信任链。
 
 ## 安装仓库
 
@@ -13,15 +13,15 @@ curl -fsSL https://opnwall.github.io/IPFire-repo/install-opnwall.sh | sh
 ## 使用方法
 
 ```sh
-opnwall list
-opnwall info adguardhome
-opnwall install adguardhome
-opnwall remove adguardhome
-opnwall update
-opnwall upgrade
+ipfrepo list
+ipfrepo info adguardhome
+ipfrepo install adguardhome
+ipfrepo remove adguardhome
+ipfrepo update
+ipfrepo upgrade
 ```
 
-每个插件在下载后都会先验证 SHA-256，再调用项目自带的安装或卸载脚本。状态保存在 `/opt/opnwall/`。
+每个插件在下载后都会先验证 SHA-256，再调用项目自带的安装或卸载脚本。状态保存在 `/opt/ipfrepo/`。
 
 ## 插件列表
 

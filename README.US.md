@@ -1,6 +1,6 @@
-# Opnwall IPFire Community Repository
+# IPFire Community Repository
 
-An unofficial community plugin repository for **IPFire 2.29 x86_64**. It uses an independent `opnwall` manager and does not replace or modify the official Pakfire repository or its GPG trust chain.
+An unofficial community plugin repository for **IPFire 2.29 x86_64**. It uses an independent `ipfrepo` manager and does not replace or modify the official Pakfire repository or its GPG trust chain.
 
 ## Install the repository
 
@@ -13,15 +13,15 @@ curl -fsSL https://opnwall.github.io/IPFire-repo/install-opnwall.sh | sh
 ## Usage
 
 ```sh
-opnwall list
-opnwall info adguardhome
-opnwall install adguardhome
-opnwall remove adguardhome
-opnwall update
-opnwall upgrade
+ipfrepo list
+ipfrepo info adguardhome
+ipfrepo install adguardhome
+ipfrepo remove adguardhome
+ipfrepo update
+ipfrepo upgrade
 ```
 
-Every package is SHA-256 verified before its own install or uninstall script is executed. State is stored under `/opt/opnwall/`.
+Every package is SHA-256 verified before its own install or uninstall script is executed. State is stored under `/opt/ipfrepo/`.
 
 ## Packages
 
