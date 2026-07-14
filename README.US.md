@@ -16,7 +16,7 @@
 
 </p>
 
-## ✨ Features
+## Features
 
 - Independent of the official Pakfire repository
 - SHA-256 verification before every package installation
@@ -24,7 +24,7 @@
 - Does not modify the official repository or GPG trust chain
 - Community-maintained with continuously expanding packages
 
-## 🚀 Install Repository
+## Install Repository
 
 Run the following command as **root**:
 
@@ -32,14 +32,14 @@ Run the following command as **root**:
 curl -fsSL https://opnwall.github.io/IPFire-repo/install-repo.sh | sh
 ```
 
-## 📦 Install a Package
+## Install a Package
 
 ```bash
 ipfrepo update
 ipfrepo install mihomo
 ```
 
-## 📖 Common Commands
+## Common Commands
 
 ```bash
 ipfrepo list                       # List packages
@@ -50,7 +50,7 @@ ipfrepo update                     # Update repository metadata
 ipfrepo upgrade                    # Upgrade installed packages
 ```
 
-## 📦 Available Packages
+## Available Packages
 
 | Package | Version | Description |
 | --- | --- | --- |
@@ -67,7 +67,7 @@ ipfrepo upgrade                    # Upgrade installed packages
 | `ttyd` | 1.0.1 | Web-based terminal |
 | `zerotier` | 1.0.1 | ZeroTier VPN integration |
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```text
 .
@@ -78,7 +78,7 @@ ipfrepo upgrade                    # Upgrade installed packages
 └── README.md
 ```
 
-## ⚠ Disclaimer
+## Disclaimer
 
 This project is maintained by the community and is **not affiliated with or supported by the official IPFire Project**.
 
