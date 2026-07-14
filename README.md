@@ -2,8 +2,7 @@
 
 <p align="center">
 
-**适用于 IPFire  x86_64 的非官方社区插件仓库**
-
+**适用于 IPFire-2.29  x86_64 的非官方社区插件仓库**
 
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
 ![Architecture](https://img.shields.io/badge/x86__64-Supported-blue)
