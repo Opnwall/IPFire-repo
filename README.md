@@ -11,7 +11,7 @@
 
 </p>
 
-# 项目特色
+## 项目特色
 
 - 独立于官方 Pakfire
 - 所有软件包安装前均进行 SHA-256 校验
@@ -19,20 +19,20 @@
 - 不修改官方仓库及系统信任链
 - 社区维护，持续扩展插件生态
 
-# 安装仓库
+## 安装仓库
 
 在终端环境，以 `root` 身份执行：
 
 ```bash
 curl -fsSL https://opnwall.github.io/IPFire-repo/install-repo.sh | sh
 ```
-# 安装插件
+## 安装插件
 ```bash
 ipfrepo update
 ipfrepo install mihomo
 ```
 
-# 常用命令
+## 常用命令
 
 ```bash
 ipfrepo list                       # 列表插件
@@ -43,7 +43,7 @@ ipfrepo update                     # 更新仓库
 ipfrepo upgrade                    # 更新仓库
 ```
 
-# 插件列表
+## 插件列表
 
 | 名称 | 版本 | 说明 |
 | --- | --- | --- |
@@ -60,7 +60,7 @@ ipfrepo upgrade                    # 更新仓库
 | `ttyd` | 1.0.1 | ttyd 网页终端 |
 | `zerotier` | 1.0.1 | ZeroTier VPN 集成 |
 
-# 仓库结构
+## 仓库结构
 
 ```text
 .
@@ -71,7 +71,7 @@ ipfrepo upgrade                    # 更新仓库
 └── README.md
 ```
 
-# 免责声明
+## 免责声明
 
 本项目为社区维护项目，无 IPFire 官方技术支持。安装前，请务必备份配置，并建议优先在测试环境验证。
 
