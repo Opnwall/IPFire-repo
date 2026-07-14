@@ -1,15 +1,17 @@
 # IPFire Community Repository
 
 <p align="center">
-![IPFire](https://img.shields.io/badge/IPFire-orange)
+
+**适用于 IPFire  x86_64 的非官方社区插件仓库**
+
+![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
 ![Architecture](https://img.shields.io/badge/x86__64-Supported-blue)
 ![Community](https://img.shields.io/badge/Community-Maintained-brightgreen)
 ![SHA256](https://img.shields.io/badge/Integrity-SHA256-success)
+
 </p>
 
-**适用于 IPFire-2.29  x86_64 的非官方社区插件仓库**
-
-## 项目特色
+# 项目特色
 
 - 独立于官方 Pakfire
 - 所有软件包安装前均进行 SHA-256 校验
