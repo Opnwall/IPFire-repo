@@ -52,8 +52,8 @@ ipfrepo upgrade                    # 更新仓库
 
 | 名称 | 版本 | 说明 |
 | --- | --- | --- |
-| `adguardhome` | 1.0.1 | AdGuard Home DNS 过滤与管理界面 |
-| `backup` | 1.0.1 | 防火墙配置备份管理页面 |
+| `adguardhome` | 1.0.1 | AdGuard Home DNS 过滤与管理工具 |
+| `backup` | 1.0.1 | 防火墙配置备份管理 |
 | `ipfire-dyndns` | 1.0.1 | Cloudflare、阿里云和腾讯云 DDNS 补丁 |
 | `lang` | 1.0.1 | 中文本地化更新工具 |
 | `lucky` | 1.0.1 | Lucky 网络工具箱 |
