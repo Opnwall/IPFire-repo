@@ -1,29 +1,53 @@
 # IPFire Community Repository
 
-**IPFire 2.29 x86_64** 的非官方社区插件仓库。它使用独立的 `ipfrepo` 管理器，不替换、不修改 IPFire 官方 Pakfire 仓库及其 GPG 信任链。
+<p align="center">
 
-## 安装仓库
+# IPFire 社区软件仓库
 
-以 `root` 身份执行：
+**适用于 IPFire  x86_64 的非官方社区插件仓库**
 
-```sh
+提供独立的软件仓库与 `ipfrepo` 包管理器，不替换、不修改官方 Pakfire 仓库及其 GPG 信任链。
+
+![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
+![Architecture](https://img.shields.io/badge/x86__64-Supported-blue)
+![Community](https://img.shields.io/badge/Community-Maintained-brightgreen)
+![SHA256](https://img.shields.io/badge/Integrity-SHA256-success)
+
+</p>
+
+## 项目特色
+
+- 独立于官方 Pakfire
+- 所有软件包安装前均进行 SHA-256 校验
+- 使用 `ipfrepo` 统一管理安装、升级与卸载
+- 不修改官方仓库及系统信任链
+- 社区维护，持续扩展插件生态
+
+# 安装仓库
+
+在终端环境，以 `root` 身份执行：
+
+```bash
 curl -fsSL https://opnwall.github.io/IPFire-repo/install-repo.sh | sh
 ```
+# 安装插件
+```bash
+ipfrepo update
+ipfrepo install mihomo
+```
 
-## 使用方法
+# 常用命令
 
-```sh
+```bash
 ipfrepo list
-ipfrepo info adguardhome
-ipfrepo install adguardhome
-ipfrepo remove adguardhome
+ipfrepo info <package>
+ipfrepo install <package>
+ipfrepo remove <package>
 ipfrepo update
 ipfrepo upgrade
 ```
 
-每个插件在下载后都会先验证 SHA-256，再调用项目自带的安装或卸载脚本。状态保存在 `/opt/ipfrepo/`。
-
-## 插件列表
+# 插件列表
 
 | 名称 | 版本 | 说明 |
 | --- | --- | --- |
@@ -40,10 +64,18 @@ ipfrepo upgrade
 | `ttyd` | 1.0.1 | ttyd 网页终端 |
 | `zerotier` | 1.0.1 | ZeroTier VPN 集成 |
 
-## 源码
+# 仓库结构
 
-完整项目源码位于 [`src/`](src/)；发布包位于 [`repo/x86_64/All/`](repo/x86_64/All/)。
+```text
+.
+├── src/                # 插件源码
+├── repo/
+│   └── x86_64/All/     # 发布软件包
+├── install-repo.sh     # 安装脚本
+└── README.md
+```
 
-## 免责声明
+# 免责声明
 
-本仓库与 IPFire 项目没有隶属关系，也不受其官方支持。第三方插件可能修改防火墙、DNS、代理或系统服务。安装前请备份配置并优先在非生产环境测试。
+本项目为社区维护项目，不受 IPFire 官方技术支持。安装前，请务必备份配置，并建议优先在测试环境验证。
+
