@@ -35,12 +35,12 @@ ipfrepo install mihomo
 # 常用命令
 
 ```bash
-ipfrepo list     #插件列表
-ipfrepo info <package>
-ipfrepo install <package>
-ipfrepo remove <package>
-ipfrepo update
-ipfrepo upgrade
+ipfrepo list                       # 列表插件
+ipfrepo info <package>             # 查看插件
+ipfrepo install <package>          # 安装插件
+ipfrepo remove <package>           # 移除插件
+ipfrepo update                     # 更新仓库
+ipfrepo upgrade                    # 更新仓库
 ```
 
 # 插件列表
