@@ -1,6 +1,6 @@
-# Opnwall IPFire Community Repository
+# IPFire Community Repository
 
-面向 **IPFire 2.29 x86_64** 的非官方社区插件仓库。它使用独立的 `opnwall` 管理器，不替换、不修改 IPFire 官方 Pakfire 仓库及其 GPG 信任链。
+**IPFire 2.29 x86_64** 的非官方社区插件仓库。它使用独立的 `opnwall` 管理器，不替换、不修改 IPFire 官方 Pakfire 仓库及其 GPG 信任链。
 
 ## 安装仓库
 
