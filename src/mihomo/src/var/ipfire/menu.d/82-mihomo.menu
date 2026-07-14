@@ -1,0 +1,7 @@
+
+    $subservices->{'15.mihomo'} = {
+				'caption' => 'Mihomo',
+			    'uri' => '/cgi-bin/mihomo.cgi',
+			    'title' => 'Mihomo',
+			    'enabled' => 1,
+			 	 };	  

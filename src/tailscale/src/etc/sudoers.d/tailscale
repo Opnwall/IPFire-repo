@@ -1,0 +1,3 @@
+nobody ALL=(ALL) NOPASSWD: /etc/init.d/tailscale
+nobody ALL=(ALL) NOPASSWD: /usr/local/bin/tailscale
+nobody ALL=(ALL) NOPASSWD: /usr/sbin/tailscaled

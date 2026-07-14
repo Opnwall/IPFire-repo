@@ -1,0 +1,160 @@
+#!/bin/sh
+#
+# AdGuard Home init script for IPFire
+#
+
+### BEGIN INIT INFO
+# Provides:          adguardhome
+# Required-Start:    $network
+# Required-Stop:     $network
+# Default-Start:
+# Default-Stop:
+# Short-Description: AdGuard Home network-wide DNS blocker
+### END INIT INFO
+
+NAME="adguardhome"
+DAEMON="/opt/adguardhome/AdGuardHome"
+SETTINGS="/var/ipfire/adguardhome/settings"
+STATEFILE="/var/ipfire/adguardhome/state"
+CONFIG_FILE="/var/ipfire/adguardhome/AdGuardHome.yaml"
+WORK_DIR="/var/lib/adguardhome"
+PIDFILE="/var/run/adguardhome.pid"
+LOGFILE="/var/log/adguardhome.log"
+
+ENABLED="on"
+WEB_ADDRESS="0.0.0.0:3000"
+
+[ -f "$SETTINGS" ] && . "$SETTINGS"
+
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+
+find_pids() {
+    if command -v pgrep >/dev/null 2>&1; then
+        pgrep -f "$DAEMON.*-w $WORK_DIR" 2>/dev/null || true
+        return 0
+    fi
+
+    ps -eo pid=,args= 2>/dev/null | awk -v daemon="$DAEMON" -v work="$WORK_DIR" '
+        index($0, daemon) && index($0, "-w " work) { print $1 }
+    '
+}
+
+is_running() {
+    [ -n "$(find_pids)" ]
+}
+
+write_state() {
+    mkdir -p "$(dirname "$STATEFILE")"
+    echo "RUNNING=$1" > "$STATEFILE"
+    echo "UPDATED=$(date '+%Y-%m-%d %H:%M:%S')" >> "$STATEFILE"
+}
+
+ensure_runtime() {
+    mkdir -p "$(dirname "$CONFIG_FILE")" "$WORK_DIR" /var/run "$(dirname "$LOGFILE")"
+    touch "$LOGFILE"
+    chmod 600 "$LOGFILE" 2>/dev/null || true
+}
+
+start() {
+    if [ "$ENABLED" != "on" ]; then
+        echo "AdGuard Home is disabled in $SETTINGS"
+        write_state 0
+        return 0
+    fi
+
+    if ! [ -x "$DAEMON" ]; then
+        echo "AdGuard Home is not installed: $DAEMON"
+        return 1
+    fi
+
+    if is_running; then
+        echo "AdGuard Home already running"
+        return 0
+    fi
+
+    ensure_runtime
+
+    echo "Starting AdGuard Home..."
+    "$DAEMON" \
+        -c "$CONFIG_FILE" \
+        -w "$WORK_DIR" \
+        --web-addr "$WEB_ADDRESS" \
+        --pidfile "$PIDFILE" \
+        --no-check-update \
+        -l "$LOGFILE" >/dev/null 2>&1 &
+
+    echo $! > "$PIDFILE"
+    sleep 3
+
+    if is_running; then
+        find_pids | head -n 1 > "$PIDFILE"
+        write_state 1
+        echo "AdGuard Home started"
+        return 0
+    fi
+
+    rm -f "$PIDFILE"
+    write_state 0
+    echo "Failed to start AdGuard Home"
+    [ -f "$LOGFILE" ] && tail -n 20 "$LOGFILE"
+    return 1
+}
+
+stop() {
+    if ! is_running; then
+        echo "AdGuard Home is not running"
+        rm -f "$PIDFILE"
+        write_state 0
+        return 0
+    fi
+
+    echo "Stopping AdGuard Home..."
+    find_pids | while read -r PID; do
+        [ -n "$PID" ] && kill "$PID" 2>/dev/null || true
+    done
+    sleep 2
+
+    if is_running; then
+        find_pids | while read -r PID; do
+            [ -n "$PID" ] && kill -9 "$PID" 2>/dev/null || true
+        done
+    fi
+
+    rm -f "$PIDFILE"
+    write_state 0
+    echo "AdGuard Home stopped"
+}
+
+restart() {
+    stop
+    start
+}
+
+status() {
+    if is_running; then
+        echo "AdGuard Home is running"
+        return 0
+    fi
+
+    echo "AdGuard Home is stopped"
+    return 1
+}
+
+version() {
+    [ -x "$DAEMON" ] || { echo "AdGuard Home is not installed: $DAEMON"; return 1; }
+    "$DAEMON" --version
+}
+
+case "${1:-}" in
+    start) start ;;
+    stop) stop ;;
+    restart) restart ;;
+    status) status ;;
+    version) version ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status|version}"
+        exit 1
+        ;;
+esac
+
+exit $?

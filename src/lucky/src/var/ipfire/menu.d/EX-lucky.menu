@@ -1,0 +1,6 @@
+$subservices->{'75.lucky'} = {
+	'caption' => 'Lucky',
+	'uri' => '/cgi-bin/lucky.cgi',
+	'title' => 'Lucky',
+	'enabled' => 1,
+};

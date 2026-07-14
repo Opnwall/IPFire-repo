@@ -1,0 +1,7 @@
+
+    $subservices->{'15.adguardhome'} = {
+                'caption' => 'AdGuard Home',
+                'uri' => '/cgi-bin/adguardhome.cgi',
+                'title' => 'AdGuard Home',
+                'enabled' => 1,
+             };

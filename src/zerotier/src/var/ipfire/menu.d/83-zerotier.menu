@@ -1,0 +1,6 @@
+    $subservices->{'16.zerotier'} = {
+                'caption' => 'ZeroTier VPN',
+                'uri' => '/cgi-bin/zerotier.cgi',
+                'title' => 'ZeroTier VPN',
+                'enabled' => 1,
+             };

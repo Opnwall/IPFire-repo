@@ -1,0 +1,4 @@
+*.dat binary
+*.db -diff
+*.gz binary
+*.xz binary

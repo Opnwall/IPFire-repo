@@ -1,0 +1,203 @@
+#!/bin/sh
+set -eu
+
+BASE_URL="${OPNWALL_BASE_URL:-https://opnwall.github.io/IPFire-repo}"
+ARCH="$(uname -m)"
+STATE_DIR="/opt/opnwall"
+DB_DIR="$STATE_DIR/db"
+CACHE_DIR="$STATE_DIR/cache"
+INSTALLED_DIR="$DB_DIR/installed"
+CATALOG="$DB_DIR/packages.db"
+
+die() {
+    echo "error: $*" >&2
+    exit 1
+}
+
+need_root() {
+    [ "$(id -u)" -eq 0 ] || die "this command must be run as root"
+}
+
+fetch_file() {
+    url="$1"
+    output="$2"
+    if command -v curl >/dev/null 2>&1; then
+        curl --retry 3 --retry-delay 2 --connect-timeout 20 -fsSL "$url" -o "$output"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -q --tries=3 --timeout=20 -O "$output" "$url"
+    else
+        die "curl or wget is required"
+    fi
+}
+
+prepare_dirs() {
+    mkdir -p "$DB_DIR" "$CACHE_DIR" "$INSTALLED_DIR"
+}
+
+update_catalog() {
+    need_root
+    prepare_dirs
+    tmp="$CATALOG.tmp.$$"
+    trap 'rm -f "$tmp"' EXIT HUP INT TERM
+    fetch_file "$BASE_URL/repo/$ARCH/packages.db" "$tmp"
+    grep -q '^# Opnwall IPFire package catalog' "$tmp" || die "invalid repository catalog"
+    mv -f "$tmp" "$CATALOG"
+    trap - EXIT HUP INT TERM
+    echo "Repository catalog updated."
+}
+
+ensure_catalog() {
+    [ -s "$CATALOG" ] || update_catalog
+}
+
+record_for() {
+    name="$1"
+    awk -F '|' -v name="$name" '$1 == name { print; exit }' "$CATALOG"
+}
+
+field() {
+    printf '%s\n' "$1" | awk -F '|' -v n="$2" '{ print $n }'
+}
+
+list_packages() {
+    ensure_catalog
+    printf '%-16s %-9s %-11s %s\n' "NAME" "VERSION" "STATUS" "DESCRIPTION"
+    awk -F '|' '!/^#/ && NF >= 7 { print }' "$CATALOG" | while IFS='|' read -r name version file sha category zh en; do
+        if [ -f "$INSTALLED_DIR/$name" ]; then
+            installed_version="$(awk -F '|' 'NR == 1 { print $1 }' "$INSTALLED_DIR/$name")"
+            if [ "$installed_version" = "$version" ]; then
+                status="installed"
+            else
+                status="upgrade"
+            fi
+        else
+            status="available"
+        fi
+        printf '%-16s %-9s %-11s %s\n' "$name" "$version" "$status" "$en"
+    done
+}
+
+show_info() {
+    ensure_catalog
+    record="$(record_for "$1")"
+    [ -n "$record" ] || die "unknown package: $1"
+    echo "Name: $(field "$record" 1)"
+    echo "Version: $(field "$record" 2)"
+    echo "Architecture: $ARCH"
+    echo "Category: $(field "$record" 5)"
+    echo "Description: $(field "$record" 7)"
+    echo "中文说明: $(field "$record" 6)"
+    if [ -f "$INSTALLED_DIR/$1" ]; then
+        echo "Status: installed"
+    else
+        echo "Status: available"
+    fi
+}
+
+download_package() {
+    record="$1"
+    file="$(field "$record" 3)"
+    expected="$(field "$record" 4)"
+    package="$CACHE_DIR/$file"
+    if [ ! -f "$package" ] || [ "$(sha256sum "$package" | awk '{print $1}')" != "$expected" ]; then
+        rm -f "$package"
+        echo "Downloading $file..."
+        fetch_file "$BASE_URL/repo/$ARCH/All/$file" "$package"
+    fi
+    actual="$(sha256sum "$package" | awk '{print $1}')"
+    [ "$actual" = "$expected" ] || die "checksum mismatch for $file"
+    printf '%s\n' "$package"
+}
+
+install_package() {
+    need_root
+    [ "$ARCH" = "x86_64" ] || die "unsupported architecture: $ARCH"
+    ensure_catalog
+    name="$1"
+    record="$(record_for "$name")"
+    [ -n "$record" ] || die "unknown package: $name"
+    version="$(field "$record" 2)"
+    file="$(field "$record" 3)"
+    sha="$(field "$record" 4)"
+    package="$(download_package "$record" | tail -n 1)"
+    tmp="$(mktemp -d /tmp/opnwall-install.XXXXXX)"
+    trap 'rm -rf "$tmp"' EXIT HUP INT TERM
+    tar -xzf "$package" -C "$tmp"
+    [ -f "$tmp/$name/install.sh" ] || die "install.sh is missing from $file"
+    echo "Installing $name $version..."
+    (cd "$tmp/$name" && yes y | bash ./install.sh)
+    printf '%s|%s|%s\n' "$version" "$file" "$sha" > "$INSTALLED_DIR/$name"
+    rm -rf "$tmp"
+    trap - EXIT HUP INT TERM
+    echo "$name $version installed."
+}
+
+remove_package() {
+    need_root
+    prepare_dirs
+    name="$1"
+    state="$INSTALLED_DIR/$name"
+    [ -f "$state" ] || die "$name is not recorded as installed"
+    IFS='|' read -r version file sha < "$state"
+    package="$CACHE_DIR/$file"
+    if [ ! -f "$package" ] || [ "$(sha256sum "$package" | awk '{print $1}')" != "$sha" ]; then
+        rm -f "$package"
+        fetch_file "$BASE_URL/repo/$ARCH/All/$file" "$package"
+    fi
+    [ "$(sha256sum "$package" | awk '{print $1}')" = "$sha" ] || die "checksum mismatch for $file"
+    tmp="$(mktemp -d /tmp/opnwall-remove.XXXXXX)"
+    trap 'rm -rf "$tmp"' EXIT HUP INT TERM
+    tar -xzf "$package" -C "$tmp"
+    [ -f "$tmp/$name/uninstall.sh" ] || die "uninstall.sh is missing from $file"
+    echo "Removing $name $version..."
+    (cd "$tmp/$name" && yes y | bash ./uninstall.sh)
+    rm -f "$state"
+    rm -rf "$tmp"
+    trap - EXIT HUP INT TERM
+    echo "$name removed."
+}
+
+upgrade_packages() {
+    need_root
+    update_catalog
+    found=0
+    for state in "$INSTALLED_DIR"/*; do
+        [ -f "$state" ] || continue
+        name="${state##*/}"
+        installed_version="$(awk -F '|' 'NR == 1 { print $1 }' "$state")"
+        record="$(record_for "$name")"
+        [ -n "$record" ] || continue
+        available_version="$(field "$record" 2)"
+        if [ "$installed_version" != "$available_version" ]; then
+            found=1
+            install_package "$name"
+        fi
+    done
+    [ "$found" -eq 1 ] || echo "All installed Opnwall packages are up to date."
+}
+
+usage() {
+    cat <<'EOF'
+Usage: opnwall COMMAND [PACKAGE]
+
+Commands:
+  update             Refresh the repository catalog
+  list               List available and installed packages
+  info PACKAGE       Show package details
+  install PACKAGE    Install or reinstall a package
+  remove PACKAGE     Remove a package
+  upgrade            Upgrade all installed Opnwall packages
+EOF
+}
+
+command="${1:-}"
+case "$command" in
+    update) update_catalog ;;
+    list) list_packages ;;
+    info) [ "$#" -eq 2 ] || die "info requires a package name"; show_info "$2" ;;
+    install) [ "$#" -eq 2 ] || die "install requires a package name"; install_package "$2" ;;
+    remove) [ "$#" -eq 2 ] || die "remove requires a package name"; remove_package "$2" ;;
+    upgrade) upgrade_packages ;;
+    -h|--help|help|'') usage ;;
+    *) die "unknown command: $command" ;;
+esac

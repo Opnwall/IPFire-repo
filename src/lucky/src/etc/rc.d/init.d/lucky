@@ -1,0 +1,127 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          lucky
+# Required-Start:    $network
+# Required-Stop:     $network
+# Default-Start:     3 5
+# Default-Stop:      0 1 2 6
+# Short-Description: Lucky DDNS, ACME and network toolbox for IPFire
+### END INIT INFO
+
+NAME="lucky"
+CONFIG="/etc/sysconfig/lucky"
+PIDFILE="/run/${NAME}.pid"
+LOGFILE="/var/log/${NAME}.log"
+
+[ -r "$CONFIG" ] && . "$CONFIG"
+
+: "${LUCKY_ENABLE:=yes}"
+: "${LUCKY_BIND:=0.0.0.0}"
+: "${LUCKY_HTTP_PORT:=16601}"
+: "${LUCKY_CONF_DIR:=/var/ipfire/lucky/conf}"
+: "${LUCKY_EXTRA_ARGS:=}"
+
+find_lucky()
+{
+	for candidate in /opt/lucky/bin/lucky /usr/bin/lucky /usr/local/bin/lucky; do
+		if [ -x "$candidate" ]; then
+			printf '%s\n' "$candidate"
+			return 0
+		fi
+	done
+
+	return 1
+}
+
+is_running()
+{
+	[ -r "$PIDFILE" ] || return 1
+	pid="$(cat "$PIDFILE" 2>/dev/null)"
+	[ -n "$pid" ] || return 1
+	kill -0 "$pid" 2>/dev/null
+}
+
+start()
+{
+	if is_running; then
+		echo "lucky is already running as pid $(cat "$PIDFILE")."
+		return 0
+	fi
+
+	if [ "$LUCKY_ENABLE" != "yes" ]; then
+		echo "lucky is disabled in $CONFIG"
+		return 1
+	fi
+
+	LUCKY_BIN="$(find_lucky)" || {
+		echo "lucky binary not found. Install lucky to /opt/lucky/bin/lucky, /usr/bin/lucky, or /usr/local/bin/lucky."
+		return 1
+	}
+
+	mkdir -p "$(dirname "$PIDFILE")" "$(dirname "$LOGFILE")" "$LUCKY_CONF_DIR"
+	touch "$LOGFILE"
+	chmod 0600 "$LOGFILE"
+
+	"$LUCKY_BIN" -cd "$LUCKY_CONF_DIR" $LUCKY_EXTRA_ARGS >>"$LOGFILE" 2>&1 &
+	echo "$!" > "$PIDFILE"
+	sleep 2
+
+	if is_running; then
+		echo "lucky is running as pid $(cat "$PIDFILE")."
+		return 0
+	fi
+
+	echo "lucky failed to start. See $LOGFILE"
+	rm -f "$PIDFILE"
+	return 1
+}
+
+stop()
+{
+	if ! is_running; then
+		rm -f "$PIDFILE"
+		echo "lucky is not running."
+		return 0
+	fi
+
+	pid="$(cat "$PIDFILE")"
+	kill "$pid" 2>/dev/null || true
+	sleep 1
+	if kill -0 "$pid" 2>/dev/null; then
+		kill -9 "$pid" 2>/dev/null || true
+	fi
+	rm -f "$PIDFILE"
+	echo "lucky stopped."
+}
+
+status()
+{
+	if is_running; then
+		echo "lucky is running as pid $(cat "$PIDFILE")."
+		return 0
+	fi
+
+	echo "lucky is not running."
+	return 3
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		start
+		;;
+	status)
+		status
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart|status}"
+		exit 1
+		;;
+esac

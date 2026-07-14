@@ -1,0 +1,261 @@
+#!/bin/bash
+###############################################################################
+#                                                                             #
+# Script de ejecución mensual de informes                                     #
+# IPFire.org - A linux based firewall                                         #
+#                                                                             #
+# Este script verifica la configuración y ejecuta los informes                #
+# mensualmente si está habilitado el programador y el scope mensual           #
+#                                                                             #
+###############################################################################
+
+# Variables de configuración
+REPORTS_DIR="/var/ipfire/reports"
+SETTINGS_FILE="$REPORTS_DIR/settings"
+
+# Scripts de informes
+FW_SCRIPT="$REPORTS_DIR/fw-report.sh"
+IDS_SCRIPT="$REPORTS_DIR/ids-report.sh"
+URL_SCRIPT="$REPORTS_DIR/url-report.sh"
+DNSFW_SCRIPT="$REPORTS_DIR/dnsfw-report.sh"
+MAIL_SCRIPT="$REPORTS_DIR/send_mail.sh"
+
+# Función para verificar si un script existe y es ejecutable
+check_script() {
+    local script_path="$1"
+    local script_name="$2"
+    
+    if [[ ! -f "$script_path" ]]; then
+        echo "ERROR: Script $script_name no encontrado en $script_path"
+        return 1
+    fi
+    
+    if [[ ! -x "$script_path" ]]; then
+        echo "ERROR: Script $script_name no tiene permisos de ejecución"
+        return 1
+    fi
+    
+    return 0
+}
+
+# Función para ejecutar un script con manejo de errores
+execute_script() {
+    local script_path="$1"
+    local script_name="$2"
+    
+    echo "Iniciando ejecución de $script_name..."
+    
+    # Ejecutar el script y capturar salida y código de error
+    local output
+    local exit_code
+    
+    output=$(bash "$script_path" 2>&1)
+    exit_code=$?
+    
+    if [[ $exit_code -eq 0 ]]; then
+        echo "SUCCESS: $script_name ejecutado correctamente"
+        if [[ -n "$output" ]]; then
+            echo "OUTPUT: $output"
+        fi
+        return 0
+    else
+        echo "ERROR: $script_name falló con código $exit_code"
+        echo "ERROR OUTPUT: $output"
+        return 1
+    fi
+}
+
+# Función para leer configuración del archivo settings
+read_setting() {
+    local setting_name="$1"
+    local default_value="$2"
+    
+    if [[ ! -f "$SETTINGS_FILE" ]]; then
+        echo "$default_value"
+        return
+    fi
+    
+    # Buscar la línea que contiene el setting
+    local value=$(grep "^$setting_name=" "$SETTINGS_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d "'\"")
+    
+    if [[ -n "$value" ]]; then
+        echo "$value"
+    else
+        echo "$default_value"
+    fi
+}
+
+# Función principal
+main() {
+    echo "=== INICIO DE EJECUCIÓN MENSUAL DE INFORMES ==="
+    
+    # Verificar que existe el directorio de informes
+    if [[ ! -d "$REPORTS_DIR" ]]; then
+        echo "ERROR: Directorio de informes no existe: $REPORTS_DIR"
+        exit 1
+    fi
+    
+    # Verificar que existe el archivo de configuración
+    if [[ ! -f "$SETTINGS_FILE" ]]; then
+        echo "ERROR: Archivo de configuración no existe: $SETTINGS_FILE"
+        exit 1
+    fi
+    
+    # Leer configuración del programador
+    local scheduler=$(read_setting "SCHEDULER" "off")
+    
+    echo "Estado del programador: $scheduler"
+    
+    # Verificar si el programador está habilitado
+    if [[ "$scheduler" != "on" ]]; then
+        echo "INFO: Programador deshabilitado (SCHEDULER=$scheduler). No se ejecutarán informes."
+        echo "=== FIN DE EJECUCIÓN ==="
+        exit 0
+    fi
+    
+    # Leer configuración del scope mensual
+    local scope_month=$(read_setting "SCOPE_MONTH" "off")
+    
+    echo "Estado del scope mensual: $scope_month"
+    
+    # Verificar si el scope mensual está habilitado
+    if [[ "$scope_month" != "on" ]]; then
+        echo "INFO: Scope mensual deshabilitado (SCOPE_MONTH=$scope_month). No se ejecutarán informes."
+        echo "=== FIN DE EJECUCIÓN ==="
+        exit 0
+    fi
+    
+    # Leer configuración de informes individuales
+    local firewall_enabled=$(read_setting "FIREWALL" "off")
+    local ids_enabled=$(read_setting "IDS" "off")
+    local url_enabled=$(read_setting "URL" "off")
+    local dnsfw_enabled=$(read_setting "DNSFW" "off")
+    
+    echo "Configuración de informes:"
+    echo "  - Firewall: $firewall_enabled"
+    echo "  - IDS: $ids_enabled"
+    echo "  - URL: $url_enabled"
+    echo "  - DNS Firewall: $dnsfw_enabled"
+    
+    # Contadores para estadísticas
+    local total_reports=0
+    local successful_reports=0
+    local failed_reports=0
+    
+    # Ejecutar informe de Firewall si está habilitado
+    if [[ "$firewall_enabled" == "on" ]]; then
+        echo "Procesando informe de Firewall..."
+        ((total_reports++))
+        if check_script "$FW_SCRIPT" "fw-report.sh"; then
+            if execute_script "$FW_SCRIPT" "Firewall Report"; then
+                ((successful_reports++))
+            else
+                ((failed_reports++))
+            fi
+        else
+            ((failed_reports++))
+        fi
+    else
+        echo "INFO: Informe de Firewall deshabilitado"
+    fi
+    
+    # Ejecutar informe de IDS si está habilitado
+    if [[ "$ids_enabled" == "on" ]]; then
+        echo "Procesando informe de IDS..."
+        ((total_reports++))
+        if check_script "$IDS_SCRIPT" "ids-report.sh"; then
+            if execute_script "$IDS_SCRIPT" "IDS Report"; then
+                ((successful_reports++))
+            else
+                ((failed_reports++))
+            fi
+        else
+            ((failed_reports++))
+        fi
+    else
+        echo "INFO: Informe de IDS deshabilitado"
+    fi
+    
+    # Ejecutar informe de URL si está habilitado
+    if [[ "$url_enabled" == "on" ]]; then
+        echo "Procesando informe de URL..."
+        ((total_reports++))
+        if check_script "$URL_SCRIPT" "url-report.sh"; then
+            if execute_script "$URL_SCRIPT" "URL Filter Report"; then
+                ((successful_reports++))
+            else
+                ((failed_reports++))
+            fi
+        else
+            ((failed_reports++))
+        fi
+    else
+        echo "INFO: Informe de URL deshabilitado"
+    fi
+
+    # Ejecutar informe de DNS Firewall si está habilitado
+    if [[ "$dnsfw_enabled" == "on" ]]; then
+        echo "Procesando informe de DNS Firewall..."
+        ((total_reports++))
+        if check_script "$DNSFW_SCRIPT" "dnsfw-report.sh"; then
+            if execute_script "$DNSFW_SCRIPT" "DNS Firewall Report"; then
+                ((successful_reports++))
+            else
+                ((failed_reports++))
+            fi
+        else
+            ((failed_reports++))
+        fi
+    else
+        echo "INFO: Informe de DNS Firewall deshabilitado"
+    fi
+    
+    # Verificar si hay informes que ejecutar
+    if [[ $total_reports -eq 0 ]]; then
+        echo "INFO: No hay informes habilitados para ejecutar."
+    else
+        # Mostrar estadísticas de ejecución
+        echo "ESTADÍSTICAS DE EJECUCIÓN:"
+        echo "  - Total de informes: $total_reports"
+        echo "  - Exitosos: $successful_reports"
+        echo "  - Fallidos: $failed_reports"
+    fi
+    
+    # Ejecutar envío por email independientemente de si hay informes o no
+    echo "Procediendo a ejecutar el script de envío de email..."
+    
+    if check_script "$MAIL_SCRIPT" "send_mail.sh"; then
+        if execute_script "$MAIL_SCRIPT" "Email Sender"; then
+            echo "SUCCESS: Script de envío de email ejecutado correctamente"
+        else
+            echo "ERROR: Falló la ejecución del script de envío de email"
+        fi
+    else
+        echo "ERROR: No se puede ejecutar script de envío de email"
+    fi
+    
+    # Resumen final
+    if [[ $total_reports -eq 0 ]]; then
+        echo "RESULTADO: No se ejecutaron informes, pero se ejecutó el script de email"
+    elif [[ $failed_reports -eq 0 ]]; then
+        echo "RESULTADO: Ejecución mensual completada exitosamente"
+    else
+        echo "RESULTADO: Ejecución mensual completada con errores ($failed_reports fallos)"
+    fi
+    
+    echo "=== FIN DE EJECUCIÓN ==="
+}
+
+# Verificar que el script se ejecuta como root (opcional)
+if [[ $EUID -ne 0 ]]; then
+    echo "ADVERTENCIA: Este script debería ejecutarse como root para acceso completo a logs"
+fi
+
+# Crear directorio si no existe
+mkdir -p "$REPORTS_DIR"
+
+# Ejecutar función principal
+main "$@"
+
+# Código de salida basado en el resultado
+exit 0

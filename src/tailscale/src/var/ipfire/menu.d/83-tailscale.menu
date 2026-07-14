@@ -1,0 +1,7 @@
+
+    $subservices->{'16.tailscale'} = {
+				'caption' => 'Tailscale',
+			    'uri' => '/cgi-bin/tailscale.cgi',
+			    'title' => 'Tailscale',
+			    'enabled' => 1,
+			 	 };	  

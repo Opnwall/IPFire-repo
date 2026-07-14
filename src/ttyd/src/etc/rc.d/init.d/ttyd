@@ -1,0 +1,193 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          ttyd
+# Required-Start:    $network sshd
+# Required-Stop:     $network
+# Default-Start:
+# Default-Stop:
+# Short-Description: ttyd browser terminal for IPFire
+### END INIT INFO
+
+NAME="ttyd"
+CONFIG="/etc/sysconfig/ttyd"
+PIDFILE="/run/${NAME}.pid"
+LOGFILE="/var/log/${NAME}.log"
+
+[ -r "$CONFIG" ] && . "$CONFIG"
+
+: "${TTYD_ENABLE:=yes}"
+: "${TTYD_INTERFACE:=0.0.0.0}"
+: "${TTYD_PORT:=7681}"
+: "${TTYD_BASE_PATH:=/}"
+: "${TTYD_SSL_CERT:=}"
+: "${TTYD_SSL_KEY:=}"
+: "${TTYD_SSH_USER:=root}"
+: "${TTYD_SSH_HOST:=127.0.0.1}"
+: "${TTYD_SSH_PORT:=22}"
+
+find_ttyd()
+{
+	for candidate in /opt/ttyd/bin/ttyd /usr/bin/ttyd /usr/local/bin/ttyd; do
+		if [ -x "$candidate" ]; then
+			printf '%s\n' "$candidate"
+			return 0
+		fi
+	done
+
+	return 1
+}
+
+is_running()
+{
+	[ -r "$PIDFILE" ] || return 1
+	pid="$(cat "$PIDFILE" 2>/dev/null)"
+	[ -n "$pid" ] || return 1
+	kill -0 "$pid" 2>/dev/null
+}
+
+find_webui_certificate()
+{
+	apache_ssl_conf="/etc/httpd/conf/vhosts.d/ipfire-interface-ssl.conf"
+
+	if [ -z "$TTYD_SSL_CERT" ] && [ -r "$apache_ssl_conf" ]; then
+		TTYD_SSL_CERT="$(awk '$1 == "SSLCertificateFile" {print $2; exit}' "$apache_ssl_conf")"
+	fi
+
+	if [ -z "$TTYD_SSL_KEY" ] && [ -r "$apache_ssl_conf" ]; then
+		TTYD_SSL_KEY="$(awk '$1 == "SSLCertificateKeyFile" {print $2; exit}' "$apache_ssl_conf")"
+	fi
+
+	if [ -z "$TTYD_SSL_CERT" ] || [ -z "$TTYD_SSL_KEY" ]; then
+		if [ -r /etc/httpd/server-ecdsa.crt ] && [ -r /etc/httpd/server-ecdsa.key ]; then
+			TTYD_SSL_CERT="/etc/httpd/server-ecdsa.crt"
+			TTYD_SSL_KEY="/etc/httpd/server-ecdsa.key"
+		elif [ -r /etc/httpd/server.crt ] && [ -r /etc/httpd/server.key ]; then
+			TTYD_SSL_CERT="/etc/httpd/server.crt"
+			TTYD_SSL_KEY="/etc/httpd/server.key"
+		fi
+	fi
+}
+
+check_preflight()
+{
+	if [ "$TTYD_ENABLE" != "yes" ]; then
+		echo "ttyd is disabled in $CONFIG"
+		return 1
+	fi
+
+	TTYD_BIN="$(find_ttyd)" || {
+		echo "ttyd binary not found. Install ttyd to /opt/ttyd/bin/ttyd, /usr/bin/ttyd, or /usr/local/bin/ttyd."
+		return 1
+	}
+
+	find_webui_certificate
+
+	if [ ! -r "$TTYD_SSL_CERT" ] || [ ! -r "$TTYD_SSL_KEY" ]; then
+		echo "IPFire WebUI certificate/key not found: $TTYD_SSL_CERT / $TTYD_SSL_KEY"
+		return 1
+	fi
+
+	if ! pgrep -x sshd >/dev/null 2>&1; then
+		echo "sshd is not running. Enable SSH before starting ttyd."
+		return 1
+	fi
+
+	return 0
+}
+
+start()
+{
+	if is_running; then
+		echo "ttyd is already running as pid $(cat "$PIDFILE")."
+		return 0
+	fi
+
+	check_preflight || return 1
+
+	mkdir -p "$(dirname "$PIDFILE")" "$(dirname "$LOGFILE")"
+	touch "$LOGFILE"
+	chmod 0600 "$LOGFILE"
+
+	mkdir -p /opt/ttyd
+	touch /opt/ttyd/known_hosts
+	chmod 0600 /opt/ttyd/known_hosts
+
+	TTYD_COMMAND='exec /usr/bin/ssh -tt -l '"$TTYD_SSH_USER"' -p '"$TTYD_SSH_PORT"' -o PreferredAuthentications=keyboard-interactive,password -o PubkeyAuthentication=no -o ServerAliveInterval=30 -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/opt/ttyd/known_hosts -o VisualHostKey=no -o LogLevel=ERROR '"$TTYD_SSH_HOST"
+
+	LD_LIBRARY_PATH="/opt/ttyd/lib:/usr/lib:/usr/local/lib" \
+		"$TTYD_BIN" \
+		--interface "$TTYD_INTERFACE" \
+		--port "$TTYD_PORT" \
+		--base-path "$TTYD_BASE_PATH" \
+		--ssl \
+		--ssl-cert "$TTYD_SSL_CERT" \
+		--ssl-key "$TTYD_SSL_KEY" \
+		--writable \
+		--terminal-type xterm-256color \
+		sh -c "$TTYD_COMMAND" >>"$LOGFILE" 2>&1 &
+
+	echo "$!" > "$PIDFILE"
+	sleep 1
+
+	if is_running; then
+		echo "ttyd is running as pid $(cat "$PIDFILE")."
+		return 0
+	fi
+
+	echo "ttyd failed to start. See $LOGFILE"
+	rm -f "$PIDFILE"
+	return 1
+}
+
+stop()
+{
+	if ! is_running; then
+		rm -f "$PIDFILE"
+		echo "ttyd is not running."
+		return 0
+	fi
+
+	pid="$(cat "$PIDFILE")"
+	kill "$pid" 2>/dev/null || true
+	sleep 1
+	if kill -0 "$pid" 2>/dev/null; then
+		kill -9 "$pid" 2>/dev/null || true
+	fi
+	rm -f "$PIDFILE"
+	echo "ttyd stopped."
+}
+
+status()
+{
+	if is_running; then
+		echo "ttyd is running as pid $(cat "$PIDFILE")."
+		return 0
+	fi
+
+	echo "ttyd is not running."
+	return 3
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		start
+		;;
+	status)
+		status
+		;;
+	reload)
+		restart
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload|status}"
+		exit 1
+		;;
+esac

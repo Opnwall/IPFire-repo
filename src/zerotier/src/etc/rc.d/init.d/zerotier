@@ -1,0 +1,279 @@
+#!/bin/sh
+#
+# ZeroTier init script for IPFire
+#
+
+### BEGIN INIT INFO
+# Provides:          zerotier
+# Required-Start:    $network
+# Required-Stop:     $network
+# Default-Start:
+# Default-Stop:
+# Short-Description: ZeroTier service
+### END INIT INFO
+
+DAEMON="/usr/sbin/zerotier-one"
+CLI="/usr/local/bin/zerotier-cli"
+HOME_DIR="/var/lib/zerotier-one"
+PIDFILE="/var/lib/zerotier-one/zerotier-one.pid"
+SETTINGS="/var/ipfire/zerotier/settings"
+STATEFILE="/var/ipfire/zerotier/state"
+LOGFILE="/var/log/zerotier.log"
+
+ENABLED="on"
+NETWORK_ID=""
+ALLOW_MANAGED="on"
+ALLOW_GLOBAL="off"
+ALLOW_DEFAULT="off"
+ALLOW_DNS="off"
+PORT=""
+
+load_settings() {
+    [ -f "$SETTINGS" ] || return 0
+
+    while IFS='=' read -r key value; do
+        key=${key%%[ 	]*}
+        value=$(printf '%s' "$value" | tr -d '\015')
+
+        case "$key" in
+            ''|\#*) continue ;;
+            ENABLED) ENABLED=$value ;;
+            NETWORK_ID) NETWORK_ID=$value ;;
+            ALLOW_MANAGED) ALLOW_MANAGED=$value ;;
+            ALLOW_GLOBAL) ALLOW_GLOBAL=$value ;;
+            ALLOW_DEFAULT) ALLOW_DEFAULT=$value ;;
+            ALLOW_DNS) ALLOW_DNS=$value ;;
+            PORT) PORT=$value ;;
+        esac
+    done < "$SETTINGS"
+}
+
+load_settings
+
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+
+is_running() {
+    [ -f "$PIDFILE" ] || return 1
+    PID="$(cat "$PIDFILE" 2>/dev/null)"
+    [ -n "$PID" ] || return 1
+    kill -0 "$PID" 2>/dev/null
+}
+
+write_state() {
+    echo "RUNNING=$1" > "$STATEFILE"
+    echo "UPDATED=$(date '+%Y-%m-%d %H:%M:%S')" >> "$STATEFILE"
+}
+
+add_forward_rules() {
+    command -v iptables >/dev/null 2>&1 || return 0
+    iptables -C FORWARD -i zt+ -j ACCEPT 2>/dev/null || iptables -A FORWARD -i zt+ -j ACCEPT
+    iptables -C FORWARD -o zt+ -j ACCEPT 2>/dev/null || iptables -A FORWARD -o zt+ -j ACCEPT
+    command -v sysctl >/dev/null 2>&1 && sysctl -w net.ipv4.ip_forward=1 >/dev/null 2>&1 || true
+}
+
+remove_forward_rules() {
+    command -v iptables >/dev/null 2>&1 || return 0
+    iptables -D FORWARD -i zt+ -j ACCEPT 2>/dev/null || true
+    iptables -D FORWARD -o zt+ -j ACCEPT 2>/dev/null || true
+}
+
+cli() {
+    "$CLI" -D"$HOME_DIR" "$@"
+}
+
+network_id_is_valid() {
+    [ -n "$1" ] || return 1
+    printf '%s' "$1" | grep -Eq '^[0-9a-fA-F]{16}$'
+}
+
+wait_for_cli() {
+    i=0
+    while [ $i -lt 20 ]; do
+        cli info >/dev/null 2>&1 && return 0
+        i=$((i + 1))
+        sleep 1
+    done
+    return 1
+}
+
+start() {
+    if [ "$ENABLED" != "on" ]; then
+        echo "ZeroTier is disabled in $SETTINGS"
+        write_state 0
+        return 0
+    fi
+
+    if ! [ -x "$DAEMON" ]; then
+        echo "zerotier-one not installed: $DAEMON"
+        return 1
+    fi
+
+    if ! [ -x "$CLI" ]; then
+        echo "zerotier-cli not installed: $CLI"
+        return 1
+    fi
+
+    if is_running; then
+        echo "zerotier-one already running"
+        return 0
+    fi
+
+    mkdir -p "$HOME_DIR"
+    chmod 700 "$HOME_DIR"
+
+    echo "Starting zerotier-one..."
+    if [ -n "$PORT" ]; then
+        "$DAEMON" -d -p"$PORT" "$HOME_DIR" >>"$LOGFILE" 2>&1
+    else
+        "$DAEMON" -d "$HOME_DIR" >>"$LOGFILE" 2>&1
+    fi
+
+    sleep 2
+
+    if is_running || wait_for_cli; then
+        add_forward_rules
+        write_state 1
+        echo "zerotier-one started"
+
+        if network_id_is_valid "$NETWORK_ID"; then
+            join
+        fi
+
+        return 0
+    fi
+
+    write_state 0
+    echo "failed to start zerotier-one"
+    return 1
+}
+
+stop() {
+    if ! is_running; then
+        echo "zerotier-one not running"
+        write_state 0
+        rm -f "$PIDFILE"
+        return 0
+    fi
+
+    PID="$(cat "$PIDFILE")"
+    echo "Stopping zerotier-one..."
+    kill "$PID" 2>/dev/null || true
+    sleep 2
+
+    if kill -0 "$PID" 2>/dev/null; then
+        kill -9 "$PID" 2>/dev/null || true
+    fi
+
+    rm -f "$PIDFILE"
+    remove_forward_rules
+    write_state 0
+    echo "zerotier-one stopped"
+}
+
+restart() {
+    stop
+    start
+}
+
+status() {
+    if is_running; then
+        echo "zerotier-one is running"
+        return 0
+    fi
+
+    echo "zerotier-one is stopped"
+    return 1
+}
+
+join() {
+    [ -x "$CLI" ] || { echo "zerotier-cli not found"; return 1; }
+    is_running || start || return 1
+
+    if ! network_id_is_valid "$NETWORK_ID"; then
+        echo "NETWORK_ID is empty or invalid in $SETTINGS"
+        return 1
+    fi
+
+    echo "Joining ZeroTier network $NETWORK_ID..."
+    cli join "$NETWORK_ID" || return 1
+
+    cli set "$NETWORK_ID" allowManaged="$(bool "$ALLOW_MANAGED")" >/dev/null 2>&1 || true
+    cli set "$NETWORK_ID" allowGlobal="$(bool "$ALLOW_GLOBAL")" >/dev/null 2>&1 || true
+    cli set "$NETWORK_ID" allowDefault="$(bool "$ALLOW_DEFAULT")" >/dev/null 2>&1 || true
+    cli set "$NETWORK_ID" allowDNS="$(bool "$ALLOW_DNS")" >/dev/null 2>&1 || true
+}
+
+leave() {
+    [ -x "$CLI" ] || { echo "zerotier-cli not found"; return 1; }
+    is_running || { echo "zerotier-one is not running"; return 1; }
+
+    if ! network_id_is_valid "$NETWORK_ID"; then
+        echo "NETWORK_ID is empty or invalid in $SETTINGS"
+        return 1
+    fi
+
+    echo "Leaving ZeroTier network $NETWORK_ID..."
+    cli leave "$NETWORK_ID"
+}
+
+set_network() {
+    NEW_NETWORK_ID="$2"
+    if ! network_id_is_valid "$NEW_NETWORK_ID"; then
+        echo "Network ID must be 16 hex characters"
+        return 1
+    fi
+
+    mkdir -p "$(dirname "$SETTINGS")"
+    touch "$SETTINGS"
+    chmod 600 "$SETTINGS"
+
+    if grep -q '^NETWORK_ID=' "$SETTINGS"; then
+        sed -i "s/^NETWORK_ID=.*/NETWORK_ID=$NEW_NETWORK_ID/" "$SETTINGS"
+    else
+        echo "NETWORK_ID=$NEW_NETWORK_ID" >> "$SETTINGS"
+    fi
+
+    NETWORK_ID="$NEW_NETWORK_ID"
+    echo "Network ID saved"
+}
+
+bool() {
+    case "$1" in
+        on|yes|true|1) echo 1 ;;
+        *) echo 0 ;;
+    esac
+}
+
+info() {
+    [ -x "$CLI" ] || { echo "zerotier-cli not found: $CLI"; return 1; }
+    cli info
+}
+
+listnetworks() {
+    [ -x "$CLI" ] || { echo "zerotier-cli not found: $CLI"; return 1; }
+    cli listnetworks
+}
+
+peers() {
+    [ -x "$CLI" ] || { echo "zerotier-cli not found: $CLI"; return 1; }
+    cli listpeers 2>/dev/null || cli peers
+}
+
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    restart) restart ;;
+    status) status ;;
+    join) join ;;
+    leave) leave ;;
+    set_network) set_network "$@" ;;
+    info) info ;;
+    listnetworks) listnetworks ;;
+    peers) peers ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status|join|leave|set_network|info|listnetworks|peers}"
+        exit 1
+        ;;
+esac
+
+exit $?

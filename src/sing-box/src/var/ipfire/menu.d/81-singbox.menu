@@ -1,0 +1,6 @@
+    $subservices->{'72.sing-box'} = {
+				'caption' => 'Sing-Box',
+			    'uri' => '/cgi-bin/sing-box.cgi',
+			    'title' => 'Sing-Box',
+			    'enabled' => 1,
+			 	 };	  

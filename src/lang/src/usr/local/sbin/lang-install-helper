@@ -1,0 +1,293 @@
+#!/bin/bash
+set -euo pipefail
+
+LANG_URL_DEFAULT='https://cloud.pfchina.org/index.php/s/CYFKMKGY7spK7mj/download?path=%2FIPFire&files=IPFire_lang.zip'
+TRUSTED_HOST='cloud.pfchina.org'
+CONFIG_FILE='/var/ipfire/lang_install.conf'
+TARGET_DIR='/var/ipfire'
+LANG_CACHE_PRIMARY='/usr/local/bin/update-lang-cache'
+LANG_CACHE_ALT='/var/ipfire/langs/updatecache'
+LANGTOOL_LANG='zh-Hans'
+
+set_lang() {
+    case "${1:-}" in
+        en|zh-Hans|zh-Hant) LANGTOOL_LANG="$1" ;;
+        zh|zh_CN|zh_Hans|zh-Hans*) LANGTOOL_LANG='zh-Hans' ;;
+        tw|zh_TW|zh_Hant|zh-Hant*) LANGTOOL_LANG='zh-Hant' ;;
+        *) LANGTOOL_LANG='en' ;;
+    esac
+}
+
+t() {
+    local key="$1"
+
+    case "$LANGTOOL_LANG" in
+        zh-Hans)
+            case "$key" in
+                error) echo "错误" ;;
+                empty_url) echo "下载地址不能为空。" ;;
+                control_chars) echo "下载地址不能包含控制字符。" ;;
+                https_required) echo "下载地址必须是 https:// 开头的 URL。" ;;
+                untrusted_host) echo "下载域名不在信任列表中" ;;
+                saved_url) echo "默认下载地址已保存。" ;;
+                no_downloader) echo "系统中未找到 wget 或 curl，无法下载文件。" ;;
+                absolute_path) echo "压缩包包含绝对路径" ;;
+                unsafe_path) echo "压缩包包含不安全路径" ;;
+                unsupported_path) echo "压缩包包含未允许的安装路径" ;;
+                empty_archive) echo "压缩包为空。" ;;
+                start_install) echo "开始执行汉化补丁安装..." ;;
+                download_url) echo "下载地址" ;;
+                target_dir) echo "目标目录" ;;
+                step_download) echo "[1/5] 下载 IPFire_lang.zip ..." ;;
+                empty_download) echo "下载文件为空。" ;;
+                step_check) echo "[2/5] 检查压缩包 ..." ;;
+                step_extract) echo "[3/5] 解压 IPFire_lang.zip ..." ;;
+                empty_extract) echo "解压后目录为空，未发现可安装文件。" ;;
+                symlink_found) echo "压缩包包含符号链接，已拒绝安装。" ;;
+                step_copy) echo "[4/5] 复制文件到" ;;
+                step_cache) echo "[5/5] 刷新语言缓存 ..." ;;
+                cache_done) echo "语言缓存已刷新。" ;;
+                cache_skip) echo "未找到语言缓存刷新程序，跳过。" ;;
+                install_done) echo "汉化补丁安装完成。" ;;
+                usage) echo "用法：$0 save-url URL [LANG] | install [URL] [LANG]" ;;
+            esac
+            ;;
+        zh-Hant)
+            case "$key" in
+                error) echo "錯誤" ;;
+                empty_url) echo "下載位址不能為空。" ;;
+                control_chars) echo "下載位址不能包含控制字元。" ;;
+                https_required) echo "下載位址必須是 https:// 開頭的 URL。" ;;
+                untrusted_host) echo "下載網域不在信任清單中" ;;
+                saved_url) echo "預設下載位址已儲存。" ;;
+                no_downloader) echo "系統中找不到 wget 或 curl，無法下載檔案。" ;;
+                absolute_path) echo "壓縮包包含絕對路徑" ;;
+                unsafe_path) echo "壓縮包包含不安全路徑" ;;
+                unsupported_path) echo "壓縮包包含未允許的安裝路徑" ;;
+                empty_archive) echo "壓縮包為空。" ;;
+                start_install) echo "開始執行漢化補丁安裝..." ;;
+                download_url) echo "下載位址" ;;
+                target_dir) echo "目標目錄" ;;
+                step_download) echo "[1/5] 下載 IPFire_lang.zip ..." ;;
+                empty_download) echo "下載檔案為空。" ;;
+                step_check) echo "[2/5] 檢查壓縮包 ..." ;;
+                step_extract) echo "[3/5] 解壓 IPFire_lang.zip ..." ;;
+                empty_extract) echo "解壓後目錄為空，未發現可安裝檔案。" ;;
+                symlink_found) echo "壓縮包包含符號連結，已拒絕安裝。" ;;
+                step_copy) echo "[4/5] 複製檔案到" ;;
+                step_cache) echo "[5/5] 重新整理語言快取 ..." ;;
+                cache_done) echo "語言快取已重新整理。" ;;
+                cache_skip) echo "找不到語言快取重新整理程式，略過。" ;;
+                install_done) echo "漢化補丁安裝完成。" ;;
+                usage) echo "用法：$0 save-url URL [LANG] | install [URL] [LANG]" ;;
+            esac
+            ;;
+        *)
+            case "$key" in
+                error) echo "Error" ;;
+                empty_url) echo "Download URL cannot be empty." ;;
+                control_chars) echo "Download URL cannot contain control characters." ;;
+                https_required) echo "Download URL must start with https://." ;;
+                untrusted_host) echo "Download host is not trusted" ;;
+                saved_url) echo "Default download URL saved." ;;
+                no_downloader) echo "wget or curl was not found, cannot download the file." ;;
+                absolute_path) echo "Archive contains an absolute path" ;;
+                unsafe_path) echo "Archive contains an unsafe path" ;;
+                unsupported_path) echo "Archive contains an unsupported install path" ;;
+                empty_archive) echo "Archive is empty." ;;
+                start_install) echo "Starting localization patch installation..." ;;
+                download_url) echo "Download URL" ;;
+                target_dir) echo "Target directory" ;;
+                step_download) echo "[1/5] Downloading IPFire_lang.zip ..." ;;
+                empty_download) echo "Downloaded file is empty." ;;
+                step_check) echo "[2/5] Checking archive ..." ;;
+                step_extract) echo "[3/5] Extracting IPFire_lang.zip ..." ;;
+                empty_extract) echo "Extracted directory is empty, no installable files found." ;;
+                symlink_found) echo "Archive contains symbolic links; installation refused." ;;
+                step_copy) echo "[4/5] Copying files to" ;;
+                step_cache) echo "[5/5] Refreshing language cache ..." ;;
+                cache_done) echo "Language cache refreshed." ;;
+                cache_skip) echo "Language cache refresh program was not found, skipped." ;;
+                install_done) echo "Localization patch installation completed." ;;
+                usage) echo "Usage: $0 save-url URL [LANG] | install [URL] [LANG]" ;;
+            esac
+            ;;
+    esac
+}
+
+die() {
+    echo "$(t error): $1" >&2
+    exit 1
+}
+
+validate_url() {
+    local url="$1"
+    local host
+
+    [[ -n "$url" ]] || die "$(t empty_url)"
+    [[ "$url" != *$'\n'* && "$url" != *$'\r'* && "$url" != *$'\t'* ]] || die "$(t control_chars)"
+    [[ "$url" =~ ^https://[^[:space:]]+$ ]] || die "$(t https_required)"
+
+    host="${url#https://}"
+    host="${host%%/*}"
+    host="${host%%:*}"
+    host="$(printf '%s' "$host" | tr '[:upper:]' '[:lower:]')"
+    [[ "$host" == "$TRUSTED_HOST" ]] || die "$(t untrusted_host): $host"
+}
+
+load_url() {
+    local url="$LANG_URL_DEFAULT"
+
+    if [[ -f "$CONFIG_FILE" ]]; then
+        while IFS= read -r line; do
+            [[ "$line" =~ ^[[:space:]]*# ]] && continue
+            if [[ "$line" == LANG_URL=* ]]; then
+                url="${line#LANG_URL=}"
+                url="${url%\"}"
+                url="${url#\"}"
+                url="${url%\'}"
+                url="${url#\'}"
+                break
+            fi
+        done < "$CONFIG_FILE"
+    fi
+
+    printf '%s\n' "$url"
+}
+
+save_url() {
+    local url="$1"
+    validate_url "$url"
+
+    install -d -m 755 "$(dirname "$CONFIG_FILE")"
+    umask 022
+    printf 'LANG_URL=%s\n' "$url" > "$CONFIG_FILE"
+    chmod 644 "$CONFIG_FILE"
+    echo "$(t saved_url)"
+}
+
+download_file() {
+    local url="$1"
+    local dest="$2"
+
+    if command -v wget >/dev/null 2>&1; then
+        wget -O "$dest" "$url"
+    elif command -v curl >/dev/null 2>&1; then
+        curl -fL -o "$dest" "$url"
+    else
+        die "$(t no_downloader)"
+    fi
+}
+
+validate_zip_entries() {
+    local zip_file="$1"
+    local entry
+    local normalized
+    local found=0
+
+    while IFS= read -r entry; do
+        [[ -n "$entry" ]] || continue
+        found=1
+        normalized="${entry//\\//}"
+        normalized="${normalized#./}"
+
+        [[ "$normalized" != /* ]] || die "$(t absolute_path): $entry"
+        [[ ! "$normalized" =~ (^|/)\.\.(/|$) ]] || die "$(t unsafe_path): $entry"
+        [[ ! "$normalized" =~ ^[A-Za-z]:/ ]] || die "$(t unsafe_path): $entry"
+
+        [[ "$normalized" == */ || "$normalized" == readme.md || "$normalized" == README.md || "$normalized" == langs/* || "$normalized" == addon-lang/* ]] || \
+            die "$(t unsupported_path): $entry"
+    done < <(unzip -Z1 "$zip_file")
+
+    [[ "$found" -eq 1 ]] || die "$(t empty_archive)"
+}
+
+install_patch() {
+    local url="${1:-}"
+    local tmp_dir zip_file extract_dir
+
+    if [[ -z "$url" ]]; then
+        url="$(load_url)"
+    fi
+    validate_url "$url"
+
+    tmp_dir="$(mktemp -d /tmp/lang-install.XXXXXX)"
+    chmod 700 "$tmp_dir"
+    trap "rm -rf -- '$tmp_dir'" EXIT
+
+    zip_file="$tmp_dir/IPFire_lang.zip"
+    extract_dir="$tmp_dir/extract"
+
+    echo "$(t start_install)"
+    echo
+    echo "$(t download_url): $url"
+    echo "$(t target_dir): $TARGET_DIR"
+    echo
+
+    echo "$(t step_download)"
+    download_file "$url" "$zip_file"
+    [[ -s "$zip_file" ]] || die "$(t empty_download)"
+
+    echo
+    echo "$(t step_check)"
+    unzip -tq "$zip_file" >/dev/null
+    validate_zip_entries "$zip_file"
+
+    echo
+    echo "$(t step_extract)"
+    install -d -m 700 "$extract_dir"
+    unzip -oq "$zip_file" -d "$extract_dir"
+    if ! find "$extract_dir" -mindepth 1 -print -quit | grep -q .; then
+        die "$(t empty_extract)"
+    fi
+    if find "$extract_dir" -type l -print -quit | grep -q .; then
+        die "$(t symlink_found)"
+    fi
+
+    echo
+    echo "$(t step_copy) $TARGET_DIR ..."
+    install -d -m 755 "$TARGET_DIR"
+    for subdir in langs addon-lang; do
+        if [[ -d "$extract_dir/$subdir" ]]; then
+            install -d -m 755 "$TARGET_DIR/$subdir"
+            cp -Rf "$extract_dir/$subdir"/. "$TARGET_DIR/$subdir"/
+        fi
+    done
+    for readme in readme.md README.md; do
+        if [[ -f "$extract_dir/$readme" ]]; then
+            cp -f "$extract_dir/$readme" "$TARGET_DIR/$readme"
+        fi
+    done
+    chmod 755 "$TARGET_DIR"
+
+    echo
+    echo "$(t step_cache)"
+    if [[ -x "$LANG_CACHE_PRIMARY" ]]; then
+        "$LANG_CACHE_PRIMARY"
+        echo "$(t cache_done)"
+    elif [[ -x "$LANG_CACHE_ALT" ]]; then
+        "$LANG_CACHE_ALT"
+        echo "$(t cache_done)"
+    else
+        echo "$(t cache_skip)"
+    fi
+
+    echo
+    echo "$(t install_done)"
+}
+
+case "${1:-}" in
+    save-url)
+        shift
+        set_lang "${2:-${LANGTOOL_LANG:-zh-Hans}}"
+        save_url "${1:-}"
+        ;;
+    install)
+        shift
+        set_lang "${2:-${LANGTOOL_LANG:-zh-Hans}}"
+        install_patch "${1:-}"
+        ;;
+    *)
+        die "$(t usage)"
+        ;;
+esac

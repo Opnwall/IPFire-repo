@@ -1,0 +1,2 @@
+Cmnd_Alias TTYD_SERVICE = /etc/rc.d/init.d/ttyd start, /etc/rc.d/init.d/ttyd stop, /etc/rc.d/init.d/ttyd restart, /etc/rc.d/init.d/ttyd status
+nobody ALL=(root) NOPASSWD: TTYD_SERVICE

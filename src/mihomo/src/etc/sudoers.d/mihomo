@@ -1,0 +1,5 @@
+nobody ALL=(root) NOPASSWD: /etc/init.d/mihomo start
+nobody ALL=(root) NOPASSWD: /etc/init.d/mihomo stop
+nobody ALL=(root) NOPASSWD: /etc/init.d/mihomo restart
+nobody ALL=(root) NOPASSWD: /etc/init.d/mihomo status
+nobody ALL=(root) NOPASSWD: /usr/bin/truncate -s 0 /var/log/mihomo.log

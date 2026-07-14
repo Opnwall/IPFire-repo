@@ -1,0 +1,3 @@
+Cmnd_Alias SYNCTHING_SERVICE = /etc/rc.d/init.d/syncthing start, /etc/rc.d/init.d/syncthing stop, /etc/rc.d/init.d/syncthing restart, /etc/rc.d/init.d/syncthing status, /etc/rc.d/init.d/syncthing version
+nobody ALL=(root) NOPASSWD: SYNCTHING_SERVICE
+nobody ALL=(root) NOPASSWD: /usr/bin/install -m 600 /tmp/syncthing-settings.* /var/ipfire/syncthing/settings

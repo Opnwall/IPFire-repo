@@ -1,0 +1,5 @@
+LUCKY_ENABLE="yes"
+LUCKY_BIND="0.0.0.0"
+LUCKY_HTTP_PORT="16601"
+LUCKY_CONF_DIR="/var/ipfire/lucky/conf"
+LUCKY_EXTRA_ARGS=""

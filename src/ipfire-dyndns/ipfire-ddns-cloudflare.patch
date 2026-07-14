@@ -1,0 +1,483 @@
+diff --git a/lfs/ddns b/lfs/ddns
+index 47358c009..d977eb64d 100644
+--- a/lfs/ddns
++++ b/lfs/ddns
+@@ -75,6 +75,7 @@ $(TARGET) : $(patsubst %,$(DIR_DL)/%,$(objects))
+ 	cd $(DIR_APP) && patch -Np1 -i $(DIR_SRC)/src/patches/ddns-014-freednsafraid-fix-typo.patch
+ 	cd $(DIR_APP) && patch -Np1 -i $(DIR_SRC)/src/patches/ddns-system-Catch-exception-when-host-is-not-dual-stacked.patch
+ 	cd $(DIR_APP) && patch -Np1 -i $(DIR_SRC)/src/patches/ddns-014_gettext-0.25_fix.patch
++	cd $(DIR_APP) && patch -Np1 -i $(DIR_SRC)/src/patches/ddns-014-dns-provider-support.patch
+ 
+ 	cd $(DIR_APP) && [ -x "configure" ] || sh ./autogen.sh
+ 	cd $(DIR_APP) && \
+diff --git a/src/patches/ddns-014-dns-provider-support.patch b/src/patches/ddns-014-dns-provider-support.patch
+new file mode 100644
+index 000000000..4f41b84ed
+--- /dev/null
++++ b/src/patches/ddns-014-dns-provider-support.patch
+@@ -0,0 +1,465 @@
++--- a/src/ddns/system.py
+++++ b/src/ddns/system.py
++@@ -121,8 +121,8 @@
++ 
++ 		return self._guess_external_ip_address(url, **kwargs)
++ 
++-	def send_request(self, url, method="GET", data=None, username=None, password=None, timeout=30):
++-		assert method in ("GET", "POST")
+++	def send_request(self, url, method="GET", data=None, username=None, password=None, timeout=30, headers=None):
+++		assert method in ("GET", "POST", "PATCH", "DELETE")
++ 
++ 		# Add all arguments in the data dict to the URL and escape them properly.
++ 		if method == "GET" and data:
++@@ -138,11 +138,15 @@
++ 		if data:
++ 			logger.debug("  data: %s" % data)
++ 
++-		req = urllib.request.Request(url, data=data)
+++		req = urllib.request.Request(url, data=data, method=method)
++ 
++ 		if username and password:
++ 			basic_auth_header = self._make_basic_auth_header(username, password)
++ 			req.add_header("Authorization", "Basic %s" % basic_auth_header.decode())
+++
+++		if headers:
+++			for k, v in headers.items():
+++				req.add_header(k, v)
++ 
++ 		# Set the user agent.
++ 		req.add_header("User-Agent", self.USER_AGENT)
++--- a/src/ddns/providers.py
+++++ b/src/ddns/providers.py
++@@ -20,12 +20,17 @@
++ ###############################################################################
++ 
++ import datetime
+++import base64
+++import hashlib
+++import hmac
+++import json
++ import logging
++ import os
++ import subprocess
++ import urllib.request
++ import urllib.error
++ import urllib.parse
+++import uuid
++ import xml.dom.minidom
++ 
++ from .i18n import _
++@@ -586,8 +591,414 @@
++ 
++ 		# If we got here, some other update error happened.
++ 		raise DDNSUpdateError(_("Server response: %s") % output)
+++
+++
+++class DDNSProviderCloudflare(DDNSProvider):
+++	handle    = "cloudflare.com"
+++	name      = "Cloudflare"
+++	website   = "https://www.cloudflare.com/"
+++	protocols = ("ipv6", "ipv4",)
+++
+++	url = "https://api.cloudflare.com/client/v4"
+++	supports_token_auth = True
+++
+++	def update_protocol(self, proto):
+++		record_type = self._record_type(proto)
+++		record = self._get_record(record_type)
+++
+++		data = {
+++			"type"    : record_type,
+++			"name"    : self.hostname,
+++			"content" : self.get_address(proto),
+++			"ttl"     : record.get("ttl", 1) if record else 1,
+++			"proxied" : record.get("proxied", False) if record else False,
+++		}
+++
+++		if record:
+++			url = "%s/zones/%s/dns_records/%s" % (self.url, self._get_zone_id(), record.get("id"))
+++			self._send_request(url, method="PATCH", data=data)
+++		else:
+++			url = "%s/zones/%s/dns_records" % (self.url, self._get_zone_id())
+++			self._send_request(url, method="POST", data=data)
+++
+++	def remove_protocol(self, proto):
+++		record = self._get_record(self._record_type(proto))
+++		if not record:
+++			return
+++
+++		url = "%s/zones/%s/dns_records/%s" % (self.url, self._get_zone_id(), record.get("id"))
+++		self._send_request(url, method="DELETE")
+++
+++	def _record_type(self, proto):
+++		if proto == "ipv6":
+++			return "AAAA"
+++
+++		return "A"
+++
+++	def _get_zone_id(self):
+++		zone_id = self.get("zone_id")
+++		if zone_id:
+++			return zone_id
++ 
+++		labels = self.hostname.split(".")
+++		for i in range(0, len(labels) - 1):
+++			zone = ".".join(labels[i:])
+++			url = "%s/zones" % self.url
+++			response = self._send_request(url, data={
+++				"name"   : zone,
+++				"status" : "active",
+++			})
++ 
+++			results = response.get("result", [])
+++			if results:
+++				zone_id = results[0].get("id")
+++				self.settings["zone_id"] = zone_id
+++
+++				return zone_id
+++
+++		raise DDNSRequestError(_("Could not find Cloudflare zone for %s") % self.hostname)
+++
+++	def _get_record(self, record_type):
+++		cache_key = "cloudflare_record_%s" % record_type
+++		if cache_key in self.settings:
+++			return self.settings[cache_key]
+++
+++		url = "%s/zones/%s/dns_records" % (self.url, self._get_zone_id())
+++		response = self._send_request(url, data={
+++			"type" : record_type,
+++			"name" : self.hostname,
+++		})
+++
+++		results = response.get("result", [])
+++		if len(results) > 1:
+++			raise DDNSRequestError(_("Cloudflare returned more than one %(type)s record for %(hostname)s") % {
+++				"type"     : record_type,
+++				"hostname" : self.hostname,
+++			})
+++
+++		record = results[0] if results else None
+++		self.settings[cache_key] = record
+++
+++		return record
+++
+++	def _send_request(self, url, method="GET", data=None):
+++		if not self.token:
+++			raise DDNSConfigurationError
+++
+++		headers = {
+++			"Authorization" : "Bearer %s" % self.token,
+++			"Accept"        : "application/json",
+++		}
+++
+++		if method in ("POST", "PATCH"):
+++			headers["Content-Type"] = "application/json"
+++			data = json.dumps(data).encode()
+++
+++		response = self.send_request(url, method=method, data=data, headers=headers)
+++		output = response.read().decode()
+++
+++		try:
+++			payload = json.loads(output)
+++		except ValueError:
+++			raise DDNSUpdateError(_("Server response: %s") % output)
+++
+++		if payload.get("success"):
+++			return payload
+++
+++		errors = payload.get("errors", [])
+++		message = ", ".join([e.get("message", "") for e in errors if e.get("message")])
+++
+++		if response.code in (401, 403):
+++			raise DDNSAuthenticationError(message)
+++		elif response.code == 429:
+++			raise DDNSTooManyRequests(message)
+++		elif response.code >= 500:
+++			raise DDNSInternalServerError(message)
+++
+++		raise DDNSUpdateError(message or _("Cloudflare API request failed"))
+++
+++
+++class DDNSProviderAliDNS(DDNSProvider):
+++	handle    = "alidns.aliyuncs.com"
+++	name      = "Alibaba Cloud DNS"
+++	website   = "https://www.alibabacloud.com/product/dns"
+++	protocols = ("ipv6", "ipv4",)
+++
+++	url = "https://alidns.aliyuncs.com/"
+++	can_remove_records = False
+++	supports_token_auth = False
+++
+++	def update_protocol(self, proto):
+++		record_type = self._record_type(proto)
+++		domain, rr, record = self._get_record(record_type)
+++
+++		data = {
+++			"RR"     : rr,
+++			"Type"   : record_type,
+++			"Value"  : self.get_address(proto),
+++			"TTL"    : record.get("TTL", 600) if record else 600,
+++			"Line"   : record.get("Line", "default") if record else "default",
+++			"Status" : "Enable",
+++		}
+++
+++		if record:
+++			data["RecordId"] = record.get("RecordId")
+++			self._send_request("UpdateDomainRecord", data)
+++		else:
+++			data["DomainName"] = domain
+++			self._send_request("AddDomainRecord", data)
+++
+++	def _record_type(self, proto):
+++		if proto == "ipv6":
+++			return "AAAA"
+++
+++		return "A"
+++
+++	def _get_record(self, record_type):
+++		cache_key = "alidns_record_%s" % record_type
+++		if cache_key in self.settings:
+++			return self.settings[cache_key]
+++
+++		for domain, rr in self._iter_domain_candidates():
+++			try:
+++				response = self._send_request("DescribeSubDomainRecords", {
+++					"DomainName" : domain,
+++					"SubDomain"  : self.hostname,
+++					"Type"       : record_type,
+++				})
+++			except DDNSRequestError:
+++				continue
+++
+++			records = response.get("DomainRecords", {}).get("Record", [])
+++			if len(records) > 1:
+++				raise DDNSRequestError(_("Alibaba Cloud DNS returned more than one %(type)s record for %(hostname)s") % {
+++					"type"     : record_type,
+++					"hostname" : self.hostname,
+++				})
+++
+++			record = records[0] if records else None
+++			self.settings[cache_key] = (domain, rr, record)
+++
+++			return self.settings[cache_key]
+++
+++		raise DDNSRequestError(_("Could not find Alibaba Cloud DNS zone for %s") % self.hostname)
+++
+++	def _iter_domain_candidates(self):
+++		labels = self.hostname.split(".")
+++		for i in range(0, len(labels) - 1):
+++			domain = ".".join(labels[i:])
+++			rr = ".".join(labels[:i]) or "@"
+++
+++			yield domain, rr
+++
+++	def _send_request(self, action, data=None):
+++		if not self.username or not self.password:
+++			raise DDNSConfigurationError
+++
+++		params = {
+++			"Action"           : action,
+++			"Version"          : "2015-01-09",
+++			"Format"           : "JSON",
+++			"AccessKeyId"      : self.username,
+++			"SignatureMethod"  : "HMAC-SHA1",
+++			"SignatureVersion" : "1.0",
+++			"SignatureNonce"   : str(uuid.uuid4()),
+++			"Timestamp"        : datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+++		}
+++
+++		if data:
+++			params.update(data)
+++
+++		params["Signature"] = self._sign(params)
+++		url = "%s?%s" % (self.url, self._format_query_args(params))
+++
+++		response = self.send_request(url)
+++		output = response.read().decode()
+++
+++		try:
+++			payload = json.loads(output)
+++		except ValueError:
+++			raise DDNSUpdateError(_("Server response: %s") % output)
+++
+++		if payload.get("Code"):
+++			code = payload.get("Code")
+++			message = payload.get("Message", code)
+++
+++			if code in ("InvalidAccessKeyId.NotFound", "SignatureDoesNotMatch", "Forbidden.RAM"):
+++				raise DDNSAuthenticationError(message)
+++
+++			raise DDNSRequestError(message)
+++
+++		return payload
+++
+++	def _sign(self, params):
+++		query = self._format_query_args(params)
+++		string_to_sign = "GET&%2F&%s" % urllib.parse.quote(query, safe="~")
+++		key = "%s&" % self.password
+++
+++		return base64.b64encode(
+++			hmac.new(key.encode(), string_to_sign.encode(), hashlib.sha1).digest()
+++		).decode()
+++
+++	def _format_query_args(self, params):
+++		args = []
+++
+++		for key in sorted(params):
+++			args.append("%s=%s" % (
+++				urllib.parse.quote(str(key), safe="~"),
+++				urllib.parse.quote(str(params[key]), safe="~"),
+++			))
+++
+++		return "&".join(args)
+++
+++
+++class DDNSProviderDNSPodTencentCloud(DDNSProvider):
+++	handle    = "dnspod.tencentcloudapi.com"
+++	name      = "Tencent Cloud DNSPod"
+++	website   = "https://www.tencentcloud.com/products/dnspod"
+++	protocols = ("ipv6", "ipv4",)
+++
+++	url = "https://dnspod.intl.tencentcloudapi.com/"
+++	can_remove_records = False
+++	supports_token_auth = False
+++
+++	def update_protocol(self, proto):
+++		record_type = self._record_type(proto)
+++		domain, subdomain, record = self._get_record(record_type)
+++
+++		data = {
+++			"Domain"     : domain,
+++			"SubDomain"  : subdomain,
+++			"RecordType" : record_type,
+++			"RecordLine" : record.get("Line", "Default") if record else "Default",
+++			"Value"      : self.get_address(proto),
+++			"TTL"        : record.get("TTL", 600) if record else 600,
+++		}
+++
+++		if record:
+++			data["RecordId"] = record.get("RecordId")
+++			self._send_request("ModifyRecord", data)
+++		else:
+++			self._send_request("CreateRecord", data)
+++
+++	def _record_type(self, proto):
+++		if proto == "ipv6":
+++			return "AAAA"
+++
+++		return "A"
+++
+++	def _get_record(self, record_type):
+++		cache_key = "dnspod_record_%s" % record_type
+++		if cache_key in self.settings:
+++			return self.settings[cache_key]
+++
+++		for domain, subdomain in self._iter_domain_candidates():
+++			try:
+++				response = self._send_request("DescribeRecordList", {
+++					"Domain"     : domain,
+++					"Subdomain"  : subdomain,
+++					"RecordType" : record_type,
+++				})
+++			except DDNSRequestError:
+++				continue
+++
+++			records = response.get("Response", {}).get("RecordList", [])
+++			if len(records) > 1:
+++				raise DDNSRequestError(_("Tencent Cloud DNSPod returned more than one %(type)s record for %(hostname)s") % {
+++					"type"     : record_type,
+++					"hostname" : self.hostname,
+++				})
+++
+++			record = records[0] if records else None
+++			self.settings[cache_key] = (domain, subdomain, record)
+++
+++			return self.settings[cache_key]
+++
+++		raise DDNSRequestError(_("Could not find Tencent Cloud DNSPod zone for %s") % self.hostname)
+++
+++	def _iter_domain_candidates(self):
+++		labels = self.hostname.split(".")
+++		for i in range(0, len(labels) - 1):
+++			domain = ".".join(labels[i:])
+++			subdomain = ".".join(labels[:i]) or "@"
+++
+++			yield domain, subdomain
+++
+++	def _send_request(self, action, data=None):
+++		if not self.username or not self.password:
+++			raise DDNSConfigurationError
+++
+++		data = data or {}
+++		body = json.dumps(data).encode()
+++		now = datetime.datetime.now(datetime.timezone.utc)
+++		timestamp = int(now.timestamp())
+++		date = now.strftime("%Y-%m-%d")
+++		headers = self._make_headers(action, body, timestamp, date)
+++
+++		response = self.send_request(self.url, method="POST", data=body, headers=headers)
+++		output = response.read().decode()
+++
+++		try:
+++			payload = json.loads(output)
+++		except ValueError:
+++			raise DDNSUpdateError(_("Server response: %s") % output)
+++
+++		error = payload.get("Response", {}).get("Error")
+++		if error:
+++			code = error.get("Code")
+++			message = error.get("Message", code)
+++
+++			if code and ("AuthFailure" in code or "UnauthorizedOperation" in code):
+++				raise DDNSAuthenticationError(message)
+++
+++			raise DDNSRequestError(message)
+++
+++		return payload
+++
+++	def _make_headers(self, action, body, timestamp, date):
+++		service = "dnspod"
+++		host = "dnspod.intl.tencentcloudapi.com"
+++		content_type = "application/json; charset=utf-8"
+++		algorithm = "TC3-HMAC-SHA256"
+++		credential_scope = "%s/%s/tc3_request" % (date, service)
+++		signed_headers = "content-type;host"
+++
+++		canonical_request = "\n".join((
+++			"POST",
+++			"/",
+++			"",
+++			"content-type:%s\nhost:%s\n" % (content_type, host),
+++			signed_headers,
+++			hashlib.sha256(body).hexdigest(),
+++		))
+++
+++		string_to_sign = "\n".join((
+++			algorithm,
+++			str(timestamp),
+++			credential_scope,
+++			hashlib.sha256(canonical_request.encode()).hexdigest(),
+++		))
+++
+++		secret_date = self._hmac_sha256(("TC3%s" % self.password).encode(), date)
+++		secret_service = self._hmac_sha256(secret_date, service)
+++		secret_signing = self._hmac_sha256(secret_service, "tc3_request")
+++		signature = hmac.new(secret_signing, string_to_sign.encode(), hashlib.sha256).hexdigest()
+++
+++		return {
+++			"Authorization"  : "%s Credential=%s/%s, SignedHeaders=%s, Signature=%s" % (
+++				algorithm, self.username, credential_scope, signed_headers, signature,
+++			),
+++			"Content-Type"   : content_type,
+++			"Host"           : host,
+++			"X-TC-Action"    : action,
+++			"X-TC-Timestamp" : str(timestamp),
+++			"X-TC-Version"   : "2021-03-23",
+++		}
+++
+++	def _hmac_sha256(self, key, message):
+++		return hmac.new(key, message.encode(), hashlib.sha256).digest()
+++
+++
++ class DDNSProviderDesecIO(DDNSProtocolDynDNS2, DDNSProvider):
++ 	handle    = "desec.io"
++ 	name      = "desec.io"

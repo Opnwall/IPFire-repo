@@ -1,0 +1,265 @@
+socks-port: 7891
+log-level: info # 在测试成功后，将日志级别调整为 error，以减少日志输出
+allow-lan: true
+bind-address: "*"
+mode: rule
+keep-alive-interval: 15
+external-controller: "0.0.0.0:9090"
+external-ui: ui
+secret: ""
+client-fingerprint: chrome
+profile:
+  store-selected: true
+  store-fake-ip: true
+geodata-mode: true
+geodata-loader: memconservative
+geo-auto-update: true
+geo-update-interval: 24
+unified-delay: true
+tcp-concurrent: true
+find-process-mode: strict
+lan-allowed-ips:
+  - 0.0.0.0/0
+  - ::/0
+sniffer:
+  enable: true
+  parse-pure-ip: true
+  force-dns-mapping: true
+  override-destination: true
+  sniff:
+    HTTP:
+      ports:
+        - 80
+        - 8080-8880
+      override-destination: true
+    TLS:
+      ports:
+        - 443
+        - 8443
+    QUIC:
+      ports:
+        - 443
+        - 8443
+  skip-domain:
+    - "+.push.apple.com"
+    - Mijia Cloud
+tun:
+  enable: true
+  stack: system
+  device: tun_0
+  mtu: 9000
+  auto-route: true
+  strict-route: true
+  auto-detect-interface: true
+  dns-hijack:
+    - 192.168.10.1:53 # 修改为LAN接口地址和端口
+    - tcp://192.168.10.1:53 # 修改为LAN接口地址和端口
+dns:
+  enable: true
+  ipv6: false
+  prefer-h3: false
+  use-hosts: true
+  use-system-hosts: true
+  respect-rules: true
+  listen: 0.0.0.0:1053
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  proxy-server-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver-policy:
+    "domain:ipfire.org":
+      - 223.5.5.5
+      - 119.29.29.29
+    "domain:pakfire.ipfire.org":
+      - 223.5.5.5
+      - 119.29.29.29
+    "domain:mirror1.ipfire.org":
+      - 223.5.5.5
+      - 119.29.29.29
+    "domain:mirrors.ipfire.org":
+      - 223.5.5.5
+      - 119.29.29.29
+    "domain:location.ipfire.org":
+      - 223.5.5.5
+      - 119.29.29.29
+    "domain:www.ipfire.org":
+      - 223.5.5.5
+      - 119.29.29.29
+    "domain:haj.ipfire.org":
+      - 223.5.5.5
+      - 119.29.29.29
+    "geosite:private,cn":
+      - 223.5.5.5
+      - 119.29.29.29
+  nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  fallback:
+    - https://dns.google/dns-query
+    - https://cloudflare-dns.com/dns-query
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    geosite:
+      - gfw
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.0/15
+  fake-ip-filter-mode: blacklist
+  fake-ip-filter:
+    - "ipfire.org"
+    - "+.ipfire.org"
+    - "pakfire.ipfire.org"
+    - "mirror1.ipfire.org"
+    - "mirrors.ipfire.org"
+    - "location.ipfire.org"
+    - "www.ipfire.org"
+    - "haj.ipfire.org"
+    - "*.lan"
+    - "*.local"
+    - "localhost"
+    - "localhost.*"
+    - "+.local"
+    - "+.msftconnecttest.com"
+    - "+.msftncsi.com"
+    - "+.pool.ntp.org"
+    - "time.*.com"
+    - "time.*.gov"
+    - "time.*.edu.cn"
+    - "time.*.apple.com"
+    - "time-ios.apple.com"
+    - "+.push.apple.com"
+    - "+.market.xiaomi.com"
+    - "+.stun.*.*"
+    - "+.stun.*.*.*"
+    - "+.stun.*.*.*.*"
+    - "+.stun.*.*.*.*.*"
+proxies:
+  - name: vless-reality-vision-bw
+    type: vless
+    server: 88.88.88.88
+    port: 1443
+    uuid: aa5aa394-378c-4710-92e8-a441acdee9b9
+    network: tcp
+    udp: true
+    tls: true
+    flow: xtls-rprx-vision
+    servername: apple.com
+    reality-opts:
+      public-key: q4vXvVtKwT67g4tYa7twV5dFZY_ApCTBaSJTGXZpXD4
+      short-id: 89f095df
+    client-fingerprint: chrome
+
+  - name: hysteria2-bw
+    type: hysteria2
+    server: 88.88.88.88
+    port: 3443
+    password: aa5aa394-378c-4710-92e8-a441acdee9b9
+    alpn:
+      - h3
+    sni: www.bing.com
+    skip-cert-verify: true
+    fast-open: true
+
+  - name: tuic5-bw
+    type: tuic
+    server: 88.88.88.88
+    port: 4443
+    uuid: aa5aa394-378c-4710-92e8-a441acdee9b9
+    password: aa5aa394-378c-4710-92e8-a441acdee9b9
+    alpn:
+      - h3
+    disable-sni: true
+    reduce-rtt: true
+    udp-relay-mode: native
+    congestion-controller: bbr
+    sni: www.bing.com
+    skip-cert-verify: true
+
+  - name: anytls-bw
+    type: anytls
+    server: 88.88.88.88
+    port: 5443
+    password: aa5aa394-378c-4710-92e8-a441acdee9b9
+    client-fingerprint: chrome
+    udp: true
+    idle-session-check-interval: 30
+    idle-session-timeout: 30
+    sni: www.bing.com
+    skip-cert-verify: true
+proxy-groups:
+  - name: 🌍选择节点
+    type: select
+    proxies:
+      - 自动选择
+      - 负载均衡
+      - vless-reality-vision-bw
+      - hysteria2-bw
+      - tuic5-bw
+      - anytls-bw
+      - DIRECT
+  - name: 自动选择
+    type: url-test
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+    lazy: true
+    proxies:
+      - vless-reality-vision-bw
+      - hysteria2-bw
+      - tuic5-bw
+      - anytls-bw
+  - name: 负载均衡
+    type: load-balance
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    strategy: consistent-hashing
+    lazy: true
+    proxies:
+      - vless-reality-vision-bw
+      - hysteria2-bw
+      - tuic5-bw
+      - anytls-bw
+  - name: 🤖AI
+    type: select
+    proxies:
+      - 🌍选择节点
+      - 自动选择
+      - vless-reality-vision-bw
+      - hysteria2-bw
+      - tuic5-bw
+      - anytls-bw
+  - name: 🍎Apple
+    type: select
+    proxies:
+      - DIRECT
+      - 🌍选择节点
+  - name: 🐟漏网之鱼
+    type: select
+    proxies:
+      - 🌍选择节点
+      - DIRECT
+rules:
+  - DOMAIN-SUFFIX,ipfire.org,DIRECT
+  - DOMAIN,haj.ipfire.org,DIRECT
+  - GEOSITE,private,DIRECT
+  - GEOIP,private,DIRECT,no-resolve
+  - GEOSITE,cn,DIRECT
+  - GEOIP,CN,DIRECT,no-resolve
+  - DOMAIN-SUFFIX,push.apple.com,DIRECT
+  - DOMAIN-SUFFIX,apple.com,🍎Apple
+  - DOMAIN-SUFFIX,icloud.com,🍎Apple
+  - DOMAIN-SUFFIX,icloud-content.com,🍎Apple
+  - DOMAIN-SUFFIX,cdn-apple.com,🍎Apple
+  - DOMAIN-SUFFIX,openai.com,🤖AI
+  - DOMAIN-SUFFIX,chatgpt.com,🤖AI
+  - DOMAIN-SUFFIX,oaistatic.com,🤖AI
+  - DOMAIN-SUFFIX,oaiusercontent.com,🤖AI
+  - DOMAIN-SUFFIX,anthropic.com,🤖AI
+  - DOMAIN-SUFFIX,claude.ai,🤖AI
+  - DOMAIN-SUFFIX,gemini.google.com,🤖AI
+  - DOMAIN-SUFFIX,generativelanguage.googleapis.com,🤖AI
+  - DOMAIN-SUFFIX,ai.google.dev,🤖AI
+  - GEOSITE,geolocation-!cn,🌍选择节点
+  - MATCH,🐟漏网之鱼

@@ -1,0 +1,1 @@
+nobody ALL=(root) NOPASSWD: /usr/local/sbin/lang-install-helper

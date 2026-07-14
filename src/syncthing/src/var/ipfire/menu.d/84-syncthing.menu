@@ -1,0 +1,7 @@
+
+    $subservices->{'16.syncthing'} = {
+                'caption' => 'Syncthing',
+                'uri' => '/cgi-bin/syncthing.cgi',
+                'title' => 'Syncthing',
+                'enabled' => 1,
+             };

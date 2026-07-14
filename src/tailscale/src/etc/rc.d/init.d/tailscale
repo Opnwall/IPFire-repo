@@ -1,0 +1,287 @@
+#!/bin/sh
+#
+# tailscale init script for IPFire
+#
+
+### BEGIN INIT INFO
+# Provides:          tailscale
+# Required-Start:    $network
+# Required-Stop:     $network
+# Default-Start:
+# Default-Stop:
+# Short-Description: Tailscale service
+### END INIT INFO
+
+NAME="tailscale"
+DAEMON="/usr/sbin/tailscaled"
+CLI="/usr/local/bin/tailscale"
+PIDFILE="/var/run/tailscaled.pid"
+SOCK="/var/run/tailscale/tailscaled.sock"
+STATE_DIR="/var/lib/tailscale"
+SETTINGS="/var/ipfire/tailscale/settings"
+STATEFILE="/var/ipfire/tailscale/state"
+LOGFILE="/var/log/tailscale.log"
+
+[ -f "$SETTINGS" ] && . "$SETTINGS"
+
+AUTH_KEY="${AUTH_KEY:-}"
+HOSTNAME="${HOSTNAME:-ipfire}"
+ACCEPT_ROUTES="${ACCEPT_ROUTES:-on}"
+ACCEPT_DNS="${ACCEPT_DNS:-off}"
+ADVERTISE_EXIT_NODE="${ADVERTISE_EXIT_NODE:-off}"
+ADVERTISE_ROUTES="${ADVERTISE_ROUTES:-}"
+EXTRA_ARGS="${EXTRA_ARGS:-}"
+
+mkdir -p /var/run/tailscale
+mkdir -p "$STATE_DIR"
+
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+IP_CMD="$(command -v ip 2>/dev/null || echo /sbin/ip)"
+ETHTOOL_CMD="$(command -v ethtool 2>/dev/null || echo /sbin/ethtool)"
+
+is_running() {
+    [ -f "$PIDFILE" ] || return 1
+    PID="$(cat "$PIDFILE" 2>/dev/null)"
+    [ -n "$PID" ] || return 1
+    kill -0 "$PID" 2>/dev/null
+}
+
+write_state() {
+    echo "RUNNING=$1" > "$STATEFILE"
+    echo "UPDATED=$(date '+%Y-%m-%d %H:%M:%S')" >> "$STATEFILE"
+}
+
+optimize_network() {
+    if ! [ -x "$ETHTOOL_CMD" ]; then
+        echo "warning: ethtool not found: $ETHTOOL_CMD" >> "$LOGFILE"
+        return 1
+    fi
+
+    if ! [ -x "$IP_CMD" ]; then
+        echo "warning: ip command not found: $IP_CMD" >> "$LOGFILE"
+        return 1
+    fi
+
+    i=0
+    while [ $i -lt 20 ]; do
+        NETDEV="$($IP_CMD -o route get 8.8.8.8 2>/dev/null | awk '{for (i=1;i<=NF;i++) if ($i=="dev") {print $(i+1); exit}}')"
+        [ -z "$NETDEV" ] && NETDEV="$($IP_CMD -o route get 1.1.1.1 2>/dev/null | awk '{for (i=1;i<=NF;i++) if ($i=="dev") {print $(i+1); exit}}')"
+
+        if [ -n "$NETDEV" ]; then
+            "$ETHTOOL_CMD" -K "$NETDEV" rx-udp-gro-forwarding on rx-gro-list off >> "$LOGFILE" 2>&1 && {
+                echo "tailscale optimization applied on $NETDEV" >> "$LOGFILE"
+                return 0
+            }
+        fi
+
+        i=$((i + 1))
+        sleep 2
+    done
+
+    echo "warning: tailscale performance optimization failed after retries" >> "$LOGFILE"
+    return 1
+}
+
+optimize_network_background() {
+    (
+        i=0
+        while [ $i -lt 6 ]; do
+            optimize_network && exit 0
+            i=$((i + 1))
+            sleep 5
+        done
+        echo "warning: tailscale delayed performance optimization was not applied" >> "$LOGFILE"
+    ) >/dev/null 2>&1 &
+}
+
+start() {
+    if ! [ -x "$DAEMON" ]; then
+        echo "tailscaled not installed: $DAEMON"
+        return 1
+    fi
+
+    if is_running; then
+        echo "tailscaled already running"
+        return 0
+    fi
+
+    echo "Starting tailscaled..."
+    "$DAEMON" \
+        --state="${STATE_DIR}/tailscaled.state" \
+        --socket="$SOCK" \
+        >"$LOGFILE" 2>&1 &
+
+    echo $! > "$PIDFILE"
+    sleep 2
+
+    if is_running; then
+        # Tailscale performance tuning.
+        optimize_network || true
+        optimize_network_background
+
+        write_state 1
+        echo "tailscaled started"
+        return 0
+    fi
+
+    write_state 0
+    echo "failed to start tailscaled"
+    return 1
+}
+
+stop() {
+    if ! is_running; then
+        echo "tailscaled not running"
+        write_state 0
+        rm -f "$PIDFILE"
+        return 0
+    fi
+
+    PID="$(cat "$PIDFILE")"
+    echo "Stopping tailscaled..."
+    kill "$PID" 2>/dev/null || true
+    sleep 2
+
+    if kill -0 "$PID" 2>/dev/null; then
+        kill -9 "$PID" 2>/dev/null || true
+    fi
+
+    rm -f "$PIDFILE"
+    write_state 0
+    echo "tailscaled stopped"
+}
+
+restart() {
+    stop
+    start
+}
+
+status() {
+    if ! is_running; then
+        echo "tailscaled is stopped"
+        return 1
+    fi
+
+    if [ -S "$SOCK" ] && [ -x "$CLI" ]; then
+        TS_OUT="$($CLI --socket="$SOCK" status 2>/dev/null)"
+        if [ $? -eq 0 ]; then
+            echo "tailscaled is running"
+            return 0
+        fi
+    fi
+
+    echo "tailscaled is running"
+    return 0
+}
+
+up() {
+    [ -x "$CLI" ] || { echo "tailscale CLI not found"; return 1; }
+    is_running || start || return 1
+    optimize_network || true
+    optimize_network_background
+
+    ARGS=""
+
+    [ -n "$AUTH_KEY" ] && ARGS="$ARGS --auth-key=$AUTH_KEY"
+    [ -n "$HOSTNAME" ] && ARGS="$ARGS --hostname=$HOSTNAME"
+    [ "$ACCEPT_ROUTES" = "on" ] && ARGS="$ARGS --accept-routes=true" || ARGS="$ARGS --accept-routes=false"
+    [ "$ACCEPT_DNS" = "on" ] && ARGS="$ARGS --accept-dns=true" || ARGS="$ARGS --accept-dns=false"
+    [ "$ADVERTISE_EXIT_NODE" = "on" ] && ARGS="$ARGS --advertise-exit-node"
+    [ -n "$ADVERTISE_ROUTES" ] && ARGS="$ARGS --advertise-routes=$ADVERTISE_ROUTES"
+    [ -n "$EXTRA_ARGS" ] && ARGS="$ARGS $EXTRA_ARGS"
+
+    $CLI --socket="$SOCK" up $ARGS
+}
+
+down() {
+    [ -x "$CLI" ] || { echo "tailscale CLI not found"; return 1; }
+    [ -S "$SOCK" ] || { echo "tailscale socket not found: $SOCK"; return 1; }
+    $CLI --socket="$SOCK" down
+}
+
+logout() {
+    [ -x "$CLI" ] || { echo "tailscale CLI not found"; return 1; }
+    [ -S "$SOCK" ] || { echo "tailscale socket not found: $SOCK"; return 1; }
+    $CLI --socket="$SOCK" logout
+}
+
+save_settings() {
+    SRC="$1"
+
+    case "$SRC" in
+        /tmp/tailscale-settings.*) ;;
+        *)
+            echo "invalid settings source"
+            return 1
+            ;;
+    esac
+
+    [ -f "$SRC" ] || { echo "settings source not found"; return 1; }
+
+    if ! awk -F= '
+        /^[[:space:]]*$/ { next }
+        /^[[:space:]]*#/ { next }
+        {
+            if ($1 !~ /^(AUTH_KEY|HOSTNAME|ACCEPT_ROUTES|ACCEPT_DNS|ADVERTISE_EXIT_NODE|ADVERTISE_ROUTES|EXTRA_ARGS)$/) {
+                exit 1
+            }
+            if ($0 ~ /[`$;]/) {
+                exit 1
+            }
+        }
+    ' "$SRC"; then
+        echo "invalid settings content"
+        return 1
+    fi
+
+    install -d -m 755 "$(dirname "$SETTINGS")"
+    install -m 644 "$SRC" "$SETTINGS"
+    rm -f "$SRC"
+    echo "settings saved"
+}
+
+tsstatus() {
+    [ -x "$CLI" ] || { echo "tailscale CLI not found: $CLI"; return 1; }
+    [ -S "$SOCK" ] || { echo "tailscale socket not found: $SOCK"; return 1; }
+    $CLI --socket="$SOCK" status
+}
+
+tsstatus_json() {
+    [ -x "$CLI" ] || { echo "tailscale CLI not found: $CLI"; return 1; }
+    [ -S "$SOCK" ] || { echo "tailscale socket not found: $SOCK"; return 1; }
+    $CLI --socket="$SOCK" status --json
+}
+
+ip() {
+    [ -x "$CLI" ] || { echo "tailscale CLI not found: $CLI"; return 1; }
+    [ -S "$SOCK" ] || { echo "tailscale socket not found: $SOCK"; return 1; }
+
+    IPV4="$($CLI --socket="$SOCK" ip -4 2>/dev/null)"
+    IPV6="$($CLI --socket="$SOCK" ip -6 2>/dev/null)"
+
+    [ -n "$IPV4" ] && echo "$IPV4"
+    [ -n "$IPV6" ] && echo "$IPV6"
+
+    [ -n "$IPV4$IPV6" ] && return 0
+    return 1
+}
+
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    restart) restart ;;
+    status) status ;;
+    up) up ;;
+    down) down ;;
+    logout) logout ;;
+    save_settings) save_settings "$2" ;;
+    tsstatus) tsstatus ;;
+    tsstatus_json) tsstatus_json ;;
+    ip) ip ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status|up|down|logout|save_settings|tsstatus|tsstatus_json|ip}"
+        exit 1
+        ;;
+esac
+
+exit $?

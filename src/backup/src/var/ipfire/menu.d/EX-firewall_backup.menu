@@ -1,0 +1,5 @@
+    $subservices->{'82.firewall_backup'} = {'caption' => $Lang::tr{'firewall backup title'},
+				  'uri' => '/cgi-bin/firewall_backup.cgi',
+				  'title' => "firewall_backup",
+				  'enabled' => 1,
+				  };

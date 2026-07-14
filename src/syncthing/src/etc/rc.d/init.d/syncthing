@@ -1,0 +1,179 @@
+#!/bin/sh
+#
+# Syncthing init script for IPFire
+#
+
+### BEGIN INIT INFO
+# Provides:          syncthing
+# Required-Start:    $network
+# Required-Stop:     $network
+# Default-Start:
+# Default-Stop:
+# Short-Description: Syncthing file synchronization service
+### END INIT INFO
+
+NAME="syncthing"
+DAEMON="/usr/local/bin/syncthing"
+USER="syncthing"
+GROUP="syncthing"
+HOME_DIR="/var/lib/syncthing"
+SETTINGS="/var/ipfire/syncthing/settings"
+STATEFILE="/var/ipfire/syncthing/state"
+PIDFILE="/var/run/syncthing.pid"
+
+ENABLED="on"
+GUI_ADDRESS="0.0.0.0:8384"
+
+[ -f "$SETTINGS" ] && . "$SETTINGS"
+
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+
+is_running() {
+    [ -n "$(find_pids)" ]
+}
+
+find_pids() {
+    if command -v pgrep >/dev/null 2>&1; then
+        pgrep -u "$USER" -f "$DAEMON serve.*--home=$HOME_DIR" 2>/dev/null || true
+        return 0
+    fi
+
+    ps -eo pid=,user=,args= 2>/dev/null | awk -v user="$USER" -v daemon="$DAEMON" -v home="$HOME_DIR" '
+        $2 == user && index($0, daemon " serve") && index($0, "--home=" home) { print $1 }
+    '
+}
+
+write_state() {
+    mkdir -p "$(dirname "$STATEFILE")"
+    echo "RUNNING=$1" > "$STATEFILE"
+    echo "UPDATED=$(date '+%Y-%m-%d %H:%M:%S')" >> "$STATEFILE"
+}
+
+ensure_runtime() {
+    mkdir -p "$HOME_DIR" /var/ipfire/syncthing /var/run
+
+    if command -v chown >/dev/null 2>&1; then
+        chown -R "$USER:$GROUP" "$HOME_DIR" 2>/dev/null || true
+    fi
+
+    chmod 700 "$HOME_DIR" 2>/dev/null || true
+}
+
+run_as_user() {
+    if command -v runuser >/dev/null 2>&1; then
+        runuser -u "$USER" -- "$@"
+        return $?
+    fi
+
+    if command -v su >/dev/null 2>&1; then
+        su -s /bin/sh -c "$(printf '%s ' "$@")" "$USER"
+        return $?
+    fi
+
+    "$@"
+}
+
+start() {
+    if [ "$ENABLED" != "on" ]; then
+        echo "Syncthing is disabled in $SETTINGS"
+        write_state 0
+        return 0
+    fi
+
+    if ! [ -x "$DAEMON" ]; then
+        echo "syncthing is not installed: $DAEMON"
+        return 1
+    fi
+
+    if is_running; then
+        echo "Syncthing already running"
+        return 0
+    fi
+
+    ensure_runtime
+
+    echo "Starting Syncthing..."
+    (
+        export HOME="$HOME_DIR"
+        export STNOUPGRADE=1
+        run_as_user "$DAEMON" serve \
+            --home="$HOME_DIR" \
+            --no-browser \
+            --no-restart \
+            --gui-address="$GUI_ADDRESS"
+    ) >/dev/null 2>&1 &
+
+    echo $! > "$PIDFILE"
+    sleep 2
+
+    if is_running; then
+        find_pids | head -n 1 > "$PIDFILE"
+        write_state 1
+        echo "Syncthing started"
+        return 0
+    fi
+
+    rm -f "$PIDFILE"
+    write_state 0
+    echo "Failed to start Syncthing"
+    return 1
+}
+
+stop() {
+    if ! is_running; then
+        echo "Syncthing is not running"
+        rm -f "$PIDFILE"
+        write_state 0
+        return 0
+    fi
+
+    echo "Stopping Syncthing..."
+    find_pids | while read -r PID; do
+        [ -n "$PID" ] && kill "$PID" 2>/dev/null || true
+    done
+    sleep 2
+
+    if is_running; then
+        find_pids | while read -r PID; do
+            [ -n "$PID" ] && kill -9 "$PID" 2>/dev/null || true
+        done
+    fi
+
+    rm -f "$PIDFILE"
+    write_state 0
+    echo "Syncthing stopped"
+}
+
+restart() {
+    stop
+    start
+}
+
+status() {
+    if is_running; then
+        echo "Syncthing is running"
+        return 0
+    fi
+
+    echo "Syncthing is stopped"
+    return 1
+}
+
+version() {
+    [ -x "$DAEMON" ] || { echo "syncthing is not installed: $DAEMON"; return 1; }
+    "$DAEMON" --version
+}
+
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    restart) restart ;;
+    status) status ;;
+    version) version ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status|version}"
+        exit 1
+        ;;
+esac
+
+exit $?

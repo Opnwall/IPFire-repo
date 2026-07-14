@@ -1,0 +1,14 @@
+# Opnwall IPFire package catalog v1
+# name|version|file|sha256|category|description_zh|description_en
+adguardhome|1.0.1|adguardhome-1.0.1-x86_64.tar.gz|f93fd52ddc0220fc2902aa9747403e9d6670e5e407d44affda1e70bb812ffd77|dns|AdGuard Home DNS 过滤与管理界面|AdGuard Home DNS filtering and WebUI integration
+backup|1.0.1|backup-1.0.1-x86_64.tar.gz|d1e4e7a87506088204f6a2a0b2c18fa28af27cc4469cbbf868c90522cab9ed1a|system|防火墙配置备份管理页面|Firewall configuration backup manager
+ipfire-dyndns|1.0.1|ipfire-dyndns-1.0.1-x86_64.tar.gz|5d0d3ae140f708ab17d56cc4e1c34619ccbe39895a3569ed33eda4106a466339|network|Cloudflare、阿里云和腾讯云 DDNS 提供商补丁|Cloudflare, Aliyun and Tencent Cloud DDNS provider patch
+lang|1.0.1|lang-1.0.1-x86_64.tar.gz|11d0b291b61772fc7b38a15118d0ed07230319b1c07cf79f86af04ee567339d4|localization|IPFire 中文本地化更新工具|Chinese localization updater for IPFire
+lucky|1.0.1|lucky-1.0.1-x86_64.tar.gz|9f933bed44e7116a7b99aeeb188394f2fdf8bb5c47a37a262e8e14c7c081cd74|network|Lucky 网络工具箱与 WebUI 集成|Lucky network toolbox and WebUI integration
+mihomo|1.0.1|mihomo-1.0.1-x86_64.tar.gz|467403027a401f37fd690ad64322aa66b6edc59d6026d352b51a1fbd8a7e29c0|proxy|Mihomo 代理服务与透明代理管理|Mihomo proxy and transparent proxy management
+reports|1.0.1|reports-1.0.1-x86_64.tar.gz|c8de7e0231785884b7d5953e2136fa581dae21798a996e940780d4e3d7f651a2|reporting|防火墙、IDS 和 DNS 报告页面|Firewall, IDS and DNS reporting pages
+sing-box|1.0.1|sing-box-1.0.1-x86_64.tar.gz|df28877a5d84d103f50c76af3921ada5f8e2905877695a17ce9ca4e2133a3839|proxy|sing-box 代理服务与 WebUI 集成|sing-box proxy service and WebUI integration
+syncthing|1.0.1|syncthing-1.0.1-x86_64.tar.gz|63e830451cfab0d19ccf7ff0426459707d362a16e911a1ea0a1a095bb58d783a|service|Syncthing 文件同步服务与管理页面|Syncthing file synchronization service and WebUI
+tailscale|1.0.1|tailscale-1.0.1-x86_64.tar.gz|3694f96157e6db5efab9b452d60fcba48939f2e8247185589282a3a41d3475ee|vpn|Tailscale VPN 服务与管理页面|Tailscale VPN service and WebUI integration
+ttyd|1.0.1|ttyd-1.0.1-x86_64.tar.gz|1815ff870633bfb95b0bf9dc50521d63b396e95cfaafa4b360e0cd2a73ea52dd|system|ttyd 网页终端集成|ttyd web terminal integration
+zerotier|1.0.1|zerotier-1.0.1-x86_64.tar.gz|ab456f09bb09321c8f3143de3beb1c89646e9f2176c7e41ee066fe4f3086b6d7|vpn|ZeroTier VPN 服务与管理页面|ZeroTier VPN service and WebUI integration

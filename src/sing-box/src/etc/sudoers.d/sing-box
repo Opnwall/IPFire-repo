@@ -1,0 +1,4 @@
+nobody ALL=(root) NOPASSWD: /etc/init.d/sing-box start
+nobody ALL=(root) NOPASSWD: /etc/init.d/sing-box stop
+nobody ALL=(root) NOPASSWD: /etc/init.d/sing-box restart
+nobody ALL=(root) NOPASSWD: /etc/init.d/sing-box status

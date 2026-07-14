@@ -1,0 +1,3 @@
+Cmnd_Alias ADGUARDHOME_SERVICE = /etc/rc.d/init.d/adguardhome start, /etc/rc.d/init.d/adguardhome stop, /etc/rc.d/init.d/adguardhome restart, /etc/rc.d/init.d/adguardhome status, /etc/rc.d/init.d/adguardhome version
+nobody ALL=(root) NOPASSWD: ADGUARDHOME_SERVICE
+nobody ALL=(root) NOPASSWD: /usr/bin/install -m 600 /tmp/adguardhome-settings.* /var/ipfire/adguardhome/settings

@@ -1,0 +1,6 @@
+$subservices->{'76.reports'} = {
+	'caption' => $Lang::tr{'Reports'},
+	'uri' => '/cgi-bin/reports.cgi',
+	'title' => $Lang::tr{'Reports'},
+	'enabled' => 1,
+};

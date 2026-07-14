@@ -1,0 +1,132 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          sing-box
+# Required-Start:    $network $remote_fs
+# Required-Stop:     $network $remote_fs
+# Default-Start:     3 5
+# Default-Stop:      0 1 6
+# Short-Description: sing-box Service
+# Description:       Start/Stop sing-box Service
+### END INIT INFO
+
+NAME="sing-box"
+BIN="/usr/local/bin/sing-box"
+CONF_DIR="/usr/local/etc/sing-box"
+PIDDIR="/var/run/sing-box"
+PIDFILE="${PIDDIR}/sing-box.pid"
+LOGFILE="/var/log/sing-box.log"
+
+ensure_dirs() {
+    install -d -m 755 "$PIDDIR"
+    install -d -m 755 /var/log
+    install -d -m 755 /dev/net
+
+    modprobe tun 2>/dev/null || true
+    if [ ! -c /dev/net/tun ]; then
+        mknod /dev/net/tun c 10 200
+    fi
+
+    touch "$LOGFILE"
+    chown root:nobody "$LOGFILE" 2>/dev/null || true
+    chmod 755 "$PIDDIR"
+    chmod 664 "$LOGFILE"
+    chmod 666 /dev/net/tun
+}
+
+is_running() {
+    if [ -f "$PIDFILE" ]; then
+        PID="$(cat "$PIDFILE" 2>/dev/null)"
+        if [ -n "$PID" ] && kill -0 "$PID" 2>/dev/null; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+check_config() {
+    "$BIN" check -C "$CONF_DIR" >/dev/null 2>&1
+    return $?
+}
+
+start() {
+    echo "Starting $NAME..."
+
+    ensure_dirs
+
+    if is_running; then
+        echo "$NAME already running."
+        return 0
+    fi
+
+    if ! check_config; then
+        echo "Configuration test failed."
+        return 1
+    fi
+
+    "$BIN" run -C "$CONF_DIR" >> "$LOGFILE" 2>&1 &
+    PID=$!
+    echo "$PID" > "$PIDFILE"
+
+    sleep 1
+
+    if kill -0 "$PID" 2>/dev/null; then
+        echo "$NAME started."
+        return 0
+    else
+        echo "Failed to start $NAME!"
+        rm -f "$PIDFILE"
+        return 1
+    fi
+}
+
+stop() {
+    echo "Stopping $NAME..."
+
+    if is_running; then
+        PID="$(cat "$PIDFILE" 2>/dev/null)"
+        kill "$PID" 2>/dev/null
+        sleep 1
+
+        if kill -0 "$PID" 2>/dev/null; then
+            kill -9 "$PID" 2>/dev/null
+        fi
+
+        rm -f "$PIDFILE"
+        echo "$NAME stopped."
+        return 0
+    else
+        rm -f "$PIDFILE"
+        echo "$NAME is not running."
+        return 0
+    fi
+}
+
+restart() {
+    stop
+    sleep 1
+    start
+}
+
+status() {
+    if is_running; then
+        echo "running"
+        return 0
+    else
+        echo "stopped"
+        return 1
+    fi
+}
+
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    restart) restart ;;
+    status) status ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+
+exit $?

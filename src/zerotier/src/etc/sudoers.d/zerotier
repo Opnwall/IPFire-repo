@@ -1,0 +1,2 @@
+Cmnd_Alias ZEROTIER_SERVICE = /etc/init.d/zerotier start, /etc/init.d/zerotier stop, /etc/init.d/zerotier restart, /etc/init.d/zerotier status, /etc/init.d/zerotier join, /etc/init.d/zerotier leave, /etc/init.d/zerotier set_network *, /etc/init.d/zerotier info, /etc/init.d/zerotier listnetworks, /etc/init.d/zerotier peers
+nobody ALL=(root) NOPASSWD: ZEROTIER_SERVICE

@@ -1,0 +1,46 @@
+diff --git a/html/cgi-bin/logs.cgi/log.dat b/html/cgi-bin/logs.cgi/log.dat
+index 4370b1bf3..7c65e2b48 100644
+--- a/html/cgi-bin/logs.cgi/log.dat
++++ b/html/cgi-bin/logs.cgi/log.dat
+@@ -25,6 +25,7 @@ my %mainsettings = ();
+ &General::readhash("/srv/web/ipfire/html/themes/ipfire/include/colors.txt", \%color);
+ 
+ use POSIX();
++use Encode ();
+ 
+ my %cgiparams=();
+ my %logsettings=();
+@@ -404,7 +405,7 @@ foreach $_ (@log)
+ 	$day =~ tr / /0/;
+ 	my $time = $cgiparams{'DAY'} ? "$2" : "$day/$2" ;
+ 	my $sec = $3;
+-	my $data = &Header::cleanhtml($4, 'y');
++	my $data = &Header::cleanhtml(&decode_syslog_highbit($4), 'y');
+ 
+ 	print <<END;
+ 		<tr>
+@@ -460,3 +461,24 @@ print <<END
+ END
+ ;
+ }
++
++sub decode_syslog_highbit($) {
++	my $message = shift;
++	my $decoded = $message;
++
++	# syslogd stores bytes with the high bit set as M-... escape sequences.
++	$decoded =~ s/M-\^([@-_?])/
++		chr(0x80 + ($1 eq '?' ? 0x7f : ord($1) - 0x40))
++	/egx;
++	$decoded =~ s/M- /chr(0x8a)/eg;
++	$decoded =~ s/M-(.)/chr(0x80 + ord($1))/egs;
++
++	return $message unless ($decoded ne $message);
++
++	my $check = $decoded;
++	eval {
++		Encode::decode("UTF-8", $check, Encode::FB_CROAK);
++	};
++
++	return $@ ? $message : $decoded;
++}
