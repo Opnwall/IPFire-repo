@@ -7,7 +7,7 @@ An unofficial community plugin repository for **IPFire 2.29 x86_64**. It uses an
 Run as `root`:
 
 ```sh
-curl -fsSL https://opnwall.github.io/IPFire-repo/install-opnwall.sh | sh
+curl -fsSL https://opnwall.github.io/IPFire-repo/install-repo.sh | sh
 ```
 
 ## Usage

@@ -39,5 +39,5 @@ install -m 0755 "$tmp" /usr/local/bin/ipfrepo
 ln -sfn /usr/local/bin/ipfrepo /usr/bin/ipfrepo
 mkdir -p /opt/ipfrepo/db/installed /opt/ipfrepo/cache
 /usr/local/bin/ipfrepo update
-echo "Opnwall IPFire community repository installed."
+echo "IPFire community repository installed."
 echo "Run: ipfrepo list"

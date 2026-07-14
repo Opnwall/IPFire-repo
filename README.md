@@ -7,7 +7,7 @@
 以 `root` 身份执行：
 
 ```sh
-curl -fsSL https://opnwall.github.io/IPFire-repo/install-opnwall.sh | sh
+curl -fsSL https://opnwall.github.io/IPFire-repo/install-repo.sh | sh
 ```
 
 ## 使用方法
