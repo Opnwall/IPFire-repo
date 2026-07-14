@@ -1,17 +1,13 @@
 # IPFire Community Repository
 
 <p align="center">
-
-**适用于 IPFire-2.29  x86_64 的非官方社区插件仓库**
-
-提供独立的软件仓库与 `ipfrepo` 包管理器，不替换、不修改官方 Pakfire 仓库及其 GPG 信任链。
-
 ![IPFire](https://img.shields.io/badge/IPFire-orange)
 ![Architecture](https://img.shields.io/badge/x86__64-Supported-blue)
 ![Community](https://img.shields.io/badge/Community-Maintained-brightgreen)
 ![SHA256](https://img.shields.io/badge/Integrity-SHA256-success)
-
 </p>
+
+**适用于 IPFire-2.29  x86_64 的非官方社区插件仓库**
 
 ## 项目特色
 
