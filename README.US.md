@@ -80,6 +80,6 @@ ipfrepo upgrade                    # Upgrade installed packages
 
 ## Disclaimer
 
-This project is maintained by the community and is **not affiliated with or supported by the official IPFire Project**.
+This project is community-maintained; the plugins are largely AI-generated or sourced from the community and do not have official support from the IPFire team.
 
-Third-party packages may modify firewall, DNS, proxy, or other system services. Always back up your configuration before installation and test packages in a non-production environment whenever possible.
+Third-party packages may modify firewall, DNS, proxy, or other system services. Please be sure to back up your configuration before installation and, whenever possible, test these packages in a non-production environment.
