@@ -1,0 +1,129 @@
+#!/bin/bash
+set -euo pipefail
+
+STATE_DIR=/var/ipfire/speedtest
+ENGINE=/usr/local/bin/ipfire-speedtest
+TIMEOUT=/usr/bin/timeout
+
+die() { echo "Error: $*" >&2; exit 1; }
+ensure_state() { install -d -m 755 -o root -g root "$STATE_DIR"; }
+
+interface_rows() {
+    local dev address label red_dev=""
+    if [[ -r /var/ipfire/ethernet/settings ]]; then
+        red_dev="$(sed -n 's/^RED_DEV=//p' /var/ipfire/ethernet/settings | head -1)"
+    fi
+    /sbin/ip -4 route show default | awk '{for(i=1;i<=NF;i++) if($i=="dev") print $(i+1)}' | sort -u | while read -r dev; do
+        [[ "$dev" =~ ^[A-Za-z0-9_.:-]+$ ]] || continue
+        address="$(/sbin/ip -o -4 addr show dev "$dev" scope global | awk 'NR==1 {split($4,a,"/"); print a[1]}')"
+        [[ "$address" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
+        label="$dev"
+        [[ -n "$red_dev" && "$dev" == "$red_dev" ]] && label="RED"
+        printf '%s\t%s\t%s\n' "$dev" "$address" "$label"
+    done
+}
+
+source_for() {
+    local requested="$1" dev address label
+    [[ "$requested" == auto ]] && return 0
+    while IFS=$'\t' read -r dev address label; do
+        [[ "$dev" == "$requested" ]] && { printf '%s\n' "$address"; return 0; }
+    done < <(interface_rows)
+    die "Invalid outbound interface"
+}
+
+safe_key() {
+    [[ "$1" == auto || "$1" =~ ^[A-Za-z0-9_.:-]+$ ]] || die "Invalid outbound interface"
+    printf '%s' "$1" | tr -cd 'A-Za-z0-9_'
+}
+
+refresh_servers() {
+    local interface="$1" source key tmp
+    source="$(source_for "$interface")"
+    key="$(safe_key "$interface")"; [[ -n "$key" ]] || key=auto
+    ensure_state
+    tmp="$(mktemp "$STATE_DIR/servers.XXXXXX")"
+    trap 'rm -f "$tmp"' RETURN
+    if [[ -n "$source" ]]; then
+        "$TIMEOUT" 45 "$ENGINE" --list --source "$source" >"$tmp.raw" 2>&1 || { rm -f "$tmp.raw"; die "Unable to retrieve test servers"; }
+    else
+        "$TIMEOUT" 45 "$ENGINE" --list >"$tmp.raw" 2>&1 || { rm -f "$tmp.raw"; die "Unable to retrieve test servers"; }
+    fi
+    grep -E '^\[[[:space:]]*[0-9]+\][[:space:]]+[0-9.]+km[[:space:]]+[0-9.]+ms[[:space:]]+' "$tmp.raw" >"$tmp" || true
+    rm -f "$tmp.raw"
+    [[ -s "$tmp" ]] || die "No available test servers were found"
+    install -m 644 -o root -g root "$tmp" "$STATE_DIR/servers-$key.txt"
+    printf 'Available servers: %s\n' "$(wc -l < "$tmp" | tr -d ' ')"
+}
+
+run_test() {
+    local interface="$1" server="$2" threads="$3" source key cache tmp
+    [[ "$server" == auto || "$server" =~ ^[0-9]+$ ]] || die "Invalid server ID"
+    [[ "$threads" =~ ^[0-9]+$ ]] && ((threads >= 1 && threads <= 16)) || die "Connections must be between 1 and 16"
+    source="$(source_for "$interface")"
+    key="$(safe_key "$interface")"; [[ -n "$key" ]] || key=auto
+    cache="$STATE_DIR/servers-$key.txt"
+    if [[ "$server" != auto ]]; then
+        [[ -r "$cache" ]] || die "Refresh the server list first"
+        grep -Eq '^\[[[:space:]]*'"$server"'\]' "$cache" || die "Invalid or unavailable server"
+    fi
+    ensure_state
+    tmp="$(mktemp "$STATE_DIR/result.XXXXXX")"
+    args=(--json --thread "$threads")
+    [[ "$server" == auto ]] || args+=(--server "$server")
+    [[ -z "$source" ]] || args+=(--source "$source")
+    if ! "$TIMEOUT" 120 "$ENGINE" "${args[@]}" >"$tmp" 2>&1; then
+        first_error="$(cat "$tmp")"
+        retry_args=(--json --thread "$threads")
+        [[ -z "$source" ]] || retry_args+=(--source "$source")
+        if ! "$TIMEOUT" 120 "$ENGINE" "${retry_args[@]}" >"$tmp" 2>&1; then
+            printf '%s\n' "$first_error" >&2
+            cat "$tmp" >&2
+            rm -f "$tmp"
+            die "Speed test failed after automatic retry"
+        fi
+        server=auto
+    fi
+    grep -q '"servers"' "$tmp" || { cat "$tmp" >&2; rm -f "$tmp"; die "Invalid speed test result"; }
+    install -m 644 -o root -g root "$tmp" "$STATE_DIR/result.json"
+    rm -f "$tmp"
+    printf 'interface=%s\nserver_id=%s\nthreads=%s\n' "$interface" "$server" "$threads" >"$STATE_DIR/settings"
+    chmod 644 "$STATE_DIR/settings"
+    echo "Speed test completed"
+}
+
+start_test() {
+    local interface="$1" server="$2" threads="$3" pid=""
+    source_for "$interface" >/dev/null
+    [[ "$server" == auto || "$server" =~ ^[0-9]+$ ]] || die "Invalid server ID"
+    [[ "$threads" =~ ^[0-9]+$ ]] && ((threads >= 1 && threads <= 16)) || die "Connections must be between 1 and 16"
+    ensure_state
+    if [[ -r "$STATE_DIR/job-status" ]] && [[ "$(cat "$STATE_DIR/job-status")" == running ]] && [[ -r "$STATE_DIR/job-pid" ]]; then
+        pid="$(cat "$STATE_DIR/job-pid")"
+        [[ "$pid" =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null && die "A speed test is already running"
+    fi
+    rm -f "$STATE_DIR/result.json" "$STATE_DIR/job.log"
+    printf '%s\n' running >"$STATE_DIR/job-status"
+    chmod 644 "$STATE_DIR/job-status"
+    (
+        if run_test "$interface" "$server" "$threads" >"$STATE_DIR/job.log" 2>&1; then
+            printf '%s\n' success >"$STATE_DIR/job-status"
+        else
+            printf '%s\n' error >"$STATE_DIR/job-status"
+        fi
+        chmod 644 "$STATE_DIR/job-status" "$STATE_DIR/job.log" 2>/dev/null || true
+        rm -f "$STATE_DIR/job-pid"
+    ) </dev/null >/dev/null 2>&1 &
+    printf '%s\n' "$!" >"$STATE_DIR/job-pid"
+    chmod 644 "$STATE_DIR/job-pid"
+    echo "Speed test started"
+}
+
+case "${1:-}" in
+    interfaces) interface_rows ;;
+    refresh) [[ $# -eq 2 ]] || die "Usage: $0 refresh INTERFACE"; refresh_servers "$2" ;;
+    start) [[ $# -eq 4 ]] || die "Usage: $0 start INTERFACE SERVER THREADS"; start_test "$2" "$3" "$4" ;;
+    run) [[ $# -eq 4 ]] || die "Usage: $0 run INTERFACE SERVER THREADS"; run_test "$2" "$3" "$4" ;;
+    clear) ensure_state; rm -f "$STATE_DIR/result.json" "$STATE_DIR/job-status" "$STATE_DIR/job.log" "$STATE_DIR/job-pid"; echo "Result cleared" ;;
+    *) die "Usage: $0 {interfaces|refresh INTERFACE|start INTERFACE SERVER THREADS|run INTERFACE SERVER THREADS|clear}" ;;
+esac
