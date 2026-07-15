@@ -62,7 +62,7 @@ ipfrepo upgrade                    # Upgrade installed packages
 | `mihomo` | 1.0.1 | Mihomo proxy and transparent proxy manager |
 | `reports` | 1.0.1 | Firewall, IDS and DNS reporting |
 | `sing-box` | 1.0.1 | sing-box proxy service |
-| `speedtest` | 1.0.1 | Internet speed test with manual server selection |
+| `speedtest` | 1.0.1 | Internet speed test |
 | `syncthing` | 1.0.1 | Syncthing file synchronization |
 | `tailscale` | 1.0.1 | Tailscale VPN integration |
 | `ttyd` | 1.0.1 | Web-based terminal |
