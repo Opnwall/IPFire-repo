@@ -1,6 +1,6 @@
 <div align="center">
   <a href="README.md">中文</a> |
-  <a href="README.US.md">English</a> 
+  <a href="README.US.md">English</a>
 </div>
 
 # IPFire Community Repository
@@ -60,6 +60,7 @@ ipfrepo upgrade                    # 升级已安装插件
 | `mihomo` | 1.0.1 | Mihomo 代理与透明代理管理 |
 | `reports` | 1.0.1 | 防火墙、IDS 和 DNS 报告 |
 | `sing-box` | 1.0.1 | sing-box 代理服务 |
+| `speedtest` | 1.0.1 | 互联网测速与手动服务器选择 |
 | `syncthing` | 1.0.1 | Syncthing 文件同步服务 |
 | `tailscale` | 1.0.1 | Tailscale VPN 集成 |
 | `ttyd` | 1.0.1 | ttyd 网页终端 |
@@ -79,4 +80,3 @@ ipfrepo upgrade                    # 升级已安装插件
 ## 免责声明
 
 本项目为社区维护项目，插件大多为借助AI编写，或来源于社区提供，无 IPFire 官方技术支持。安装前，请务必备份配置，并建议优先在测试环境验证。
-
