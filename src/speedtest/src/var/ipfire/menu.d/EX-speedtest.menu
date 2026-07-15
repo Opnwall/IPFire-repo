@@ -1,0 +1,6 @@
+    $subservices->{'18.speedtest'} = {
+                'caption' => 'Speedtest',
+                'uri' => '/cgi-bin/speedtest.cgi',
+                'title' => 'Speedtest',
+                'enabled' => 1,
+             };
