@@ -60,7 +60,7 @@ ipfrepo upgrade                    # 升级已安装插件
 | `mihomo` | 1.0.1 | Mihomo 代理与透明代理管理 |
 | `reports` | 1.0.1 | 防火墙、IDS 和 DNS 报告 |
 | `sing-box` | 1.0.1 | sing-box 代理服务 |
-| `speedtest` | 1.0.1 | 互联网测速与手动服务器选择 |
+| `speedtest` | 1.0.1 | 互联网测速 |
 | `syncthing` | 1.0.1 | Syncthing 文件同步服务 |
 | `tailscale` | 1.0.1 | Tailscale VPN 集成 |
 | `ttyd` | 1.0.1 | ttyd 网页终端 |
