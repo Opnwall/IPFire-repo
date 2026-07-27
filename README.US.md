@@ -65,7 +65,7 @@ ipfrepo upgrade                    # Upgrade installed packages
 | `speedtest` | 1.0.2 | Internet speed test |
 | `syncthing` | 1.0.2 | Syncthing file synchronization |
 | `tailscale` | 1.0.2 | Tailscale VPN integration |
-| `ttyd` | 1.0.1 | Web-based terminal |
+| `ttyd` | 1.0.2 | Web-based terminal |
 | `zerotier` | 1.0.2 | ZeroTier VPN integration |
 
 ## Component Versions
