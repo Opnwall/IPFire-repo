@@ -3,6 +3,7 @@ use strict;
 use warnings;
 no warnings 'once';
 use utf8;
+use Encode qw(encode);
 use JSON::PP;
 use File::Temp qw(tempfile);
 
@@ -17,6 +18,17 @@ my $service        = "/etc/init.d/tailscale";
 my $sudo_cmd       = "/usr/bin/sudo";
 my $settings_file  = "/var/ipfire/tailscale/settings";
 # =================
+
+sub utf8_bytes {
+    my ($value) = @_;
+    $value = '' unless defined $value;
+    return utf8::is_utf8($value) ? encode('UTF-8', $value) : $value;
+}
+
+sub html_escape {
+    my ($value) = @_;
+    return &Header::escape(utf8_bytes($value));
+}
 
 &Header::showhttpheaders();
 &Header::getcgihash(\%settings);
@@ -204,12 +216,12 @@ sub L {
     my ($key) = @_;
     my $lang_key = "tailscale $key";
     if (($Lang::language || '') eq 'tw' && exists $fallback_tw{$key}) {
-        return $fallback_tw{$key};
+        return utf8_bytes($fallback_tw{$key});
     }
     if (($Lang::language || '') eq 'zh' && exists $fallback_zh{$key}) {
-        return $fallback_zh{$key};
+        return utf8_bytes($fallback_zh{$key});
     }
-    return $fallback{$key} || $Lang::tr{$lang_key} || $key;
+    return utf8_bytes($fallback{$key} || $Lang::tr{$lang_key} || $key);
 }
 
 sub run_service_command {
@@ -605,27 +617,27 @@ print "<form method='post'>";
 # Service status.
 &Header::openbox('100%', 'left', L('service_status'));
 
-print "<b>" . &Header::escape(L('status')) . ":</b> ";
+print "<b>" . html_escape(L('status')) . ":</b> ";
 if ($running) {
-    print "<span class='status-dot running'></span><span style='color:green;'>" . &Header::escape(L('running')) . "</span>";
+    print "<span class='status-dot running'></span><span style='color:green;'>" . html_escape(L('running')) . "</span>";
 }
 else {
-    print "<span class='status-dot stopped'></span><span style='color:red;'>" . &Header::escape(L('stopped')) . "</span>";
+    print "<span class='status-dot stopped'></span><span style='color:red;'>" . html_escape(L('stopped')) . "</span>";
 }
 
 print "<br><br>";
 
-print "<button type='submit' name='ACTION' value='start'>" . &Header::escape(L('start')) . "</button>  ";
-print "<button type='submit' name='ACTION' value='stop'>" . &Header::escape(L('stop')) . "</button>  ";
-print "<button type='submit' name='ACTION' value='restart'>" . &Header::escape(L('restart')) . "</button>  ";
-print "<button type='submit' name='ACTION' value='down'>" . &Header::escape(L('disconnect')) . "</button>  ";
-print "<button type='submit' name='ACTION' value='resume'>" . &Header::escape(L('resume')) . "</button>  ";
-print "<button type='submit' name='ACTION' value='refresh'>" . &Header::escape(L('refresh')) . "</button>  ";
+print "<button type='submit' name='ACTION' value='start'>" . html_escape(L('start')) . "</button>  ";
+print "<button type='submit' name='ACTION' value='stop'>" . html_escape(L('stop')) . "</button>  ";
+print "<button type='submit' name='ACTION' value='restart'>" . html_escape(L('restart')) . "</button>  ";
+print "<button type='submit' name='ACTION' value='down'>" . html_escape(L('disconnect')) . "</button>  ";
+print "<button type='submit' name='ACTION' value='resume'>" . html_escape(L('resume')) . "</button>  ";
+print "<button type='submit' name='ACTION' value='refresh'>" . html_escape(L('refresh')) . "</button>  ";
 
 if ($show_output) {
     print "<br><br>";
-    print "<div class='ipfire-note " . &Header::escape($notice_type) . "'>";
-    print &Header::escape($notice_text);
+    print "<div class='ipfire-note " . html_escape($notice_type) . "'>";
+    print html_escape($notice_text);
     print "</div>";
 }
 
@@ -639,18 +651,18 @@ my $accept_dns_checked = $config{'ACCEPT_DNS'} eq 'on' ? " checked='checked'" : 
 my $exit_node_checked = $config{'ADVERTISE_EXIT_NODE'} eq 'on' ? " checked='checked'" : '';
 
 print "<table class='info-table'>";
-print "<tr><td class='key'>" . &Header::escape(L('auth_key')) . "</td><td><input class='config-input' type='password' name='AUTH_KEY' value='" . &Header::escape($config{'AUTH_KEY'}) . "' autocomplete='off'><div class='config-help'>" . &Header::escape(L('auth_key_help')) . "</div></td></tr>";
-print "<tr><td class='key'>" . &Header::escape(L('hostname')) . "</td><td><input class='config-input' type='text' name='HOSTNAME' value='" . &Header::escape($config{'HOSTNAME'}) . "'></td></tr>";
-print "<tr><td class='key'>" . &Header::escape(L('accept_routes')) . "</td><td><input type='checkbox' name='ACCEPT_ROUTES' value='on'$accept_routes_checked></td></tr>";
-print "<tr><td class='key'>" . &Header::escape(L('accept_dns')) . "</td><td><input type='checkbox' name='ACCEPT_DNS' value='on'$accept_dns_checked></td></tr>";
-print "<tr><td class='key'>" . &Header::escape(L('exit_node')) . "</td><td><input type='checkbox' name='ADVERTISE_EXIT_NODE' value='on'$exit_node_checked></td></tr>";
-print "<tr><td class='key'>" . &Header::escape(L('advertise_routes')) . "</td><td><input class='config-input' type='text' name='ADVERTISE_ROUTES' value='" . &Header::escape($config{'ADVERTISE_ROUTES'}) . "' placeholder='192.168.101.0/24'></td></tr>";
-print "<tr><td class='key'>" . &Header::escape(L('extra_args')) . "</td><td><input class='config-input' type='text' name='EXTRA_ARGS' value='" . &Header::escape($config{'EXTRA_ARGS'}) . "'></td></tr>";
+print "<tr><td class='key'>" . html_escape(L('auth_key')) . "</td><td><input class='config-input' type='password' name='AUTH_KEY' value='" . html_escape($config{'AUTH_KEY'}) . "' autocomplete='off'><div class='config-help'>" . html_escape(L('auth_key_help')) . "</div></td></tr>";
+print "<tr><td class='key'>" . html_escape(L('hostname')) . "</td><td><input class='config-input' type='text' name='HOSTNAME' value='" . html_escape($config{'HOSTNAME'}) . "'></td></tr>";
+print "<tr><td class='key'>" . html_escape(L('accept_routes')) . "</td><td><input type='checkbox' name='ACCEPT_ROUTES' value='on'$accept_routes_checked></td></tr>";
+print "<tr><td class='key'>" . html_escape(L('accept_dns')) . "</td><td><input type='checkbox' name='ACCEPT_DNS' value='on'$accept_dns_checked></td></tr>";
+print "<tr><td class='key'>" . html_escape(L('exit_node')) . "</td><td><input type='checkbox' name='ADVERTISE_EXIT_NODE' value='on'$exit_node_checked></td></tr>";
+print "<tr><td class='key'>" . html_escape(L('advertise_routes')) . "</td><td><input class='config-input' type='text' name='ADVERTISE_ROUTES' value='" . html_escape($config{'ADVERTISE_ROUTES'}) . "' placeholder='192.168.101.0/24'></td></tr>";
+print "<tr><td class='key'>" . html_escape(L('extra_args')) . "</td><td><input class='config-input' type='text' name='EXTRA_ARGS' value='" . html_escape($config{'EXTRA_ARGS'}) . "'></td></tr>";
 print "</table>";
 print "<br>";
-print "<button type='submit' name='ACTION' value='save'>" . &Header::escape(L('save_config')) . "</button>  ";
-print "<button type='submit' name='ACTION' value='up'>" . &Header::escape(L('join_network')) . "</button>  ";
-print "<button type='submit' name='ACTION' value='logout'>" . &Header::escape(L('leave_network')) . "</button>";
+print "<button type='submit' name='ACTION' value='save'>" . html_escape(L('save_config')) . "</button>  ";
+print "<button type='submit' name='ACTION' value='up'>" . html_escape(L('join_network')) . "</button>  ";
+print "<button type='submit' name='ACTION' value='logout'>" . html_escape(L('leave_network')) . "</button>";
 
 &Header::closebox();
 
@@ -658,13 +670,13 @@ print "<button type='submit' name='ACTION' value='logout'>" . &Header::escape(L(
 &Header::openbox('100%', 'left', L('connection_info'));
 
 print "<table class='info-table'>";
-print "<tr><td class='key'>" . &Header::escape(L('hostname')) . "</td><td>" . &Header::escape($conn{'hostname'}) . "</td></tr>";
-print "<tr><td class='key'>" . &Header::escape(L('assigned_address')) . "</td><td>" . &Header::escape($conn{'tailscale_ip'}) . "</td></tr>";
-print "<tr><td class='key'>" . &Header::escape(L('login_state')) . "</td><td>" . &Header::escape($conn{'login_state'}) . "</td></tr>";
-print "<tr><td class='key'>" . &Header::escape(L('advertise_routes')) . "</td><td>" . &Header::escape($conn{'advertise_routes'}) . "</td></tr>";
-print "<tr><td class='key'>" . &Header::escape(L('exit_node')) . "</td><td>" . &Header::escape($conn{'exit_node'}) . "</td></tr>";
-print "<tr><td class='key'>" . &Header::escape(L('peer_total')) . "</td><td>" . &Header::escape($conn{'peer_total'}) . "</td></tr>";
-print "<tr><td class='key'>" . &Header::escape(L('peer_online')) . "</td><td>" . &Header::escape($conn{'peer_online'}) . "</td></tr>";
+print "<tr><td class='key'>" . html_escape(L('hostname')) . "</td><td>" . html_escape($conn{'hostname'}) . "</td></tr>";
+print "<tr><td class='key'>" . html_escape(L('assigned_address')) . "</td><td>" . html_escape($conn{'tailscale_ip'}) . "</td></tr>";
+print "<tr><td class='key'>" . html_escape(L('login_state')) . "</td><td>" . html_escape($conn{'login_state'}) . "</td></tr>";
+print "<tr><td class='key'>" . html_escape(L('advertise_routes')) . "</td><td>" . html_escape($conn{'advertise_routes'}) . "</td></tr>";
+print "<tr><td class='key'>" . html_escape(L('exit_node')) . "</td><td>" . html_escape($conn{'exit_node'}) . "</td></tr>";
+print "<tr><td class='key'>" . html_escape(L('peer_total')) . "</td><td>" . html_escape($conn{'peer_total'}) . "</td></tr>";
+print "<tr><td class='key'>" . html_escape(L('peer_online')) . "</td><td>" . html_escape($conn{'peer_online'}) . "</td></tr>";
 print "</table>";
 
 &Header::closebox();
@@ -673,7 +685,7 @@ print "</table>";
 &Header::openbox('100%', 'left', L('peer_info'));
 
 print "<table class='peer-table'>";
-print "<tr><th>" . &Header::escape(L('tailscale_ip')) . "</th><th>" . &Header::escape(L('hostname')) . "</th><th>" . &Header::escape(L('user')) . "</th><th>" . &Header::escape(L('status')) . "</th></tr>";
+print "<tr><th>" . html_escape(L('tailscale_ip')) . "</th><th>" . html_escape(L('hostname')) . "</th><th>" . html_escape(L('user')) . "</th><th>" . html_escape(L('status')) . "</th></tr>";
 
 if (ref($conn{'peer_rows'}) eq 'ARRAY' && @{$conn{'peer_rows'}}) {
     for my $peer (@{$conn{'peer_rows'}}) {
@@ -684,15 +696,15 @@ if (ref($conn{'peer_rows'}) eq 'ARRAY' && @{$conn{'peer_rows'}}) {
         my $state_class = $peer->{'online'} ? 'peer-online' : 'peer-offline';
 
         print "<tr>";
-        print "<td>" . &Header::escape($ip) . "</td>";
-        print "<td>" . &Header::escape($hostname) . "</td>";
-        print "<td>" . &Header::escape($user) . "</td>";
-        print "<td class='$state_class'>" . &Header::escape($state) . "</td>";
+        print "<td>" . html_escape($ip) . "</td>";
+        print "<td>" . html_escape($hostname) . "</td>";
+        print "<td>" . html_escape($user) . "</td>";
+        print "<td class='$state_class'>" . html_escape($state) . "</td>";
         print "</tr>";
     }
 }
 else {
-    print "<tr><td colspan='4'>" . &Header::escape(L('no_peer_info')) . "</td></tr>";
+    print "<tr><td colspan='4'>" . html_escape(L('no_peer_info')) . "</td></tr>";
 }
 
 print "</table>";

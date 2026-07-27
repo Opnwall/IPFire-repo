@@ -3,6 +3,7 @@ use strict;
 use warnings;
 no warnings 'once';
 use utf8;
+use Encode qw(encode);
 
 require '/var/ipfire/general-functions.pl';
 require "${General::swroot}/lang.pl";
@@ -12,6 +13,17 @@ my %settings = ();
 my $service  = "/etc/rc.d/init.d/adguardhome";
 my $sudo_cmd = "/usr/bin/sudo";
 my $config   = "/var/ipfire/adguardhome/settings";
+
+sub utf8_bytes {
+    my ($value) = @_;
+    $value = '' unless defined $value;
+    return utf8::is_utf8($value) ? encode('UTF-8', $value) : $value;
+}
+
+sub html_escape {
+    my ($value) = @_;
+    return &Header::escape(utf8_bytes($value));
+}
 
 sub agh_tr {
     my ($key) = @_;
@@ -80,16 +92,16 @@ sub agh_tr {
     );
 
     if (($Lang::language || '') eq 'tw' && exists $tw{$key}) {
-        return $tw{$key};
+        return utf8_bytes($tw{$key});
     }
     if (($Lang::language || '') eq 'zh' && exists $zh{$key}) {
-        return $zh{$key};
+        return utf8_bytes($zh{$key});
     }
     if (exists $en{$key}) {
-        return $en{$key};
+        return utf8_bytes($en{$key});
     }
-    return $Lang::tr{$key} if defined $Lang::tr{$key} && $Lang::tr{$key} ne '';
-    return $key;
+    return utf8_bytes($Lang::tr{$key}) if defined $Lang::tr{$key} && $Lang::tr{$key} ne '';
+    return utf8_bytes($key);
 }
 
 &Header::showhttpheaders();
@@ -237,32 +249,32 @@ print "<form method='post'>\n";
 
 &Header::openbox('100%', 'left', &agh_tr('adguardhome service status'));
 print "<table class='adguardhome-table'>\n";
-print "<tr><td>" . &Header::escape(&agh_tr('adguardhome status')) . "</td><td>";
+print "<tr><td>" . html_escape(&agh_tr('adguardhome status')) . "</td><td>";
 if ($running) {
-    print "<span class='adguardhome-status running'></span>" . &Header::escape(&agh_tr('adguardhome running'));
+    print "<span class='adguardhome-status running'></span>" . html_escape(&agh_tr('adguardhome running'));
 } else {
-    print "<span class='adguardhome-status stopped'></span>" . &Header::escape(&agh_tr('adguardhome stopped'));
+    print "<span class='adguardhome-status stopped'></span>" . html_escape(&agh_tr('adguardhome stopped'));
 }
 print "</td></tr>\n";
-print "<tr><td>" . &Header::escape(&agh_tr('adguardhome version')) . "</td><td><pre style='margin:0;white-space:pre-wrap;'>" . &Header::escape($version) . "</pre></td></tr>\n";
-print "<tr><td>" . &Header::escape(&agh_tr('adguardhome gui')) . "</td><td><a target='_blank' href='" . &Header::escape($gui_url) . "'>" . &Header::escape($gui_url) . "</a><br>" . &Header::escape(&agh_tr('adguardhome first run')) . "</td></tr>\n";
+print "<tr><td>" . html_escape(&agh_tr('adguardhome version')) . "</td><td><pre style='margin:0;white-space:pre-wrap;'>" . html_escape($version) . "</pre></td></tr>\n";
+print "<tr><td>" . html_escape(&agh_tr('adguardhome gui')) . "</td><td><a target='_blank' href='" . html_escape($gui_url) . "'>" . html_escape($gui_url) . "</a><br>" . html_escape(&agh_tr('adguardhome first run')) . "</td></tr>\n";
 print "</table><br>\n";
-print "<button type='submit' name='ACTION' value='start'>" . &Header::escape(&agh_tr('adguardhome start')) . "</button> ";
-print "<button type='submit' name='ACTION' value='stop'>" . &Header::escape(&agh_tr('adguardhome stop')) . "</button> ";
-print "<button type='submit' name='ACTION' value='restart'>" . &Header::escape(&agh_tr('adguardhome restart')) . "</button> ";
-print "<button type='submit' name='ACTION' value='refresh'>" . &Header::escape(&agh_tr('adguardhome refresh')) . "</button>\n";
+print "<button type='submit' name='ACTION' value='start'>" . html_escape(&agh_tr('adguardhome start')) . "</button> ";
+print "<button type='submit' name='ACTION' value='stop'>" . html_escape(&agh_tr('adguardhome stop')) . "</button> ";
+print "<button type='submit' name='ACTION' value='restart'>" . html_escape(&agh_tr('adguardhome restart')) . "</button> ";
+print "<button type='submit' name='ACTION' value='refresh'>" . html_escape(&agh_tr('adguardhome refresh')) . "</button>\n";
 if ($show_output) {
-    print "<br><br><pre style='background:#111;color:#f66;padding:8px;white-space:pre-wrap;'>" . &Header::escape($cmd_output) . "</pre>\n";
+    print "<br><br><pre style='background:#111;color:#f66;padding:8px;white-space:pre-wrap;'>" . html_escape($cmd_output) . "</pre>\n";
 }
 &Header::closebox();
 
 &Header::openbox('100%', 'left', &agh_tr('adguardhome settings'));
 my $checked = ($cfg{'ENABLED'} || 'on') eq 'on' ? " checked" : "";
 print "<table class='adguardhome-table'>\n";
-print "<tr><td>" . &Header::escape(&agh_tr('adguardhome enabled')) . "</td><td><input type='checkbox' name='ENABLED' value='on'$checked></td></tr>\n";
-print "<tr><td>" . &Header::escape(&agh_tr('adguardhome web address')) . "</td><td><input type='text' name='WEB_ADDRESS' value='" . &Header::escape($cfg{'WEB_ADDRESS'}) . "' style='width:240px;'></td></tr>\n";
+print "<tr><td>" . html_escape(&agh_tr('adguardhome enabled')) . "</td><td><input type='checkbox' name='ENABLED' value='on'$checked></td></tr>\n";
+print "<tr><td>" . html_escape(&agh_tr('adguardhome web address')) . "</td><td><input type='text' name='WEB_ADDRESS' value='" . html_escape($cfg{'WEB_ADDRESS'}) . "' style='width:240px;'></td></tr>\n";
 print "</table><br>\n";
-print "<button type='submit' name='ACTION' value='save'>" . &Header::escape(&agh_tr('adguardhome save')) . "</button>\n";
+print "<button type='submit' name='ACTION' value='save'>" . html_escape(&agh_tr('adguardhome save')) . "</button>\n";
 &Header::closebox();
 
 print "</form>\n";

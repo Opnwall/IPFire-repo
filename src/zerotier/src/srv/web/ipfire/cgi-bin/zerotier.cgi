@@ -3,6 +3,7 @@ use strict;
 use warnings;
 no warnings 'once';
 use utf8;
+use Encode qw(encode);
 
 require '/var/ipfire/general-functions.pl';
 require "${General::swroot}/lang.pl";
@@ -12,6 +13,17 @@ my %settings = ();
 my $service  = "/etc/init.d/zerotier";
 my $sudo_cmd = "/usr/bin/sudo";
 my $config   = "/var/ipfire/zerotier/settings";
+
+sub utf8_bytes {
+    my ($value) = @_;
+    $value = '' unless defined $value;
+    return utf8::is_utf8($value) ? encode('UTF-8', $value) : $value;
+}
+
+sub html_escape {
+    my ($value) = @_;
+    return &Header::escape(utf8_bytes($value));
+}
 
 sub zt_tr {
     my ($key) = @_;
@@ -131,16 +143,16 @@ sub zt_tr {
     );
 
     if (($Lang::language || '') eq 'tw' && exists $tw{$key}) {
-        return $tw{$key};
+        return utf8_bytes($tw{$key});
     }
     if (($Lang::language || '') eq 'zh' && exists $zh{$key}) {
-        return $zh{$key};
+        return utf8_bytes($zh{$key});
     }
     if (exists $en{$key}) {
-        return $en{$key};
+        return utf8_bytes($en{$key});
     }
-    return $Lang::tr{$key} if defined $Lang::tr{$key} && $Lang::tr{$key} ne '';
-    return $key;
+    return utf8_bytes($Lang::tr{$key}) if defined $Lang::tr{$key} && $Lang::tr{$key} ne '';
+    return utf8_bytes($key);
 }
 
 &Header::showhttpheaders();
@@ -397,20 +409,20 @@ print "<button type='submit' name='ACTION' value='refresh'>" . &zt_tr('zerotier 
 
 if ($show_output) {
     print "<br><br><div class='ipfire-note'>";
-    print &Header::escape($cmd_output);
+    print html_escape($cmd_output);
     print "</div>";
 }
 print "<div class='zt-section-title'>" . &zt_tr('zerotier node info') . "</div>";
 print "<table class='info-table'>";
-print "<tr><td class='key'>" . &zt_tr('zerotier node id') . "</td><td>" . &Header::escape($node{'address'}) . "</td></tr>";
-print "<tr><td class='key'>" . &zt_tr('zerotier online status') . "</td><td>" . &Header::escape($node{'status'}) . "</td></tr>";
-print "<tr><td class='key'>" . &zt_tr('zerotier program version') . "</td><td>" . &Header::escape($node{'version'}) . "</td></tr>";
+print "<tr><td class='key'>" . &zt_tr('zerotier node id') . "</td><td>" . html_escape($node{'address'}) . "</td></tr>";
+print "<tr><td class='key'>" . &zt_tr('zerotier online status') . "</td><td>" . html_escape($node{'status'}) . "</td></tr>";
+print "<tr><td class='key'>" . &zt_tr('zerotier program version') . "</td><td>" . html_escape($node{'version'}) . "</td></tr>";
 print "</table>";
 &Header::closebox();
 
 &Header::openbox('100%', 'left', &zt_tr('zerotier network config'));
 print &zt_tr('zerotier network id') . ": ";
-print "<input class='zt-input' type='text' name='NETWORK_ID' maxlength='16' value='" . &Header::escape($saved_network_id) . "'> ";
+print "<input class='zt-input' type='text' name='NETWORK_ID' maxlength='16' value='" . html_escape($saved_network_id) . "'> ";
 print "<button type='submit' name='ACTION' value='save_network'>" . &zt_tr('zerotier save') . "</button>  ";
 print "<button type='submit' name='ACTION' value='join'>" . &zt_tr('zerotier join') . "</button>  ";
 print "<button type='submit' name='ACTION' value='leave'>" . &zt_tr('zerotier leave') . "</button>";
@@ -422,12 +434,12 @@ if (@networks) {
     for my $net (@networks) {
         my $class = ($net->{'status'} eq 'OK') ? 'zt-ok' : 'zt-warn';
         print "<tr>";
-        print "<td>" . &Header::escape($net->{'id'}) . "</td>";
-        print "<td>" . &Header::escape($net->{'name'}) . "</td>";
-        print "<td class='$class'>" . &Header::escape($net->{'status'}) . "</td>";
-        print "<td>" . &Header::escape($net->{'type'}) . "</td>";
-        print "<td>" . &Header::escape($net->{'dev'}) . "</td>";
-        print "<td>" . &Header::escape($net->{'assigned'}) . "</td>";
+        print "<td>" . html_escape($net->{'id'}) . "</td>";
+        print "<td>" . html_escape($net->{'name'}) . "</td>";
+        print "<td class='$class'>" . html_escape($net->{'status'}) . "</td>";
+        print "<td>" . html_escape($net->{'type'}) . "</td>";
+        print "<td>" . html_escape($net->{'dev'}) . "</td>";
+        print "<td>" . html_escape($net->{'assigned'}) . "</td>";
         print "</tr>";
     }
 }
@@ -443,11 +455,11 @@ print "<tr><th>" . &zt_tr('zerotier address') . "</th><th>" . &zt_tr('zerotier v
 if (@peers) {
     for my $peer (@peers) {
         print "<tr>";
-        print "<td>" . &Header::escape($peer->{'address'}) . "</td>";
-        print "<td>" . &Header::escape($peer->{'version'}) . "</td>";
-        print "<td>" . &Header::escape($peer->{'latency'}) . "</td>";
-        print "<td>" . &Header::escape($peer->{'role'}) . "</td>";
-        print "<td>" . &Header::escape($peer->{'paths'}) . "</td>";
+        print "<td>" . html_escape($peer->{'address'}) . "</td>";
+        print "<td>" . html_escape($peer->{'version'}) . "</td>";
+        print "<td>" . html_escape($peer->{'latency'}) . "</td>";
+        print "<td>" . html_escape($peer->{'role'}) . "</td>";
+        print "<td>" . html_escape($peer->{'paths'}) . "</td>";
         print "</tr>";
     }
 }

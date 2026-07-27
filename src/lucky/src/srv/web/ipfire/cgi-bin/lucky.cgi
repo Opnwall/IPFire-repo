@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+no warnings 'once';
 use utf8;
 use HTML::Entities qw(encode_entities);
 

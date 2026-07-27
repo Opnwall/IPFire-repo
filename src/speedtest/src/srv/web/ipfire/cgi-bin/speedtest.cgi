@@ -3,6 +3,7 @@ use strict;
 use warnings;
 no warnings 'once';
 use utf8;
+use Encode qw(encode);
 use JSON::PP qw(decode_json encode_json);
 
 require '/var/ipfire/general-functions.pl';
@@ -13,6 +14,17 @@ my %form;
 my $sudo = '/usr/bin/sudo';
 my $ctl = '/usr/local/sbin/ipfire-speedtestctl';
 my $state_dir = '/var/ipfire/speedtest';
+
+sub utf8_bytes {
+    my ($value) = @_;
+    $value = '' unless defined $value;
+    return utf8::is_utf8($value) ? encode('UTF-8', $value) : $value;
+}
+
+sub html_escape {
+    my ($value) = @_;
+    return &Header::escape(utf8_bytes($value));
+}
 
 sub tr_text {
     my ($key) = @_;
@@ -25,9 +37,9 @@ sub tr_text {
     my %tw = (
         title=>'Speedtest', settings=>'測速設定', result=>'測速結果', interface=>'出站介面', automatic=>'自動選擇', interface_help=>'僅顯示具有 IPv4 預設路由的介面。', server=>'測速伺服器', server_auto=>'自動選擇', server_help=>'變更出站介面後，請重新整理伺服器清單。', refresh=>'重新整理伺服器', threads=>'並行連線', run=>'開始測速', clear=>'清除結果', running=>'正在測速，請等待.......', refreshing=>'正在取得測速伺服器。', time=>'測試時間', isp=>'電信業者 / 公網 IP', test_server=>'測速伺服器', distance=>'距離', engine=>'測速引擎', latency=>'延遲', jitter=>'抖動', loss=>'封包遺失率', download=>'下載', upload=>'上傳', failed=>'網際網路測速失敗。'
     );
-    return $tw{$key} if ($Lang::language || '') eq 'tw' && exists $tw{$key};
-    return $zh{$key} if ($Lang::language || '') eq 'zh' && exists $zh{$key};
-    return $en{$key} // $key;
+    return utf8_bytes($tw{$key}) if ($Lang::language || '') eq 'tw' && exists $tw{$key};
+    return utf8_bytes($zh{$key}) if ($Lang::language || '') eq 'zh' && exists $zh{$key};
+    return utf8_bytes($en{$key} // $key);
 }
 
 sub request_is_safe {
@@ -154,10 +166,10 @@ print <<'STYLE';
 .speedtest-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid #ccc;margin-bottom:14px}.speedtest-metric{padding:16px;border-right:1px solid #ccc;background:#fff}.speedtest-metric:last-child{border-right:0}.speedtest-metric span{color:#667;display:block;font-size:12px}.speedtest-metric strong{display:block;font-size:24px;margin-top:5px;white-space:nowrap}.speedtest-result,.speedtest-form{width:100%;border-collapse:collapse}.speedtest-result td,.speedtest-form td{border-top:1px solid #ddd;padding:7px 15px}.speedtest-result td:first-child,.speedtest-form td:first-child{font-weight:bold;width:190px}.speedtest-control{box-sizing:border-box;max-width:480px;width:100%;height:32px}.speedtest-help{color:#667;font-size:12px;margin-top:4px}.speedtest-actions button,.speedtest-refresh{margin-right:5px;margin-top:7px}.speedtest-status{background:#d9edf7;border:1px solid #bce8f1;padding:10px;margin-bottom:12px;display:none}.speedtest-error{background:#f2dede;border:1px solid #ebccd1;color:#a94442;padding:10px;margin-bottom:12px}@media(max-width:800px){.speedtest-summary{grid-template-columns:1fr 1fr}.speedtest-metric{border-bottom:1px solid #ccc}}
 </style>
 STYLE
-print "<div class='speedtest-error'>".&Header::escape($error)."</div>" if $error ne '';
+print "<div class='speedtest-error'>".html_escape($error)."</div>" if $error ne '';
 my $status_style=$job_status eq 'running' ? " style='display:block'" : '';
-print "<div id='speedtest-status' class='speedtest-status'${status_style}>".&Header::escape(tr_text('running'))."</div>";
-print "<div id='speedtest-job' data-status='".&Header::escape($job_status)."' data-log='".&Header::escape($job_log)."' style='display:none'></div>";
+print "<div id='speedtest-status' class='speedtest-status'${status_style}>".html_escape(tr_text('running'))."</div>";
+print "<div id='speedtest-job' data-status='".html_escape($job_status)."' data-log='".html_escape($job_log)."' style='display:none'></div>";
 
 if ($server_result) {
     my $lat=($server_result->{'latency'}||0)/1_000_000; my $jit=($server_result->{'jitter'}||0)/1_000_000;
@@ -165,27 +177,27 @@ if ($server_result) {
     my $packet=$server_result->{'packet_loss'}||{}; my $loss='N/A';
     if (($packet->{'sent'}||0)>0) { $loss=sprintf('%.2f%%',100*(1-(($packet->{'sent'}-$packet->{'dup'})/($packet->{'max'}+1)))); }
     print "<div class='speedtest-summary'>";
-    for my $metric ([latency=>sprintf('%.2f ms',$lat)],[jitter=>sprintf('%.2f ms',$jit)],[loss=>$loss],[download=>sprintf('%.2f Mbps',$dl)],[upload=>sprintf('%.2f Mbps',$ul)]) { print "<div class='speedtest-metric'><span>".&Header::escape(tr_text($metric->[0]))."</span><strong>".&Header::escape($metric->[1])."</strong></div>"; }
+    for my $metric ([latency=>sprintf('%.2f ms',$lat)],[jitter=>sprintf('%.2f ms',$jit)],[loss=>$loss],[download=>sprintf('%.2f Mbps',$dl)],[upload=>sprintf('%.2f Mbps',$ul)]) { print "<div class='speedtest-metric'><span>".html_escape(tr_text($metric->[0]))."</span><strong>".html_escape($metric->[1])."</strong></div>"; }
     print "</div>";
     &Header::openbox('100%','left',tr_text('result'));
     print "<table class='speedtest-result'>";
     my $isp=join(' / ',grep {defined $_ && $_ ne ''} ($user->{'Isp'}||$user->{'isp'},$user->{'IP'}||$user->{'ip'}));
     my @rows=([time=>$result->{'timestamp'}],[isp=>$isp],[test_server=>'['.($server_result->{'id'}||'').'] '.($server_result->{'name'}||'').' - '.($server_result->{'sponsor'}||'')],[distance=>sprintf('%.2f km',$server_result->{'distance'}||0)],[engine=>'speedtest-go 1.7.10']);
-    for my $row (@rows) { print '<tr><td>'.&Header::escape(tr_text($row->[0])).'</td><td>'.&Header::escape($row->[1]||'').'</td></tr>'; }
+    for my $row (@rows) { print '<tr><td>'.html_escape(tr_text($row->[0])).'</td><td>'.html_escape($row->[1]||'').'</td></tr>'; }
     print '</table>'; &Header::closebox();
 }
 
 print "<form method='post' id='speedtest-form'>";
 &Header::openbox('100%','left',tr_text('settings'));
 print "<table class='speedtest-form'>";
-print '<tr><td>'.&Header::escape(tr_text('interface')).'</td><td><select class="speedtest-control" name="INTERFACE">';
-for my $item (@interfaces) { my $selected=$cfg{'interface'} eq $item->{'name'}?' selected':''; my $label=$item->{'label'}.($item->{'name'} eq 'auto'?'':' ('.$item->{'name'}.')'); print '<option value="'.&Header::escape($item->{'name'}).'"'.$selected.'>'.&Header::escape($label).'</option>'; }
-print '</select><div class="speedtest-help">'.&Header::escape(tr_text('interface_help')).'</div></td></tr>';
-print '<tr><td>'.&Header::escape(tr_text('server')).'</td><td><select class="speedtest-control" name="SERVER"><option value="auto">'.&Header::escape(tr_text('server_auto')).'</option>';
-for my $item (@servers) { my $selected=$cfg{'server_id'} eq $item->{'id'}?' selected':''; my $label='['.$item->{'id'}.'] '.$item->{'name'}.' - '.$item->{'sponsor'}.' / '.$item->{'latency'}.' / '.sprintf('%.1f',$item->{'distance'}).' km'; print '<option value="'.$item->{'id'}.'"'.$selected.'>'.&Header::escape($label).'</option>'; }
-print '</select><div class="speedtest-help">'.&Header::escape(tr_text('server_help')).'</div></td></tr>';
-print '<tr><td>'.&Header::escape(tr_text('threads')).'</td><td><input class="speedtest-control" type="number" min="1" max="16" name="THREADS" value="'.&Header::escape($cfg{'threads'}).'" /></td></tr>';
-print '<tr><td></td><td class="speedtest-actions"><button type="button" value="run" data-status="run">'.&Header::escape(tr_text('run')).'</button><button type="button" value="clear" data-status="clear">'.&Header::escape(tr_text('clear')).'</button><button class="speedtest-refresh" type="button" value="refresh" data-status="refresh">'.&Header::escape(tr_text('refresh')).'</button></td></tr>';
+print '<tr><td>'.html_escape(tr_text('interface')).'</td><td><select class="speedtest-control" name="INTERFACE">';
+for my $item (@interfaces) { my $selected=$cfg{'interface'} eq $item->{'name'}?' selected':''; my $label=$item->{'label'}.($item->{'name'} eq 'auto'?'':' ('.$item->{'name'}.')'); print '<option value="'.html_escape($item->{'name'}).'"'.$selected.'>'.html_escape($label).'</option>'; }
+print '</select><div class="speedtest-help">'.html_escape(tr_text('interface_help')).'</div></td></tr>';
+print '<tr><td>'.html_escape(tr_text('server')).'</td><td><select class="speedtest-control" name="SERVER"><option value="auto">'.html_escape(tr_text('server_auto')).'</option>';
+for my $item (@servers) { my $selected=$cfg{'server_id'} eq $item->{'id'}?' selected':''; my $label='['.$item->{'id'}.'] '.$item->{'name'}.' - '.$item->{'sponsor'}.' / '.$item->{'latency'}.' / '.sprintf('%.1f',$item->{'distance'}).' km'; print '<option value="'.$item->{'id'}.'"'.$selected.'>'.html_escape($label).'</option>'; }
+print '</select><div class="speedtest-help">'.html_escape(tr_text('server_help')).'</div></td></tr>';
+print '<tr><td>'.html_escape(tr_text('threads')).'</td><td><input class="speedtest-control" type="number" min="1" max="16" name="THREADS" value="'.html_escape($cfg{'threads'}).'" /></td></tr>';
+print '<tr><td></td><td class="speedtest-actions"><button type="button" value="run" data-status="run">'.html_escape(tr_text('run')).'</button><button type="button" value="clear" data-status="clear">'.html_escape(tr_text('clear')).'</button><button class="speedtest-refresh" type="button" value="refresh" data-status="refresh">'.html_escape(tr_text('refresh')).'</button></td></tr>';
 print '</table>'; &Header::closebox(); print '</form>';
 my $running=tr_text('running'); my $refreshing=tr_text('refreshing');
 my $failed=tr_text('failed');

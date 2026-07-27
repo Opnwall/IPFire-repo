@@ -3,6 +3,7 @@ use strict;
 use warnings;
 no warnings 'once';
 use utf8;
+use Encode qw(encode);
 
 require '/var/ipfire/general-functions.pl';
 require "${General::swroot}/lang.pl";
@@ -12,6 +13,17 @@ my %settings = ();
 my $service  = "/etc/rc.d/init.d/syncthing";
 my $sudo_cmd = "/usr/bin/sudo";
 my $config   = "/var/ipfire/syncthing/settings";
+
+sub utf8_bytes {
+    my ($value) = @_;
+    $value = '' unless defined $value;
+    return utf8::is_utf8($value) ? encode('UTF-8', $value) : $value;
+}
+
+sub html_escape {
+    my ($value) = @_;
+    return &Header::escape(utf8_bytes($value));
+}
 
 sub st_tr {
     my ($key) = @_;
@@ -77,16 +89,16 @@ sub st_tr {
     );
 
     if (($Lang::language || '') eq 'tw' && exists $tw{$key}) {
-        return $tw{$key};
+        return utf8_bytes($tw{$key});
     }
     if (($Lang::language || '') eq 'zh' && exists $zh{$key}) {
-        return $zh{$key};
+        return utf8_bytes($zh{$key});
     }
     if (exists $en{$key}) {
-        return $en{$key};
+        return utf8_bytes($en{$key});
     }
-    return $Lang::tr{$key} if defined $Lang::tr{$key} && $Lang::tr{$key} ne '';
-    return $key;
+    return utf8_bytes($Lang::tr{$key}) if defined $Lang::tr{$key} && $Lang::tr{$key} ne '';
+    return utf8_bytes($key);
 }
 
 &Header::showhttpheaders();
@@ -234,32 +246,32 @@ print "<form method='post'>\n";
 
 &Header::openbox('100%', 'left', &st_tr('syncthing service status'));
 print "<table class='syncthing-table'>\n";
-print "<tr><td>" . &Header::escape(&st_tr('syncthing status')) . "</td><td>";
+print "<tr><td>" . html_escape(&st_tr('syncthing status')) . "</td><td>";
 if ($running) {
-    print "<span class='syncthing-status running'></span>" . &Header::escape(&st_tr('syncthing running'));
+    print "<span class='syncthing-status running'></span>" . html_escape(&st_tr('syncthing running'));
 } else {
-    print "<span class='syncthing-status stopped'></span>" . &Header::escape(&st_tr('syncthing stopped'));
+    print "<span class='syncthing-status stopped'></span>" . html_escape(&st_tr('syncthing stopped'));
 }
 print "</td></tr>\n";
-print "<tr><td>" . &Header::escape(&st_tr('syncthing version')) . "</td><td><pre style='margin:0;white-space:pre-wrap;'>" . &Header::escape($version) . "</pre></td></tr>\n";
-print "<tr><td>" . &Header::escape(&st_tr('syncthing gui')) . "</td><td><a target='_blank' href='" . &Header::escape($gui_url) . "'>" . &Header::escape($gui_url) . "</a></td></tr>\n";
+print "<tr><td>" . html_escape(&st_tr('syncthing version')) . "</td><td><pre style='margin:0;white-space:pre-wrap;'>" . html_escape($version) . "</pre></td></tr>\n";
+print "<tr><td>" . html_escape(&st_tr('syncthing gui')) . "</td><td><a target='_blank' href='" . html_escape($gui_url) . "'>" . html_escape($gui_url) . "</a></td></tr>\n";
 print "</table><br>\n";
-print "<button type='submit' name='ACTION' value='start'>" . &Header::escape(&st_tr('syncthing start')) . "</button> ";
-print "<button type='submit' name='ACTION' value='stop'>" . &Header::escape(&st_tr('syncthing stop')) . "</button> ";
-print "<button type='submit' name='ACTION' value='restart'>" . &Header::escape(&st_tr('syncthing restart')) . "</button> ";
-print "<button type='submit' name='ACTION' value='refresh'>" . &Header::escape(&st_tr('syncthing refresh')) . "</button>\n";
+print "<button type='submit' name='ACTION' value='start'>" . html_escape(&st_tr('syncthing start')) . "</button> ";
+print "<button type='submit' name='ACTION' value='stop'>" . html_escape(&st_tr('syncthing stop')) . "</button> ";
+print "<button type='submit' name='ACTION' value='restart'>" . html_escape(&st_tr('syncthing restart')) . "</button> ";
+print "<button type='submit' name='ACTION' value='refresh'>" . html_escape(&st_tr('syncthing refresh')) . "</button>\n";
 if ($show_output) {
-    print "<br><br><pre style='background:#111;color:#f66;padding:8px;white-space:pre-wrap;'>" . &Header::escape($cmd_output) . "</pre>\n";
+    print "<br><br><pre style='background:#111;color:#f66;padding:8px;white-space:pre-wrap;'>" . html_escape($cmd_output) . "</pre>\n";
 }
 &Header::closebox();
 
 &Header::openbox('100%', 'left', &st_tr('syncthing settings'));
 my $checked = ($cfg{'ENABLED'} || 'on') eq 'on' ? " checked" : "";
 print "<table class='syncthing-table'>\n";
-print "<tr><td>" . &Header::escape(&st_tr('syncthing enabled')) . "</td><td><input type='checkbox' name='ENABLED' value='on'$checked></td></tr>\n";
-print "<tr><td>" . &Header::escape(&st_tr('syncthing gui address')) . "</td><td><input type='text' name='GUI_ADDRESS' value='" . &Header::escape($cfg{'GUI_ADDRESS'}) . "' style='width:240px;'></td></tr>\n";
+print "<tr><td>" . html_escape(&st_tr('syncthing enabled')) . "</td><td><input type='checkbox' name='ENABLED' value='on'$checked></td></tr>\n";
+print "<tr><td>" . html_escape(&st_tr('syncthing gui address')) . "</td><td><input type='text' name='GUI_ADDRESS' value='" . html_escape($cfg{'GUI_ADDRESS'}) . "' style='width:240px;'></td></tr>\n";
 print "</table><br>\n";
-print "<button type='submit' name='ACTION' value='save'>" . &Header::escape(&st_tr('syncthing save')) . "</button>\n";
+print "<button type='submit' name='ACTION' value='save'>" . html_escape(&st_tr('syncthing save')) . "</button>\n";
 &Header::closebox();
 
 print "</form>\n";

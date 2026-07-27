@@ -54,19 +54,34 @@ ipfrepo upgrade                    # Upgrade installed packages
 
 | Package | Version | Description |
 | --- | --- | --- |
-| `adguardhome` | 1.0.1 | AdGuard Home DNS filtering and management |
+| `adguardhome` | 1.0.2 | AdGuard Home DNS filtering and management |
 | `backup` | 1.0.1 | Firewall configuration backup manager |
 | `ipfire-dyndns` | 1.0.1 | DDNS patch for Cloudflare, Alibaba Cloud and Tencent Cloud |
 | `lang` | 1.0.2 | Chinese localization update tool |
-| `lucky` | 1.0.1 | Lucky network toolbox |
-| `mihomo` | 1.0.1 | Mihomo proxy and transparent proxy manager |
+| `lucky` | 1.0.2 | Lucky network toolbox |
+| `mihomo` | 1.0.2 | Mihomo proxy and transparent proxy manager |
 | `reports` | 1.0.1 | Firewall, IDS and DNS reporting |
-| `sing-box` | 1.0.1 | sing-box proxy service |
-| `speedtest` | 1.0.1 | Internet speed test |
-| `syncthing` | 1.0.1 | Syncthing file synchronization |
-| `tailscale` | 1.0.1 | Tailscale VPN integration |
+| `sing-box` | 1.0.2 | sing-box proxy service |
+| `speedtest` | 1.0.2 | Internet speed test |
+| `syncthing` | 1.0.2 | Syncthing file synchronization |
+| `tailscale` | 1.0.2 | Tailscale VPN integration |
 | `ttyd` | 1.0.1 | Web-based terminal |
-| `zerotier` | 1.0.1 | ZeroTier VPN integration |
+| `zerotier` | 1.0.2 | ZeroTier VPN integration |
+
+## Component Versions
+
+Upstream versions bundled with or used by the current packages:
+
+| Component | Version | Source |
+| --- | --- | --- |
+| Mihomo | 1.19.29 | Bundled |
+| sing-box | 1.13.14 | Bundled (glibc amd64) |
+| AdGuard Home | 0.107.78 | Bundled |
+| Lucky | 2.27.2 | Bundled |
+| Syncthing | 2.1.2 | Downloaded from the official release during installation |
+| Speedtest Go | 1.7.10 | Bundled |
+| ttyd | 1.7.7 | Bundled |
+| ZeroTier | 1.16.2 | Bundled |
 
 ## Repository Structure
 
