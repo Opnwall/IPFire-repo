@@ -57,7 +57,7 @@ ipfrepo upgrade                    # Upgrade installed packages
 | `adguardhome` | 1.0.1 | AdGuard Home DNS filtering and management |
 | `backup` | 1.0.1 | Firewall configuration backup manager |
 | `ipfire-dyndns` | 1.0.1 | DDNS patch for Cloudflare, Alibaba Cloud and Tencent Cloud |
-| `lang` | 1.0.1 | Chinese localization update tool |
+| `lang` | 1.0.2 | Chinese localization update tool |
 | `lucky` | 1.0.1 | Lucky network toolbox |
 | `mihomo` | 1.0.1 | Mihomo proxy and transparent proxy manager |
 | `reports` | 1.0.1 | Firewall, IDS and DNS reporting |
