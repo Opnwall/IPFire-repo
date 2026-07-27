@@ -52,19 +52,34 @@ ipfrepo upgrade                    # 升级已安装插件
 
 | 名称 | 版本 | 说明 |
 | --- | --- | --- |
-| `adguardhome` | 1.0.1 | AdGuard Home DNS 过滤与管理工具 |
+| `adguardhome` | 1.0.2 | AdGuard Home DNS 过滤与管理工具 |
 | `backup` | 1.0.1 | 防火墙配置备份管理 |
 | `ipfire-dyndns` | 1.0.1 | Cloudflare、阿里云和腾讯云 DDNS 补丁 |
 | `lang` | 1.0.2 | 中文本地化更新工具 |
-| `lucky` | 1.0.1 | Lucky 网络工具箱 |
-| `mihomo` | 1.0.1 | Mihomo 代理与透明代理管理 |
+| `lucky` | 1.0.2 | Lucky 网络工具箱 |
+| `mihomo` | 1.0.2 | Mihomo 代理与透明代理管理 |
 | `reports` | 1.0.1 | 防火墙、IDS 和 DNS 报告 |
-| `sing-box` | 1.0.1 | sing-box 代理服务 |
-| `speedtest` | 1.0.1 | 互联网测速 |
-| `syncthing` | 1.0.1 | Syncthing 文件同步服务 |
-| `tailscale` | 1.0.1 | Tailscale VPN 集成 |
+| `sing-box` | 1.0.2 | sing-box 代理服务 |
+| `speedtest` | 1.0.2 | 互联网测速 |
+| `syncthing` | 1.0.2 | Syncthing 文件同步服务 |
+| `tailscale` | 1.0.2 | Tailscale VPN 集成 |
 | `ttyd` | 1.0.1 | ttyd 网页终端 |
-| `zerotier` | 1.0.1 | ZeroTier VPN 集成 |
+| `zerotier` | 1.0.2 | ZeroTier VPN 集成 |
+
+## 组件版本
+
+本次软件包内置或安装使用的上游版本：
+
+| 组件 | 版本 | 获取方式 |
+| --- | --- | --- |
+| Mihomo | 1.19.29 | 软件包内置 |
+| sing-box | 1.13.14 | 软件包内置（glibc amd64） |
+| AdGuard Home | 0.107.78 | 软件包内置 |
+| Lucky | 2.27.2 | 软件包内置 |
+| Syncthing | 2.1.2 | 安装时从官方版本下载 |
+| Speedtest Go | 1.7.10 | 软件包内置 |
+| ttyd | 1.7.7 | 软件包内置 |
+| ZeroTier | 1.16.2 | 软件包内置 |
 
 ## 仓库结构
 

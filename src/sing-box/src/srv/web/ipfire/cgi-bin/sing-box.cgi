@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use utf8;
-use Encode qw(decode FB_CROAK);
+use Encode qw(decode encode FB_CROAK);
 use CGI::Carp qw(fatalsToBrowser carpout);
 use File::Temp qw(tempdir);
 use JSON::PP qw(encode_json);
@@ -21,6 +21,17 @@ my $singbox_conf  = "/usr/local/etc/sing-box/config.json";
 my $singbox_log   = "/var/log/sing-box.log";
 my $sudo_cmd      = "/usr/bin/sudo";
 # ========================
+
+sub utf8_bytes {
+    my ($value) = @_;
+    $value = '' unless defined $value;
+    return utf8::is_utf8($value) ? encode('UTF-8', $value) : $value;
+}
+
+sub html_escape {
+    my ($value) = @_;
+    return &Header::escape(utf8_bytes($value));
+}
 
 my %fallback = (
     page_title => 'Sing-Box',
@@ -109,12 +120,12 @@ my %fallback_tw = (
 sub L {
     my ($key) = @_;
     if (($Lang::language || '') eq 'tw' && exists $fallback_tw{$key}) {
-        return $fallback_tw{$key};
+        return utf8_bytes($fallback_tw{$key});
     }
     if (($Lang::language || '') eq 'zh' && exists $fallback_zh{$key}) {
-        return $fallback_zh{$key};
+        return utf8_bytes($fallback_zh{$key});
     }
-    return $fallback{$key} || $key;
+    return utf8_bytes($fallback{$key} || $key);
 }
 
 sub strip_ansi {
@@ -428,7 +439,7 @@ print "<button type='submit' name='ACTION' value='restart'>" . L('restart') . "<
 
 if ($show_output) {
     print "<br><br><pre style='color:#ff3333;background:#111;padding:5px;box-sizing:border-box;margin:0;white-space:pre-wrap;'>";
-    print &Header::escape($cmd_output);
+    print html_escape($cmd_output);
     print "</pre>";
 }
 
@@ -463,7 +474,7 @@ print "<div class='config-wrap'>";
 print "<div class='config-editor'>";
 print "<pre id='json-preview' class='config-highlight'></pre>";
 print "<textarea id='conf-editor' class='config-textarea' name='CONF' wrap='off' oninput='updateJsonPreview()' onscroll='syncJsonScroll()' spellcheck='false'>";
-print &Header::escape($conf_content);
+print html_escape($conf_content);
 print "</textarea>";
 print "</div>";
 print "</div>";
@@ -483,7 +494,7 @@ if (-e $singbox_log) {
         my $log_content = <$log_fh>;
         close($log_fh);
         $log_content = strip_ansi($log_content);
-        print &Header::escape($log_content);
+        print html_escape($log_content);
     }
 } else {
     print L('no_log_file');

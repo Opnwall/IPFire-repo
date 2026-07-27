@@ -20,6 +20,17 @@ my $mihomo_log   = "/var/log/mihomo.log";
 my $sudo_cmd     = "/usr/bin/sudo";
 # ========================
 
+sub utf8_bytes {
+    my ($value) = @_;
+    $value = '' unless defined $value;
+    return utf8::is_utf8($value) ? encode('UTF-8', $value) : $value;
+}
+
+sub html_escape {
+    my ($value) = @_;
+    return &Header::escape(utf8_bytes($value));
+}
+
 my %fallback = (
     page_title => 'Mihomo',
     service_status => 'Service Status',
@@ -110,12 +121,12 @@ my %fallback_tw = (
 sub L {
     my ($key) = @_;
     if (($Lang::language || '') eq 'tw' && exists $fallback_tw{$key}) {
-        return $fallback_tw{$key};
+        return utf8_bytes($fallback_tw{$key});
     }
     if (($Lang::language || '') eq 'zh' && exists $fallback_zh{$key}) {
-        return $fallback_zh{$key};
+        return utf8_bytes($fallback_zh{$key});
     }
-    return $fallback{$key} || $key;
+    return utf8_bytes($fallback{$key} || $key);
 }
 
 sub strip_ansi {
@@ -365,7 +376,7 @@ print "<button type='submit' name='ACTION' value='restart'>" . L('restart') . "<
 
 if ($show_output) {
     print "<br><br><pre style='color:#ff3333;background:#111;padding:5px;white-space:pre-wrap;'>";
-    print &Header::escape($cmd_output);
+    print html_escape($cmd_output);
     print "</pre>";
 }
 
@@ -385,7 +396,7 @@ if (-e $mihomo_conf) {
 }
 
 print "<textarea name='CONF' style='width:100%;height:200px;'>";
-print &Header::escape($conf_content);
+print html_escape($conf_content);
 print "</textarea>";
 
 &Header::closebox();
