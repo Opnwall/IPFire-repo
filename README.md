@@ -55,7 +55,7 @@ ipfrepo upgrade                    # 升级已安装插件
 | `adguardhome` | 1.0.1 | AdGuard Home DNS 过滤与管理工具 |
 | `backup` | 1.0.1 | 防火墙配置备份管理 |
 | `ipfire-dyndns` | 1.0.1 | Cloudflare、阿里云和腾讯云 DDNS 补丁 |
-| `lang` | 1.0.1 | 中文本地化更新工具 |
+| `lang` | 1.0.2 | 中文本地化更新工具 |
 | `lucky` | 1.0.1 | Lucky 网络工具箱 |
 | `mihomo` | 1.0.1 | Mihomo 代理与透明代理管理 |
 | `reports` | 1.0.1 | 防火墙、IDS 和 DNS 报告 |
