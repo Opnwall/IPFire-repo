@@ -63,7 +63,7 @@ ipfrepo upgrade                    # 升级已安装插件
 | `speedtest` | 1.0.2 | 互联网测速 |
 | `syncthing` | 1.0.2 | Syncthing 文件同步服务 |
 | `tailscale` | 1.0.2 | Tailscale VPN 集成 |
-| `ttyd` | 1.0.1 | ttyd 网页终端 |
+| `ttyd` | 1.0.2 | ttyd 网页终端 |
 | `zerotier` | 1.0.2 | ZeroTier VPN 集成 |
 
 ## 组件版本

@@ -234,7 +234,7 @@ print "</form>\n";
 if ($running) {
 	print "<iframe class='ttyd-terminal' src='" . encode_entities($url) . "'></iframe>\n";
 } else {
-	print "<div class='ttyd-warning'>" . ttyd_tr("ttyd not running", "The terminal service is not running. Make sure ttyd is installed, SSH is enabled, and the IPFire WebUI certificate is available.") . "</div>\n";
+	print "<div class='ttyd-warning'>" . encode_entities(ttyd_tr("ttyd not running", "The terminal service is not running. Make sure ttyd is installed, SSH is enabled, and the IPFire WebUI certificate is available.")) . "</div>\n";
 }
 
 &Header::closebigbox();
