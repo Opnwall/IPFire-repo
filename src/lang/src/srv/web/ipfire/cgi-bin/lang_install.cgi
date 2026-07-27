@@ -3,7 +3,7 @@ use strict;
 use warnings;
 no warnings 'once';
 use utf8;
-use Encode qw(decode FB_CROAK FB_DEFAULT);
+use Encode qw(decode encode FB_CROAK FB_DEFAULT);
 
 BEGIN {
     $SIG{__WARN__} = sub {
@@ -213,6 +213,15 @@ sub decode_utf8_output {
     return decode('UTF-8', $value, FB_DEFAULT);
 }
 
+# IPFire's Header::escape() expects an UTF-8 byte string.  Text literals and
+# decoded helper output are Perl character strings, which makes core203's
+# Encode::decode() abort while rendering the first translated label.
+sub html_escape {
+    my ($value) = @_;
+    $value = '' unless defined $value;
+    return &Header::escape(encode('UTF-8', $value));
+}
+
 sub run_cmd {
     my ($cmd) = @_;
     my $out = `$cmd 2>&1`;
@@ -273,7 +282,7 @@ else {
     }
 }
 
-&Header::openpage(t('page_title'), 1, '');
+&Header::openpage(encode('UTF-8', t('page_title')), 1, '');
 print "<meta charset='UTF-8'>\n";
 
 print <<'EOF';
@@ -359,19 +368,19 @@ print "<form method='post'>";
 
 print "<div class='lang-card'>";
 print "<div class='action-row'>";
-print "<b>" . &Header::escape(t('download_url')) . "</b><br>";
+print "<b>" . html_escape(t('download_url')) . "</b><br>";
 print "</div>";
-print "<input class='lang-input' type='text' name='LANG_URL' value='" . &Header::escape($lang_url) . "'>";
-print "<div class='lang-hint'>" . &Header::escape(t('url_hint')) . "</div>";
+print "<input class='lang-input' type='text' name='LANG_URL' value='" . html_escape($lang_url) . "'>";
+print "<div class='lang-hint'>" . html_escape(t('url_hint')) . "</div>";
 print "<div class='lang-toolbar'>";
-print "<button type='submit' name='ACTION' value='saveurl'>" . &Header::escape(t('save_url')) . "</button>";
-print "<button type='submit' name='ACTION' value='install'>" . &Header::escape(t('install_now')) . "</button>";
+print "<button type='submit' name='ACTION' value='saveurl'>" . html_escape(t('save_url')) . "</button>";
+print "<button type='submit' name='ACTION' value='install'>" . html_escape(t('install_now')) . "</button>";
 print "</div>";
 print "</div>";
 
 if ($show_output) {
-    print "<pre class='output-box " . &Header::escape($status_class) . "'>";
-    print &Header::escape($cmd_output);
+    print "<pre class='output-box " . html_escape($status_class) . "'>";
+    print html_escape($cmd_output);
     print "</pre>";
 }
 
