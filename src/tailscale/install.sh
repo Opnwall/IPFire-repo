@@ -7,6 +7,8 @@ if [ -z "$TAILSCALE_ARCH" ] && [ "$#" -gt 0 ]; then
     TAILSCALE_ARCH="$1"
 fi
 DOWNLOAD_TMPDIR=""
+BUNDLED_TAILSCALE="$BASE_DIR/src/usr/local/bin/tailscale"
+BUNDLED_TAILSCALED="$BASE_DIR/src/usr/sbin/tailscaled"
 
 print_step() {
     echo
@@ -120,10 +122,19 @@ print_step "Checking source files"
 print_step "Stopping old service"
 /etc/rc.d/init.d/tailscale stop >/dev/null 2>&1 || true
 
-print_step "Downloading Tailscale binaries"
+print_step "Installing Tailscale binaries"
 install -d -m 755 /usr/local/bin
 install -d -m 755 /usr/sbin
-download_tailscale_binaries
+if [ -f "$BUNDLED_TAILSCALE" ] && [ -f "$BUNDLED_TAILSCALED" ]; then
+    echo "Using bundled Tailscale binaries."
+    install -m 755 "$BUNDLED_TAILSCALE" /usr/local/bin/tailscale
+    install -m 755 "$BUNDLED_TAILSCALED" /usr/sbin/tailscaled
+    assert_elf /usr/local/bin/tailscale "tailscale"
+    assert_elf /usr/sbin/tailscaled "tailscaled"
+else
+    echo "Bundled Tailscale binaries not found; downloading the stable static package."
+    download_tailscale_binaries
+fi
 
 print_step "Copying files"
 tmp_settings=""
@@ -164,7 +175,7 @@ visudo -cf /etc/sudoers.d/tailscale >/dev/null || die "sudoers validation failed
 print_step "Adding forwarding rules"
 iptables -C FORWARD -i tailscale0 -j ACCEPT 2>/dev/null || iptables -A FORWARD -i tailscale0 -j ACCEPT
 iptables -C FORWARD -o tailscale0 -j ACCEPT 2>/dev/null || iptables -A FORWARD -o tailscale0 -j ACCEPT
-grep -q '^net.ipv4.ip_forward=1$' /etc/sysctl.conf || echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf
+grep -Eq '^[[:space:]]*net\.ipv4\.ip_forward[[:space:]]*=[[:space:]]*1([[:space:]]*(#.*)?)?$' /etc/sysctl.conf || echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf
 sysctl -w net.ipv4.ip_forward=1 >/dev/null
 
 print_step "Reloading Web service"

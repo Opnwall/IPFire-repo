@@ -7,8 +7,13 @@ set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PATCH_FILE="${SCRIPT_DIR}/src/patches/ddns-014-dns-provider-support.patch"
-DDNS_DIR="${DDNS_DIR:-/usr/lib/python3.10/site-packages/ddns}"
-DDNS_BIN="${DDNS_BIN:-/usr/bin/ddns}"
+if [ -z "${DDNS_DIR:-}" ]; then
+	DDNS_DIR=$(python3 -c 'import pathlib, ddns; print(pathlib.Path(ddns.__file__).resolve().parent)') || {
+		echo "Cannot locate the installed ddns Python package." >&2
+		exit 1
+	}
+fi
+DDNS_BIN="${DDNS_BIN:-$(command -v ddns || true)}"
 PROVIDERS="${DDNS_DIR}/providers.py"
 SYSTEM="${DDNS_DIR}/system.py"
 REQUIRED_PROVIDERS="cloudflare.com alidns.aliyuncs.com dnspod.tencentcloudapi.com"
@@ -20,6 +25,11 @@ fi
 
 if [ ! -f "${PROVIDERS}" ] || [ ! -f "${SYSTEM}" ]; then
 	echo "Cannot find ddns Python files in ${DDNS_DIR}" >&2
+	exit 1
+fi
+
+if [ -z "${DDNS_BIN}" ] || [ ! -x "${DDNS_BIN}" ]; then
+	echo "Cannot find the ddns command." >&2
 	exit 1
 fi
 

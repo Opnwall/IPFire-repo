@@ -90,7 +90,7 @@ visudo -cf /etc/sudoers.d/zerotier >/dev/null || die "sudoers validation failed"
 print_step "Adding forwarding rules"
 iptables -C FORWARD -i zt+ -j ACCEPT 2>/dev/null || iptables -A FORWARD -i zt+ -j ACCEPT
 iptables -C FORWARD -o zt+ -j ACCEPT 2>/dev/null || iptables -A FORWARD -o zt+ -j ACCEPT
-grep -q '^net.ipv4.ip_forward=1$' /etc/sysctl.conf || echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf
+grep -Eq '^[[:space:]]*net\.ipv4\.ip_forward[[:space:]]*=[[:space:]]*1([[:space:]]*(#.*)?)?$' /etc/sysctl.conf || echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf
 sysctl -w net.ipv4.ip_forward=1 >/dev/null
 
 print_step "Reloading Web service"

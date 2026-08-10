@@ -1,5 +1,7 @@
 # IPFire DDNS Provider Patch
 
+Tested on **IPFire 2.29 - Core Update 203** with Python 3.10 and `ddns-014`, including install, provider registration, uninstall restoration, and reinstall checks.
+
 This package adds extra DDNS providers to IPFire's `ddns` package:
 
 - `cloudflare.com`
@@ -9,7 +11,7 @@ This package adds extra DDNS providers to IPFire's `ddns` package:
 ## Files
 
 ```text
-cloudflare patch/
+ipfire-dyndns/
 ├── install.sh
 ├── uninstall.sh
 ├── ipfire-ddns-cloudflare.patch
@@ -32,13 +34,13 @@ The installer will:
 - run Python syntax checks
 - verify the new providers are listed by `/usr/bin/ddns`
 
-Default target path:
+The installer discovers the active Python `ddns` package automatically. On Core Update 203, the path is:
 
 ```text
 /usr/lib/python3.10/site-packages/ddns
 ```
 
-To override it:
+To override automatic discovery:
 
 ```sh
 DDNS_DIR=/path/to/ddns ./install.sh
@@ -115,7 +117,7 @@ The CAM user should have permission to query, create, and modify DNSPod records.
 - Alibaba Cloud DNS and Tencent Cloud DNSPod use username/password fields.
 - The providers update `A` and `AAAA` records.
 - Existing DNS record TTL and line settings are preserved when possible.
-- DNS records must already exist at the provider. The patch does not create new records automatically, so a typo in the hostname cannot silently create an unwanted record.
+- If a DNS record does not exist, the provider API creates the corresponding `A` or `AAAA` record. Verify the hostname carefully before forcing an update.
 - Existing records are not deleted automatically. In particular, an existing `AAAA` record will not be removed just because the IPFire host currently has no usable IPv6 address.
 - If the IPFire page still shows a hostname in red after a successful update, check local DNS cache. The record may already be correct in public DNS while the firewall's resolver still has an old negative cache entry.
 

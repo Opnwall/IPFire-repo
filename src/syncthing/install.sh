@@ -121,7 +121,7 @@ if [ -f /var/ipfire/syncthing/settings ]; then
 fi
 
 for dir in etc srv usr var; do
-    cp -R -f "$BASE_DIR/src/$dir/." "/$dir/"
+    [ ! -d "$BASE_DIR/src/$dir" ] || cp -R -f "$BASE_DIR/src/$dir/." "/$dir/"
 done
 
 if [ -n "$tmp_settings" ] && [ -f "$tmp_settings" ]; then

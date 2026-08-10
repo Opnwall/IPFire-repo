@@ -7,9 +7,10 @@
 
 <p align="center">
 
-**An unofficial community package repository for IPFire 2.29 (x86_64)**
+**An unofficial community package repository for IPFire 2.29 Core Update 203 (x86_64)**
 
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
+![Core Update](https://img.shields.io/badge/Core_Update-203-red)
 ![Architecture](https://img.shields.io/badge/x86__64-Supported-blue)
 ![Community](https://img.shields.io/badge/Community-Maintained-brightgreen)
 ![SHA256](https://img.shields.io/badge/Integrity-SHA256-success)
@@ -23,6 +24,7 @@
 - Unified package management with `ipfrepo`
 - Does not modify the official repository or GPG trust chain
 - Community-maintained with continuously expanding packages
+- Every current package has been install, syntax, and uninstall-restoration tested on IPFire 2.29 Core Update 203
 
 ## Install Repository
 
@@ -54,19 +56,19 @@ ipfrepo upgrade                    # Upgrade installed packages
 
 | Package | Version | Description |
 | --- | --- | --- |
-| `adguardhome` | 1.0.2 | AdGuard Home DNS filtering and management |
-| `backup` | 1.0.1 | Firewall configuration backup manager |
-| `ipfire-dyndns` | 1.0.1 | DDNS patch for Cloudflare, Alibaba Cloud and Tencent Cloud |
-| `lang` | 1.0.2 | Chinese localization update tool |
-| `lucky` | 1.0.2 | Lucky network toolbox |
-| `mihomo` | 1.0.2 | Mihomo proxy and transparent proxy manager |
-| `reports` | 1.0.1 | Firewall, IDS and DNS reporting |
-| `sing-box` | 1.0.2 | sing-box proxy service |
-| `speedtest` | 1.0.2 | Internet speed test |
-| `syncthing` | 1.0.2 | Syncthing file synchronization |
-| `tailscale` | 1.0.2 | Tailscale VPN integration |
-| `ttyd` | 1.0.2 | Web-based terminal |
-| `zerotier` | 1.0.2 | ZeroTier VPN integration |
+| `adguardhome` | 1.0.3 | AdGuard Home DNS filtering and management |
+| `backup` | 1.0.2 | Firewall configuration backup manager |
+| `ipfire-dyndns` | 1.0.2 | DDNS patch for Cloudflare, Alibaba Cloud and Tencent Cloud |
+| `lang` | 1.0.3 | Chinese localization update tool |
+| `lucky` | 1.0.3 | Lucky network toolbox |
+| `mihomo` | 1.0.3 | Mihomo proxy and transparent proxy manager |
+| `reports` | 1.0.2 | Firewall, IDS and DNS reporting |
+| `sing-box` | 1.0.3 | sing-box proxy service |
+| `speedtest` | 1.0.3 | Internet speed test |
+| `syncthing` | 1.0.3 | Syncthing file synchronization |
+| `tailscale` | 1.0.3 | Tailscale VPN integration |
+| `ttyd` | 1.0.3 | Web-based terminal |
+| `zerotier` | 1.0.3 | ZeroTier VPN integration |
 
 ## Component Versions
 
@@ -78,7 +80,8 @@ Upstream versions bundled with or used by the current packages:
 | sing-box | 1.13.14 | Bundled (glibc amd64) |
 | AdGuard Home | 0.107.78 | Bundled |
 | Lucky | 2.27.2 | Bundled |
-| Syncthing | 2.1.2 | Downloaded from the official release during installation |
+| Syncthing | 2.1.3 | Downloaded from the official release during installation |
+| Tailscale | 1.102.2 | Downloaded from the official stable release during installation |
 | Speedtest Go | 1.7.10 | Bundled |
 | ttyd | 1.7.7 | Bundled |
 | ZeroTier | 1.16.2 | Bundled |
