@@ -41,7 +41,9 @@ rm -f /etc/sudoers.d/zerotier
 print_step "Cleaning network rules"
 iptables -D FORWARD -i zt+ -j ACCEPT 2>/dev/null || true
 iptables -D FORWARD -o zt+ -j ACCEPT 2>/dev/null || true
-sed -i '/^net\.ipv4\.ip_forward=1$/d' /etc/sysctl.conf 2>/dev/null || true
+
+# IP forwarding is a system-wide router setting and may be required by IPFire
+# or another VPN plugin. Do not remove it during a plugin uninstall.
 
 print_step "Removing configuration files"
 rm -rf /var/ipfire/zerotier

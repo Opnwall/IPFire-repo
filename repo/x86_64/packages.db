@@ -1,15 +1,15 @@
 # Opnwall IPFire package catalog v1
 # name|version|file|sha256|category|description_zh|description_en
-adguardhome|1.0.2|adguardhome-1.0.2-x86_64.tar.gz|e4bacd02fa5f235a88f8d7677df6a475acdca7c27071c6446dbd01cca6579672|dns|AdGuard Home DNS 过滤与管理界面|AdGuard Home DNS filtering and WebUI integration
-backup|1.0.1|backup-1.0.1-x86_64.tar.gz|d1e4e7a87506088204f6a2a0b2c18fa28af27cc4469cbbf868c90522cab9ed1a|system|防火墙配置备份管理页面|Firewall configuration backup manager
-ipfire-dyndns|1.0.1|ipfire-dyndns-1.0.1-x86_64.tar.gz|5d0d3ae140f708ab17d56cc4e1c34619ccbe39895a3569ed33eda4106a466339|network|Cloudflare、阿里云和腾讯云 DDNS 提供商补丁|Cloudflare, Aliyun and Tencent Cloud DDNS provider patch
-lang|1.0.2|lang-1.0.2-x86_64.tar.gz|457dfa4189368449028014e7a79d3ad029aedb9e3ae5f1c87270aa5438bf7c78|localization|IPFire 中文本地化更新工具|Chinese localization updater for IPFire
-lucky|1.0.2|lucky-1.0.2-x86_64.tar.gz|71e42f2cd1d0f990b3639ee92e35d5c16db947a83417ed32cc581c5897191f8e|network|Lucky 网络工具箱与 WebUI 集成|Lucky network toolbox and WebUI integration
-mihomo|1.0.2|mihomo-1.0.2-x86_64.tar.gz|2a4abbf29214aed2df71b317682ec7e76966e3d2c7f71629147dc9eed9f6fd52|proxy|Mihomo 代理服务与透明代理管理|Mihomo proxy and transparent proxy management
-reports|1.0.1|reports-1.0.1-x86_64.tar.gz|c8de7e0231785884b7d5953e2136fa581dae21798a996e940780d4e3d7f651a2|reporting|防火墙、IDS 和 DNS 报告页面|Firewall, IDS and DNS reporting pages
-sing-box|1.0.2|sing-box-1.0.2-x86_64.tar.gz|5c4d5bf63069930625422dd0408762e26433f14e9545ec5d0a9a8c4650d6180e|proxy|sing-box 代理服务与 WebUI 集成|sing-box proxy service and WebUI integration
-speedtest|1.0.2|speedtest-1.0.2-x86_64.tar.gz|c8cdb50660828c5fa8cbf3fd619546114431eb55b6286060f244da8cf9b5aefb|network|互联网测速与手动服务器选择|Internet speed test with manual server selection
-syncthing|1.0.2|syncthing-1.0.2-x86_64.tar.gz|f3baf546fc94a066c062530bbebf052b97a47ccd7633e3cea9cba7ec70a44768|service|Syncthing 文件同步服务与管理页面|Syncthing file synchronization service and WebUI
-tailscale|1.0.2|tailscale-1.0.2-x86_64.tar.gz|cf0fdaa840662c516002292254cca9e624f8da460555f4380efec6bf61097a2e|vpn|Tailscale VPN 服务与管理页面|Tailscale VPN service and WebUI integration
-ttyd|1.0.2|ttyd-1.0.2-x86_64.tar.gz|2f48fb430ad8ec56ccc010e553a4fe121ff3bd171d96ad2220eda5cb639208e0|system|ttyd 网页终端集成|ttyd web terminal integration
-zerotier|1.0.2|zerotier-1.0.2-x86_64.tar.gz|381ac4d47a31580372d334e70cb9fac5aa751082c02fabc349f15046f1167477|vpn|ZeroTier VPN 服务与管理页面|ZeroTier VPN service and WebUI integration
+adguardhome|1.0.3|adguardhome-1.0.3-x86_64.tar.gz|c8dcf7a580399334e4b9db45f9408b0553fb774a01133af0851031bec8ddc9fd|dns|适配 Core 203 的 AdGuard Home DNS 过滤与管理界面|AdGuard Home DNS filtering and WebUI integration for Core 203
+backup|1.0.2|backup-1.0.2-x86_64.tar.gz|5bcbf9d9b7f4fc41017df7730047b2edb739ffea819c05c913c95859e7356614|system|适配 Core 203 的防火墙配置备份管理页面|Firewall configuration backup manager for Core 203
+ipfire-dyndns|1.0.2|ipfire-dyndns-1.0.2-x86_64.tar.gz|f728a110189e307ababd01081ebca91ae1e0c525e8a6179c958600021ffb0288|network|适配 Core 203 的 Cloudflare、阿里云和腾讯云 DDNS 提供商补丁|Cloudflare, Aliyun and Tencent Cloud DDNS provider patch for Core 203
+lang|1.0.3|lang-1.0.3-x86_64.tar.gz|c8d25e494c8b121bdcb9e2615a597067ef192ec286efb111bb028f2ab483a2f1|localization|适配 Core 203 的 IPFire 中文本地化更新工具|Chinese localization updater for IPFire Core 203
+lucky|1.0.3|lucky-1.0.3-x86_64.tar.gz|53aa79764100f468cd7bd44c519ecb4b21d0e0cf7140846e5f08886d6126659e|network|适配 Core 203 的 Lucky 网络工具箱与 WebUI|Lucky network toolbox and WebUI integration for Core 203
+mihomo|1.0.3|mihomo-1.0.3-x86_64.tar.gz|172db9081b07e1eecb1aabfbe9255591fa1454913a432a9c1b9b46e2c2c25e25|proxy|适配 Core 203 的 Mihomo 代理服务与透明代理管理|Mihomo proxy and transparent proxy management for Core 203
+reports|1.0.2|reports-1.0.2-x86_64.tar.gz|19fdc3822ee8c8b4699befc4f4db8d720d856797c087bc87edb252986b17f49a|reporting|适配 Core 203 的防火墙、IDS 和 DNS 报告页面|Firewall, IDS and DNS reporting pages for Core 203
+sing-box|1.0.3|sing-box-1.0.3-x86_64.tar.gz|f4ec302fd628c2885e8e1fbb0fa64a93eab741824b2466baff367f0d90f8253d|proxy|适配 Core 203 的 sing-box 代理服务与 WebUI|sing-box proxy service and WebUI integration for Core 203
+speedtest|1.0.3|speedtest-1.0.3-x86_64.tar.gz|90aeefbe46148061eeb28fd078176eb863c575a7cd85e2bb803d06d7bd8511de|network|适配 Core 203 的互联网测速与手动服务器选择|Internet speed test with manual server selection for Core 203
+syncthing|1.0.3|syncthing-1.0.3-x86_64.tar.gz|e5071d307355d56a4aa5c913cbee0a896f139c3d40022c08e93cca285951956e|service|适配 Core 203 的 Syncthing 文件同步服务与管理页面|Syncthing file synchronization service and WebUI for Core 203
+tailscale|1.0.3|tailscale-1.0.3-x86_64.tar.gz|aa99195928f115a5194b77964fde161011001a4d12d8e353d585012be33577b7|vpn|适配 Core 203 的 Tailscale VPN 服务与管理页面|Tailscale VPN service and WebUI integration for Core 203
+ttyd|1.0.3|ttyd-1.0.3-x86_64.tar.gz|57f7a114d62f6af90cd627dc04d310fb265ec297574acc382cdb9e43d17719df|system|适配 Core 203 的 ttyd 网页终端集成|ttyd web terminal integration for Core 203
+zerotier|1.0.3|zerotier-1.0.3-x86_64.tar.gz|e829b6d42893e92d597a08e80a83e45de00b2a34b5409cc6f561976e47533782|vpn|适配 Core 203 的 ZeroTier VPN 服务与管理页面|ZeroTier VPN service and WebUI integration for Core 203

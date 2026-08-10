@@ -53,6 +53,9 @@ rm -f /etc/sudoers.d/tailscale
 print_step "Removing configuration files"
 rm -rf /var/ipfire/tailscale
 
+# IP forwarding is a system-wide router setting and may be required by IPFire
+# or another VPN plugin. Do not remove it during a plugin uninstall.
+
 print_step "Reloading Web service"
 /etc/init.d/apache reload >/dev/null 2>&1 || true
 

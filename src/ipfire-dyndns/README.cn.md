@@ -1,5 +1,7 @@
 # IPFire DDNS 服务商补丁
 
+已在 **IPFire 2.29 - Core Update 203**（Python 3.10、`ddns-014`）上完成安装、服务商注册、卸载恢复和重新安装验证。
+
 这个补丁包为 IPFire 的 `ddns` 动态域名组件增加以下服务商支持：
 
 - `cloudflare.com`
@@ -9,7 +11,7 @@
 ## 文件说明
 
 ```text
-cloudflare patch/
+ipfire-dyndns/
 ├── install.sh
 ├── uninstall.sh
 ├── README.md
@@ -34,13 +36,13 @@ chmod +x install.sh uninstall.sh
 - 执行 Python 语法检查
 - 验证新服务商是否已被 `/usr/bin/ddns` 识别
 
-默认安装路径：
+安装脚本会通过 Python 自动识别当前 `ddns` 包目录。Core Update 203 的路径为：
 
 ```text
 /usr/lib/python3.10/site-packages/ddns
 ```
 
-如果你的系统路径不同，可以这样指定：
+如需覆盖自动识别结果，可以这样指定：
 
 ```sh
 DDNS_DIR=/path/to/ddns ./install.sh
@@ -117,7 +119,7 @@ dnspod.tencentcloudapi.com
 - 阿里云和腾讯云使用 IPFire 页面里的“用户名/密码”字段。
 - 目前支持更新 `A` 和 `AAAA` 记录。
 - 如果记录已经存在，会尽量保留原有 TTL 和线路设置。
-- DNS 记录必须先在服务商后台创建好。补丁默认不会自动创建新记录，避免主机名输错时静默创建不需要的解析记录。
+- DNS 记录不存在时，补丁会通过服务商 API 创建对应的 `A` 或 `AAAA` 记录；请先确认主机名填写正确。
 - 补丁默认不会自动删除已有记录。例如当前 IPFire 没有可用 IPv6 地址时，不会自动删除已有的 `AAAA` 记录。
 - 如果更新成功后页面主机名仍显示红色，可能是 IPFire 本机 DNS 缓存了旧的 NXDOMAIN 结果。公网 DNS 可能已经正确，刷新本机 DNS 缓存或等待缓存过期即可。
 
