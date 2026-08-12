@@ -68,6 +68,26 @@ ipfrepo upgrade                    # 升级已安装插件
 | `ttyd` | 1.0.3 | ttyd 网页终端 |
 | `zerotier` | 1.0.3 | ZeroTier VPN 集成 |
 
+## 独立扩展下载
+
+### DNS 防火墙自定义 RPZ 列表 1.1.2
+
+为 IPFire 原有 DNS 防火墙增加自定义 HTTPS RPZ 列表的添加、编辑、删除、启用和停用功能。自定义源与官方列表共用 `update-rpzs`、互斥锁和 DNS reload；HTTPS 源支持 `ETag` 与 `Last-Modified` 条件请求，未变化时不会重复下载完整文件。
+
+- 适用版本：IPFire 2.29 Core Update 203（x86_64）
+- [下载 ZIP](downloads/ipfire-dns-firewall-custom-lists-1.1.2.zip)
+- [中文安装与测试说明](downloads/README.dns-firewall.zh-CN.md)
+- [English documentation](downloads/README.dns-firewall.en.md)
+- SHA-256：`9d367a231e9e9c3f90204685d600731ee6e707bd2d5f9a4bb35f30ef3e13f098`
+
+```bash
+unzip ipfire-dns-firewall-custom-lists-1.1.2.zip
+cd ipfire-dns-firewall-custom-lists-1.1.2
+./install.sh
+```
+
+此扩展直接修改系统 DNS 防火墙文件，不由 `ipfrepo` 管理。安装前请备份，并优先在测试环境验证。
+
 ## 组件版本
 
 本次软件包内置或安装使用的上游版本：

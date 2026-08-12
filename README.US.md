@@ -70,6 +70,26 @@ ipfrepo upgrade                    # Upgrade installed packages
 | `ttyd` | 1.0.3 | Web-based terminal |
 | `zerotier` | 1.0.3 | ZeroTier VPN integration |
 
+## Standalone Extension Download
+
+### DNS Firewall Custom RPZ Lists 1.1.2
+
+Adds WebGUI management for custom HTTPS RPZ feeds to the built-in IPFire DNS Firewall, including add, edit, delete, enable, and disable operations. Custom feeds share the official `update-rpzs` entry point, lock, and DNS reload. HTTPS feeds use conditional `ETag` and `Last-Modified` requests, avoiding a full download when the source has not changed.
+
+- Supported system: IPFire 2.29 Core Update 203 (x86_64)
+- [Download ZIP](downloads/ipfire-dns-firewall-custom-lists-1.1.2.zip)
+- [English documentation](downloads/README.dns-firewall.en.md)
+- [Chinese installation and test guide](downloads/README.dns-firewall.zh-CN.md)
+- SHA-256: `9d367a231e9e9c3f90204685d600731ee6e707bd2d5f9a4bb35f30ef3e13f098`
+
+```bash
+unzip ipfire-dns-firewall-custom-lists-1.1.2.zip
+cd ipfire-dns-firewall-custom-lists-1.1.2
+./install.sh
+```
+
+This extension directly patches the system DNS Firewall files and is not managed by `ipfrepo`. Back up the firewall and test it in a non-production environment first.
+
 ## Component Versions
 
 Upstream versions bundled with or used by the current packages:
