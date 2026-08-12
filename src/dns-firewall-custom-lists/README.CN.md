@@ -1,3 +1,8 @@
+<div align="center">
+  <a href="README.md">English</a> |
+  <a href="README.CN.md">中文</a>
+</div>
+
 # IPFire DNS 防火墙自定义列表扩展
 
 适用于 **IPFire 2.29 Core Update 203**。本扩展在现有“DNS 防火墙”页面中加入自定义 RPZ 列表管理，并保留官方列表原有的启用、停用和访问控制功能。
