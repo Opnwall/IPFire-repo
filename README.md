@@ -69,14 +69,6 @@ ipfrepo upgrade                    # 升级已安装插件
 | `ttyd` | 1.0.3 | ttyd 网页终端 |
 | `zerotier` | 1.0.3 | ZeroTier VPN 集成 |
 
-安装 DNS 防火墙自定义列表插件：
-
-```bash
-ipfrepo update
-ipfrepo install dns-firewall-custom-lists
-```
-
-插件支持添加、编辑、删除、启用和停用自定义 HTTPS RPZ 列表，并通过 `ETag` 与 `Last-Modified` 条件请求避免无变化时重复下载完整文件。卸载可使用 `ipfrepo remove dns-firewall-custom-lists`，安装与卸载过程都会保留恢复备份。
 
 ## 组件版本
 
