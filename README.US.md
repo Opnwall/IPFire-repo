@@ -71,15 +71,6 @@ ipfrepo upgrade                    # Upgrade installed packages
 | `ttyd` | 1.0.3 | Web-based terminal |
 | `zerotier` | 1.0.3 | ZeroTier VPN integration |
 
-Install the DNS Firewall custom-list package with:
-
-```bash
-ipfrepo update
-ipfrepo install dns-firewall-custom-lists
-```
-
-The package supports adding, editing, deleting, enabling, and disabling custom HTTPS RPZ feeds. Conditional `ETag` and `Last-Modified` requests avoid full downloads when a source has not changed. Remove it with `ipfrepo remove dns-firewall-custom-lists`; both installation and removal preserve recovery backups.
-
 ## Component Versions
 
 Upstream versions bundled with or used by the current packages:
