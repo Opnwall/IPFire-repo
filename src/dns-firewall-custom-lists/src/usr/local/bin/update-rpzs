@@ -1,0 +1,188 @@
+#!/bin/bash
+###############################################################################
+#                                                                             #
+# IPFire.org - An Open Source Firewall                                        #
+# Copyright (C) 2026 - IPFire Team  <info@ipfire.org>                         #
+#                                                                             #
+# This program is free software: you can redistribute it and/or modify        #
+# it under the terms of the GNU General Public License as published by        #
+# the Free Software Foundation, either version 3 of the License, or           #
+# (at your option) any later version.                                         #
+#                                                                             #
+# This program is distributed in the hope that it will be useful,             #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of              #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               #
+# GNU General Public License for more details.                                #
+#                                                                             #
+# You should have received a copy of the GNU General Public License           #
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.       #
+#                                                                             #
+###############################################################################
+
+readonly SYNC_PATH="/var/lib/knot-resolver/zones"
+readonly UPDATE_LOCK="/var/ipfire/dns/rpz-update.lock"
+readonly CUSTOM_CONFIG="/var/ipfire/dns/custom_dnsbl.json"
+
+# Serialize official and custom RPZ updates. Official synchronizations are
+# user-triggered and therefore wait for a running custom update to finish.
+exec 9>"${UPDATE_LOCK}"
+/usr/bin/flock 9
+
+readonly ZONE_SYNC_ARGS=(
+	# Be quiet
+	"--quiet"
+
+	# Output Path
+	"--path=${SYNC_PATH}"
+
+	# Always use TLS
+	"--secure"
+)
+
+custom_zone_enabled() {
+	local wanted_zone="$1"
+	local zone enabled rest
+
+	while IFS=',' read -r zone enabled rest; do
+		[ "${zone}" = "${wanted_zone}" ] || continue
+		[ "${enabled}" = "on" ]
+		return
+	done < /var/ipfire/dns/dnsbl
+
+	return 1
+}
+
+update_custom_rpzs() {
+	local zone url target tmp etag etag_new http_code
+	local failed=0
+	local -a curl_args
+
+	[ -s "${CUSTOM_CONFIG}" ] || return 0
+
+	while IFS=$'\t' read -r zone url; do
+		[[ "${zone}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,252}$ ]] || continue
+		[[ "${url}" == https://* ]] || continue
+		custom_zone_enabled "${zone}" || continue
+
+		target="${SYNC_PATH}/${zone}.zone"
+		tmp="$(mktemp "${SYNC_PATH}/.${zone}.XXXXXX")"
+		etag="${SYNC_PATH}/.${zone}.etag"
+		etag_new="${etag}.new.$$"
+		curl_args=(
+			"--silent" "--show-error" "--fail" "--location"
+			"--proto" "=https" "--proto-redir" "=https"
+			"--connect-timeout" "30" "--retry" "2"
+			"--remote-time" "--etag-save" "${etag_new}"
+			"--output" "${tmp}" "--write-out" "%{http_code}"
+		)
+		[ ! -s "${etag}" ] || curl_args+=( "--etag-compare" "${etag}" )
+		[ ! -e "${target}" ] || curl_args+=( "--time-cond" "${target}" )
+
+		if ! http_code="$(/usr/bin/curl "${curl_args[@]}" "${url}")"; then
+			logger -p daemon.err -t update-rpzs "Failed to download custom RPZ ${url}"
+			rm -f "${tmp}" "${etag_new}"
+			failed=1
+			continue
+		fi
+
+		# Conditional requests avoid transferring unchanged HTTPS feeds during
+		# the hourly RPZ update.
+		if [ "${http_code}" = "304" ]; then
+			rm -f "${tmp}"
+			[ ! -s "${etag_new}" ] || mv -f "${etag_new}" "${etag}"
+			logger -t update-rpzs "Custom RPZ ${zone} not modified (HTTP 304)"
+			continue
+		fi
+
+		if [ "${http_code}" != "200" ]; then
+			logger -p daemon.err -t update-rpzs "Unexpected HTTP status ${http_code} from ${url}"
+			rm -f "${tmp}" "${etag_new}"
+			failed=1
+			continue
+		fi
+
+		if grep -Eiq '<html([[:space:]]|>)' "${tmp}" || ! grep -Eiq '(^|[[:space:]])SOA([[:space:]]|$)' "${tmp}"; then
+			logger -p daemon.err -t update-rpzs "Rejected invalid custom RPZ data from ${url}"
+			rm -f "${tmp}" "${etag_new}"
+			failed=1
+			continue
+		fi
+
+		if [ ! -e "${target}" ] || ! cmp -s "${tmp}" "${target}"; then
+			chown knot-resolver:knot-resolver "${tmp}"
+			chmod 0644 "${tmp}"
+			mv -f "${tmp}" "${target}"
+			logger -t update-rpzs "Updated custom RPZ ${zone}"
+		else
+			# Keep Last-Modified useful for feeds without ETag support even when
+			# the newly downloaded content is byte-identical.
+			touch -r "${tmp}" "${target}"
+			rm -f "${tmp}"
+		fi
+
+		if [ -s "${etag_new}" ]; then
+			mv -f "${etag_new}" "${etag}"
+		else
+			rm -f "${etag_new}" "${etag}"
+		fi
+	done <<< "$(jq -r '.[] | select(.custom == true) | [.zone, .url] | @tsv' "${CUSTOM_CONFIG}")"
+
+	return ${failed}
+}
+
+main() {
+	local name
+	local primary
+	local zone
+	local _zone
+	local enabled
+	local rest
+	local failed=0
+
+	local -A primaries=()
+	local -A all_zones=()
+
+	while IFS=$'\t' read -r name zone primary; do
+		while IFS=$',' read -r _zone enabled rest; do
+			# Skip if we are looking at the wrong list
+			[ "${zone}" = "${_zone}" ] || continue
+
+			# We are done if the list is not enabled
+			[ "${enabled}" = "on" ] || break
+
+			# Store the enabled zone with their primary
+			all_zones["${zone}"]="${primary}"
+
+			# Collect a list of all unique primaries
+			primaries["${primary}"]=1
+		done < /var/ipfire/dns/dnsbl		
+	done <<< "$(jq -r '.[] | [.name, .zone, .primary] | @tsv' /var/ipfire/dns/dnsbl.json)"
+
+	# Walk through all primaries
+	for primary in "${!primaries[@]}"; do
+		local zones=()
+
+		# Collect all zones that match this primary
+		for zone in "${!all_zones[@]}"; do
+			if [ "${all_zones["${zone}"]}" = "${primary}" ]; then
+				zones+=( "${zone}" )
+			fi
+		done
+
+		# Run the sync as unprivileged user
+		setpriv --reuid="knot-resolver" --regid="knot-resolver" --init-groups \
+			zone-sync "${ZONE_SYNC_ARGS[@]}" --primary="${primary}"  "${zones[@]}" || failed=$?
+	done
+
+	# HTTPS custom feeds follow the same update entrypoint and lock as the
+	# official catalogue, but are downloaded as files because zone-sync only
+	# supports DNS zone transfers.
+	update_custom_rpzs || failed=$?
+
+	# Reload DNS
+	/usr/local/bin/dnsctrl reload
+
+	return ${failed}
+}
+
+main "$@" || exit $?

@@ -16,13 +16,19 @@ For **IPFire 2.29 Core Update 203**. This extension adds user-managed RPZ feeds 
 - Updates official and custom feeds through `/usr/local/bin/update-rpzs`, under one lock and one DNS reload.
 - Provides English and Simplified Chinese UI strings; other languages fall back to English.
 
-## Installation
-
-Upload the archive to IPFire, log in as root, and run:
+## Install from the Community Repository
 
 ```sh
-unzip ipfire-dns-firewall-custom-lists-1.1.2.zip
-cd ipfire-dns-firewall-custom-lists-1.1.2
+ipfrepo update
+ipfrepo install dns-firewall-custom-lists
+```
+
+## Install from Source
+
+Copy the source directory to IPFire, log in as root, and run:
+
+```sh
+cd dns-firewall-custom-lists
 ./install.sh
 ```
 
@@ -30,7 +36,13 @@ The installer validates Core Update 203 and required commands, checks script syn
 
 ## Uninstallation
 
-Run this command from the extracted directory:
+For a repository installation, run:
+
+```sh
+ipfrepo remove dns-firewall-custom-lists
+```
+
+For a source installation, run from the source directory:
 
 ```sh
 ./uninstall.sh

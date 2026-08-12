@@ -238,6 +238,7 @@ ipfrepo upgrade                    # 升级已安装插件</code></pre>
           <tbody>
             <tr><td><code>adguardhome</code></td><td>1.0.3</td><td>AdGuard Home DNS 过滤与管理界面</td></tr>
             <tr><td><code>backup</code></td><td>1.0.2</td><td>防火墙配置备份管理页面</td></tr>
+            <tr><td><code>dns-firewall-custom-lists</code></td><td>1.1.2</td><td>DNS 防火墙自定义 HTTPS RPZ 列表管理</td></tr>
             <tr><td><code>ipfire-dyndns</code></td><td>1.0.2</td><td>Cloudflare、阿里云和腾讯云 DDNS 补丁</td></tr>
             <tr><td><code>lang</code></td><td>1.0.3</td><td>中文本地化更新工具</td></tr>
             <tr><td><code>lucky</code></td><td>1.0.3</td><td>Lucky 网络工具箱</td></tr>
@@ -260,14 +261,11 @@ ipfrepo upgrade                    # 升级已安装插件</code></pre>
     </section>
 
     <section class="card">
-      <h2>DNS 防火墙自定义 RPZ 列表 1.1.2</h2>
-      <p>为 IPFire 原有 DNS 防火墙增加自定义 HTTPS RPZ 列表管理。支持添加、编辑、删除、启用和停用，并与官方列表共用更新入口、互斥锁及 DNS reload。通过 ETag 和 Last-Modified 条件请求，源文件未变化时不会重复下载完整列表。</p>
-      <p><strong>适用：</strong>IPFire 2.29 Core Update 203（x86_64）。这是直接修改系统文件的独立扩展，不由 ipfrepo 管理。</p>
-      <pre><button class="copy">复制</button><code>unzip ipfire-dns-firewall-custom-lists-1.1.2.zip
-cd ipfire-dns-firewall-custom-lists-1.1.2
-./install.sh</code></pre>
-      <p style="margin-top:18px"><a href="downloads/ipfire-dns-firewall-custom-lists-1.1.2.zip"><strong>下载 ZIP</strong></a> · <a href="downloads/README.dns-firewall.zh-CN.md">中文说明</a> · <a href="downloads/README.dns-firewall.en.md">English</a></p>
-      <p><code>SHA-256: 9d367a231e9e9c3f90204685d600731ee6e707bd2d5f9a4bb35f30ef3e13f098</code></p>
+      <h2>DNS 防火墙自定义列表插件</h2>
+      <p>该插件已纳入社区仓库，与 sing-box 等插件使用相同的安装、升级、校验和卸载流程。它支持管理自定义 HTTPS RPZ，并通过条件请求避免无变化时重复下载完整列表。</p>
+      <pre><button class="copy">复制</button><code>ipfrepo update
+ipfrepo install dns-firewall-custom-lists</code></pre>
+      <p style="margin-top:18px">卸载：<code>ipfrepo remove dns-firewall-custom-lists</code></p>
     </section>
 
     <section class="card">
@@ -310,6 +308,7 @@ ipfrepo upgrade                    # Upgrade installed packages</code></pre>
           <tbody>
             <tr><td><code>adguardhome</code></td><td>1.0.3</td><td>AdGuard Home DNS filtering and management</td></tr>
             <tr><td><code>backup</code></td><td>1.0.2</td><td>Firewall configuration backup manager</td></tr>
+            <tr><td><code>dns-firewall-custom-lists</code></td><td>1.1.2</td><td>Custom HTTPS RPZ list management for the DNS Firewall</td></tr>
             <tr><td><code>ipfire-dyndns</code></td><td>1.0.2</td><td>DDNS patch for Cloudflare, Alibaba Cloud and Tencent Cloud</td></tr>
             <tr><td><code>lang</code></td><td>1.0.3</td><td>Chinese localization update tool</td></tr>
             <tr><td><code>lucky</code></td><td>1.0.3</td><td>Lucky network toolbox</td></tr>
@@ -332,14 +331,11 @@ ipfrepo upgrade                    # Upgrade installed packages</code></pre>
     </section>
 
     <section class="card">
-      <h2>DNS Firewall Custom RPZ Lists 1.1.2</h2>
-      <p>Adds custom HTTPS RPZ feed management to the built-in IPFire DNS Firewall. It supports adding, editing, deleting, enabling, and disabling feeds while sharing the official update entry point, lock, and DNS reload. Conditional ETag and Last-Modified requests avoid full downloads when a source has not changed.</p>
-      <p><strong>Supported:</strong> IPFire 2.29 Core Update 203 (x86_64). This is a standalone system-file patch and is not managed by ipfrepo.</p>
-      <pre><button class="copy">Copy</button><code>unzip ipfire-dns-firewall-custom-lists-1.1.2.zip
-cd ipfire-dns-firewall-custom-lists-1.1.2
-./install.sh</code></pre>
-      <p style="margin-top:18px"><a href="downloads/ipfire-dns-firewall-custom-lists-1.1.2.zip"><strong>Download ZIP</strong></a> · <a href="downloads/README.dns-firewall.en.md">English documentation</a> · <a href="downloads/README.dns-firewall.zh-CN.md">中文说明</a></p>
-      <p><code>SHA-256: 9d367a231e9e9c3f90204685d600731ee6e707bd2d5f9a4bb35f30ef3e13f098</code></p>
+      <h2>DNS Firewall Custom Lists Package</h2>
+      <p>This extension is now a community repository package and uses the same installation, upgrade, checksum, and removal workflow as sing-box. It manages custom HTTPS RPZ feeds and uses conditional requests to avoid unchanged full downloads.</p>
+      <pre><button class="copy">Copy</button><code>ipfrepo update
+ipfrepo install dns-firewall-custom-lists</code></pre>
+      <p style="margin-top:18px">Remove: <code>ipfrepo remove dns-firewall-custom-lists</code></p>
     </section>
 
     <section class="card">

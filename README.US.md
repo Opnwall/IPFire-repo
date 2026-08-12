@@ -58,6 +58,7 @@ ipfrepo upgrade                    # Upgrade installed packages
 | --- | --- | --- |
 | `adguardhome` | 1.0.3 | AdGuard Home DNS filtering and management |
 | `backup` | 1.0.2 | Firewall configuration backup manager |
+| `dns-firewall-custom-lists` | 1.1.2 | Custom HTTPS RPZ list management for the DNS Firewall |
 | `ipfire-dyndns` | 1.0.2 | DDNS patch for Cloudflare, Alibaba Cloud and Tencent Cloud |
 | `lang` | 1.0.3 | Chinese localization update tool |
 | `lucky` | 1.0.3 | Lucky network toolbox |
@@ -70,25 +71,14 @@ ipfrepo upgrade                    # Upgrade installed packages
 | `ttyd` | 1.0.3 | Web-based terminal |
 | `zerotier` | 1.0.3 | ZeroTier VPN integration |
 
-## Standalone Extension Download
-
-### DNS Firewall Custom RPZ Lists 1.1.2
-
-Adds WebGUI management for custom HTTPS RPZ feeds to the built-in IPFire DNS Firewall, including add, edit, delete, enable, and disable operations. Custom feeds share the official `update-rpzs` entry point, lock, and DNS reload. HTTPS feeds use conditional `ETag` and `Last-Modified` requests, avoiding a full download when the source has not changed.
-
-- Supported system: IPFire 2.29 Core Update 203 (x86_64)
-- [Download ZIP](downloads/ipfire-dns-firewall-custom-lists-1.1.2.zip)
-- [English documentation](downloads/README.dns-firewall.en.md)
-- [Chinese installation and test guide](downloads/README.dns-firewall.zh-CN.md)
-- SHA-256: `9d367a231e9e9c3f90204685d600731ee6e707bd2d5f9a4bb35f30ef3e13f098`
+Install the DNS Firewall custom-list package with:
 
 ```bash
-unzip ipfire-dns-firewall-custom-lists-1.1.2.zip
-cd ipfire-dns-firewall-custom-lists-1.1.2
-./install.sh
+ipfrepo update
+ipfrepo install dns-firewall-custom-lists
 ```
 
-This extension directly patches the system DNS Firewall files and is not managed by `ipfrepo`. Back up the firewall and test it in a non-production environment first.
+The package supports adding, editing, deleting, enabling, and disabling custom HTTPS RPZ feeds. Conditional `ETag` and `Last-Modified` requests avoid full downloads when a source has not changed. Remove it with `ipfrepo remove dns-firewall-custom-lists`; both installation and removal preserve recovery backups.
 
 ## Component Versions
 
