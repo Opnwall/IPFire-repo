@@ -1,3 +1,7 @@
+<div align="center">
+  <a href="README.md">English</a> |
+  <a href="README.CN.md">中文</a>
+</div>
 # IPFire DNS Firewall Custom Lists Extension
 
 For **IPFire 2.29 Core Update 203**. This extension adds user-managed RPZ feeds to the existing DNS Firewall page while preserving the enable/disable and access-control behavior of the official lists.
