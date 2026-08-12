@@ -74,7 +74,7 @@ ipfrepo remove dns-firewall-custom-lists
 - 说明：`OISD Big blocklist (recommended in IPFire forum)`
 - 许可证：`https://github.com/sjhgvr/oisd/blob/main/LICENSE`
 
-## 统一更新机制
+## 更新机制
 
 执行官方 `dnsctrl sync-rpzs` 时，`/usr/local/bin/update-rpzs` 先通过 AXFR/IXFR 同步启用的官方列表，再对启用的自定义 HTTPS RPZ 发起条件请求，最后统一重新加载 DNS。整个过程只持有一把 `/var/ipfire/dns/rpz-update.lock`，不会发生官方与自定义列表并发写入。
 
