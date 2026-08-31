@@ -119,17 +119,6 @@ filter_logs_by_time() {
     FILTERED_LOG="$temp_log"
 }
 
-# Métricas correctas de IPs y puertos
-calculate_correct_metrics() {
-    local temp_ip="/var/tmp/ip_extractions.$$"
-    local temp_port="/var/tmp/port_extractions.$$"
-    grep -a "DROP" "$FILTERED_LOG" | grep -a -oE "SRC=[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" | sed 's/SRC=//' > "$temp_ip"
-    TOTAL_IPS_EXTRACTED=$(wc -l < "$temp_ip" 2>/dev/null || echo "0")
-    grep -a "DROP" "$FILTERED_LOG" | grep -a -oE "DPT=[0-9]+" | sed 's/DPT=//' > "$temp_port"
-    TOTAL_PORTS_EXTRACTED=$(wc -l < "$temp_port" 2>/dev/null || echo "0")
-    rm -f "$temp_ip" "$temp_port"
-}
-
 # Detección de patrones de ataque -> avisos (localizado)
 detect_attack_patterns() {
     local out=""
@@ -222,15 +211,23 @@ filter_logs_by_time
 OUTPUT_DIR=$(dirname "$OUTPUT_FILE")
 [[ -d "$OUTPUT_DIR" ]] || mkdir -p "$OUTPUT_DIR"
 
-# Estadísticas básicas del periodo
+# Estadísticas básicas del periodo.
+# NOTA: IPFire, por defecto, solo registra los paquetes DESCARTADOS (DROP); el
+# tráfico ACEPTADO no se escribe en el log y REJECT solo aparece si hay reglas
+# de rechazo con logging. Por eso el informe se centra en los descartes.
 TOTAL_DROPS=$(grep -a -c "DROP" "$FILTERED_LOG" 2>/dev/null)
-TOTAL_ACCEPTS=$(grep -a -c "ACCEPT" "$FILTERED_LOG" 2>/dev/null)
-TOTAL_REJECTS=$(grep -a -c "REJECT" "$FILTERED_LOG" 2>/dev/null)
-calculate_correct_metrics
+UNIQUE_SRC=$(grep -a "DROP" "$FILTERED_LOG" 2>/dev/null | grep -aoE 'SRC=[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | sort -u | grep -vc '^$')
+UNIQUE_PORTS=$(grep -a "DROP" "$FILTERED_LOG" 2>/dev/null | grep -aoE 'DPT=[0-9]+' | sort -u | grep -vc '^$')
+
+# Conteo por tipo de descarte (prefijo del log: DROP_INPUT, DROP_HOSTILE, …)
+DROP_TYPE_COUNTS=$(grep -a -oE 'kernel: (DROP|REJECT)[A-Za-z_]*' "$FILTERED_LOG" 2>/dev/null | sed 's/kernel: //' | sort | uniq -c | sort -nr)
+
+# Nombres localizados de los tipos de descarte (id=Nombre;… para awk)
+FWTYPE_KV="DROP_INPUT=$(t 'reports fw type input' 'Entrada (INPUT)');DROP_FORWARD=$(t 'reports fw type forward' 'Reenvío (FORWARD)');DROP_OUTPUT=$(t 'reports fw type output' 'Salida (OUTPUT)');DROP_HOSTILE=$(t 'reports fw type hostile' 'Redes hostiles');DROP_CTINVALID=$(t 'reports fw type ctinvalid' 'Conexión inválida');DROP_NEWNOTSYN=$(t 'reports fw type newnotsyn' 'TCP sin SYN');DROP_SPOOFED_MARTIAN=$(t 'reports fw type spoofed' 'Spoofing (Martian)');DROP_PORTSCAN=$(t 'reports fw type portscan' 'Escaneo de puertos');"
 
 FORMATTED_DROPS=$(ipfr_format_number "$TOTAL_DROPS")
-FORMATTED_ACCEPTS=$(ipfr_format_number "$TOTAL_ACCEPTS")
-FORMATTED_REJECTS=$(ipfr_format_number "$TOTAL_REJECTS")
+FORMATTED_SRC=$(ipfr_format_number "$UNIQUE_SRC")
+FORMATTED_PORTS=$(ipfr_format_number "$UNIQUE_PORTS")
 
 # Capturar TOP IPs (para las barras)
 TOP_IPS=$(grep -a "DROP" "$FILTERED_LOG" 2>/dev/null | \
@@ -243,15 +240,15 @@ ipfr_doc_open "fw" "&#x1F525;" "$(t 'reports fw title' 'Informe de Firewall') &m
     "$(t 'reports generated on' 'Generado el') $(date '+%d/%m/%Y %H:%M') &middot; $(t 'reports period word' 'Periodo'): $TIME_DESCRIPTION"
 
 ipfr_stats_open
-ipfr_stat red    "$(t 'reports fw stat drops' 'Paquetes bloqueados')"   "$FORMATTED_DROPS"   "$(t 'reports fw stat drops d' 'Conexiones descartadas (DROP)')"
-ipfr_stat green  "$(t 'reports fw stat accepts' 'Paquetes aceptados')"  "$FORMATTED_ACCEPTS" "$(t 'reports fw stat accepts d' 'Conexiones permitidas (ACCEPT)')"
-ipfr_stat orange "$(t 'reports fw stat rejects' 'Paquetes rechazados')" "$FORMATTED_REJECTS" "$(t 'reports fw stat rejects d' 'Conexiones rechazadas (REJECT)')"
+ipfr_stat red    "$(t 'reports fw stat drops' 'Paquetes bloqueados')" "$FORMATTED_DROPS" "$(t 'reports fw stat drops d' 'Conexiones descartadas (DROP)')"
+ipfr_stat blue   "$(t 'reports fw stat srcips' 'Orígenes únicos')"     "$FORMATTED_SRC"   "$(t 'reports fw stat srcips d' 'IPs de origen distintas')"
+ipfr_stat orange "$(t 'reports fw stat ports' 'Puertos únicos')"       "$FORMATTED_PORTS" "$(t 'reports fw stat ports d' 'Puertos destino atacados')"
 ipfr_stats_close
 
 ipfr_section "&#x1F4CA;" "$(t 'reports sec overview' 'Visión general')"
 ipfr_grid_open
-printf '%s\n' "DROP|$TOTAL_DROPS|#dc143c" "ACCEPT|$TOTAL_ACCEPTS|#22a559" "REJECT|$TOTAL_REJECTS|#f59e0b" \
-    | ipfr_donut "$(t 'reports fw donut title' 'Tráfico del firewall')" "$(t 'reports fw donut sub' 'Reparto por veredicto')" "$(t 'reports fw unit packets' 'paquetes')"
+echo "$DROP_TYPE_COUNTS" | head -n 6 | awk -v kv="$FWTYPE_KV" 'BEGIN{ n=split(kv,a,";"); for(i=1;i<=n;i++){ if(a[i]!=""){ e=index(a[i],"="); m[substr(a[i],1,e-1)]=substr(a[i],e+1) } } split("#dc143c #f59e0b #6f42c1 #0d6efd #17a2b8 #22a559",c," ") } NF>=2{ id=$2; if(id in m) name=m[id]; else { name=id; sub(/^DROP_/,"",name) } print name"|"$1"|"c[((NR-1)%6)+1] }' \
+    | ipfr_donut "$(t 'reports fw drops donut title' 'Bloqueos por tipo')" "$(t 'reports fw drops donut sub' 'Reparto por tipo de descarte')" "$(t 'reports fw unit packets' 'paquetes')"
 echo "$TOP_IPS" | awk 'NF>=2{print $2"|"$1}' \
     | ipfr_hbars "TOP $NUMBER $(t 'reports fw sec topips' 'IPs bloqueadas')" "$(t 'reports fw bars sub' 'Direcciones de origen con más descartes')" "#dc143c"
 ipfr_grid_close
@@ -321,7 +318,7 @@ ipfr_doc_close "<strong>IPFire</strong> $(t 'reports footer system' 'Reports Sys
 
 # Limpieza (solo nuestros temporales)
 [[ -f "$FILTERED_LOG" ]] && rm -f "$FILTERED_LOG"
-rm -f /var/tmp/filtered_fw_log.$$ /var/tmp/ip_extractions.$$ /var/tmp/port_extractions.$$ 2>/dev/null
+rm -f /var/tmp/filtered_fw_log.$$ 2>/dev/null
 
 echo "Informe de firewall generado: $OUTPUT_FILE"
 exit 0

@@ -61,7 +61,7 @@ ipfrepo upgrade                    # 升级已安装插件
 | `lang` | 1.0.3 | 中文本地化更新工具 |
 | `lucky` | 1.0.3 | Lucky 网络工具箱 |
 | `mihomo` | 1.0.3 | Mihomo 代理与透明代理管理 |
-| `reports` | 1.0.2 | 防火墙、IDS 和 DNS 报告 |
+| `reports` | 1.0.5 | 防火墙、IDS、URL Filter 和 DNS Firewall 报告 |
 | `sing-box` | 1.0.3 | sing-box 代理服务 |
 | `speedtest` | 1.0.3 | 互联网测速 |
 | `syncthing` | 1.0.3 | Syncthing 文件同步服务 |

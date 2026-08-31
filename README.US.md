@@ -63,7 +63,7 @@ ipfrepo upgrade                    # Upgrade installed packages
 | `lang` | 1.0.3 | Chinese localization update tool |
 | `lucky` | 1.0.3 | Lucky network toolbox |
 | `mihomo` | 1.0.3 | Mihomo proxy and transparent proxy manager |
-| `reports` | 1.0.2 | Firewall, IDS and DNS reporting |
+| `reports` | 1.0.5 | Firewall, IDS, URL Filter and DNS Firewall reporting |
 | `sing-box` | 1.0.3 | sing-box proxy service |
 | `speedtest` | 1.0.3 | Internet speed test |
 | `syncthing` | 1.0.3 | Syncthing file synchronization |

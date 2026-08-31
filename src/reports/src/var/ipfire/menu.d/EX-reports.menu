@@ -1,6 +1,5 @@
-$subservices->{'76.reports'} = {
-	'caption' => $Lang::tr{'Reports'},
-	'uri' => '/cgi-bin/reports.cgi',
-	'title' => $Lang::tr{'Reports'},
-	'enabled' => 1,
-};
+	$subservices->{'80.reports'} = {'caption' => $Lang::tr{'Reports'},
+				  'uri' => '/cgi-bin/reports.cgi',
+				  'title' => 'Reports',
+				  'enabled' => 1,
+				  };

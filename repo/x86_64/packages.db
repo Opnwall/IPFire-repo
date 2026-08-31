@@ -7,7 +7,7 @@ ipfire-dyndns|1.0.2|ipfire-dyndns-1.0.2-x86_64.tar.gz|f728a110189e307ababd01081e
 lang|1.0.3|lang-1.0.3-x86_64.tar.gz|c8d25e494c8b121bdcb9e2615a597067ef192ec286efb111bb028f2ab483a2f1|localization|适配 Core 203 的 IPFire 中文本地化更新工具|Chinese localization updater for IPFire Core 203
 lucky|1.0.3|lucky-1.0.3-x86_64.tar.gz|53aa79764100f468cd7bd44c519ecb4b21d0e0cf7140846e5f08886d6126659e|network|适配 Core 203 的 Lucky 网络工具箱与 WebUI|Lucky network toolbox and WebUI integration for Core 203
 mihomo|1.0.3|mihomo-1.0.3-x86_64.tar.gz|172db9081b07e1eecb1aabfbe9255591fa1454913a432a9c1b9b46e2c2c25e25|proxy|适配 Core 203 的 Mihomo 代理服务与透明代理管理|Mihomo proxy and transparent proxy management for Core 203
-reports|1.0.2|reports-1.0.2-x86_64.tar.gz|19fdc3822ee8c8b4699befc4f4db8d720d856797c087bc87edb252986b17f49a|reporting|适配 Core 203 的防火墙、IDS 和 DNS 报告页面|Firewall, IDS and DNS reporting pages for Core 203
+reports|1.0.5|reports-1.0.5-x86_64.tar.gz|233b30025d2b4d9cbb143383b0e5f4c8252acb328838caf44fade9e443b02ed6|reporting|位于服务菜单的防火墙、IDS、URL Filter 和 DNS Firewall 报告页面|Firewall, IDS, URL Filter and DNS Firewall reporting pages under Services
 sing-box|1.0.3|sing-box-1.0.3-x86_64.tar.gz|f4ec302fd628c2885e8e1fbb0fa64a93eab741824b2466baff367f0d90f8253d|proxy|适配 Core 203 的 sing-box 代理服务与 WebUI|sing-box proxy service and WebUI integration for Core 203
 speedtest|1.0.3|speedtest-1.0.3-x86_64.tar.gz|90aeefbe46148061eeb28fd078176eb863c575a7cd85e2bb803d06d7bd8511de|network|适配 Core 203 的互联网测速与手动服务器选择|Internet speed test with manual server selection for Core 203
 syncthing|1.0.3|syncthing-1.0.3-x86_64.tar.gz|e5071d307355d56a4aa5c913cbee0a896f139c3d40022c08e93cca285951956e|service|适配 Core 203 的 Syncthing 文件同步服务与管理页面|Syncthing file synchronization service and WebUI for Core 203

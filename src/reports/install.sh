@@ -54,6 +54,10 @@ for dir in etc srv var; do
 	cp -R -f "src/$dir/." "/$dir/"
 done
 
+# Core Update 203 uses "zh" for Simplified Chinese. Remove the obsolete
+# duplicate left behind by older Reports packages before rebuilding the cache.
+rm -f /var/ipfire/addon-lang/reports.cn.pl
+
 if [[ -n "$tmp_settings" && -f "$tmp_settings" ]]; then
 	install -m 660 "$tmp_settings" /var/ipfire/reports/settings
 	rm -f "$tmp_settings"

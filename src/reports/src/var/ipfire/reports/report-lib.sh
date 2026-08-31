@@ -24,13 +24,6 @@ ipfr_format_number() {
 }
 
 # ---------------------------------------------------------------------------
-# Escape HTML mínimo para texto procedente de logs (anti-inyección)
-# ---------------------------------------------------------------------------
-ipfr_html_escape() {
-    sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'
-}
-
-# ---------------------------------------------------------------------------
 # i18n: el informe se genera en el idioma del GUI de IPFire
 #   - Idioma desde /var/ipfire/main/settings (LANGUAGE=), reserva 'en'.
 #   - Las cadenas se leen de /var/ipfire/addon-lang/reports.<lang>.pl.
@@ -70,6 +63,50 @@ t() {
     [[ -n "$IPFR_LANG_LOADED" ]] || ipfr_load_lang
     local v="${IPFR_T[$1]}"
     if [[ -n "$v" ]]; then printf '%s' "$v"; else printf '%s' "$2"; fi
+}
+
+# ---------------------------------------------------------------------------
+# Categorías de listas de IPFire (compartidas por DNS Firewall y URL Filter)
+#   Son las categorías de la DBL de IPFire más "custom" (listas personalizadas).
+# ---------------------------------------------------------------------------
+IPFR_CAT_IDS="ads custom dating doh gambling games malware phishing piracy porn shopping smart-tv social streaming violence"
+
+# Devuelve "id=Nombre;id=Nombre;…" con los nombres localizados (usa t()).
+# Debe invocarse en el shell principal tras ipfr_load_lang.
+ipfr_cat_kv() {
+    local kv="" cid def
+    for cid in $IPFR_CAT_IDS; do
+        case "$cid" in
+            ads)       def="Publicidad";;
+            custom)    def="Personalizada";;
+            dating)    def="Citas";;
+            doh)       def="DNS-over-HTTPS público";;
+            gambling)  def="Apuestas";;
+            games)     def="Juegos";;
+            malware)   def="Malware";;
+            phishing)  def="Phishing";;
+            piracy)    def="Piratería";;
+            porn)      def="Pornografía";;
+            shopping)  def="Compras";;
+            smart-tv)  def="Smart TV";;
+            social)    def="Redes sociales";;
+            streaming) def="Streaming";;
+            violence)  def="Violencia";;
+            *)         def="$cid";;
+        esac
+        kv+="${cid}=$(t "reports cat ${cid}" "$def");"
+    done
+    printf '%s' "$kv"
+}
+
+# Fragmento awk con la función friendly(id): traduce el ID de categoría a su
+# nombre localizado. Requiere pasar  -v cats="$(ipfr_cat_kv)"  al awk.
+ipfr_awk_friendly() {
+    cat <<'AWK'
+function friendly(id,  n,i,nc,arr,eq){
+    if(!_cm_done){ nc=split(cats,arr,";"); for(i=1;i<=nc;i++){ if(arr[i]!=""){ eq=index(arr[i],"="); _cm[substr(arr[i],1,eq-1)]=substr(arr[i],eq+1) } } _cm_done=1 }
+    n=id; sub(/\..*/,"",n); return (n in _cm)?_cm[n]:n }
+AWK
 }
 
 # Color sólido por nombre lógico (compartido por ambos modos)

@@ -4,10 +4,12 @@
 # IPFire.org - Generador de Informes del DNS Firewall (UTF-8)                 #
 # Copyright (C) 2007-2025  IPFire Team  <info@ipfire.org>                     #
 #                                                                             #
-# Informe del DNS Firewall (RPZ de unbound). Analiza /var/log/messages        #
-# buscando "info: rpz: applied [lista] ... IP@puerto dominio" e ignora las    #
-# peticiones internas (127.0.0.1). Maquetación moderna y gráficas SVG vía     #
-# report-lib.sh. Sin JavaScript ni dependencias.                              #
+# Informe del DNS Firewall (RPZ sobre knot-resolver/kresd). Analiza            #
+# /var/log/messages buscando "kresd: ... local data applied, user: IP,        #
+# name: dominio" e ignora las peticiones internas (127.0.0.1 / ::1). La        #
+# categoría de cada dominio se obtiene de los ficheros de zona RPZ locales     #
+# (/var/lib/knot-resolver/zones), sin consultar la red. Maquetación moderna    #
+# y gráficas SVG vía report-lib.sh. Sin JavaScript ni dependencias.           #
 #                                                                             #
 ###############################################################################
 
@@ -17,6 +19,9 @@ DEFAULT_OUTPUT="/var/ipfire/reports/reports/dnsfw-report.html"
 DEFAULT_NUMBER=10
 CONFIG_FILE="/var/ipfire/reports/settings"
 DNSBL_FILE="/var/ipfire/dns/dnsbl"
+# Zonas RPZ que descarga knot-resolver. Cada dominio bloqueado se almacena como
+# "<dominio>.<categoría>.rpz.ipfire.org. CNAME ." (más su comodín "*.<dominio>…").
+ZONES_DIR="/var/lib/knot-resolver/zones"
 
 LOG_FILE="$DEFAULT_LOG"
 OUTPUT_FILE="$DEFAULT_OUTPUT"
@@ -99,7 +104,9 @@ generate_date_patterns() {
     esac
 }
 
-# Filtrar logs por tiempo y quedarnos con los bloqueos RPZ (sin 127.0.0.1)
+# Filtrar logs por tiempo y quedarnos con los bloqueos de kresd
+# ("local data applied"), descartando las consultas internas del propio
+# resolutor (127.0.0.1 / ::1) para no contar duplicados.
 filter_logs_by_time() {
     local temp_log="/var/tmp/filtered_dnsfw_log.$$"
     local files_to_process date_pattern
@@ -108,29 +115,76 @@ filter_logs_by_time() {
     > "$temp_log"
     for log_file in "${files_to_process[@]}"; do
         if [[ "$log_file" == *.gz ]]; then
-            zcat "$log_file" 2>/dev/null | grep -a -F 'info: rpz: applied' | grep -a -E "$date_pattern" | grep -av '127\.0\.0\.1@' >> "$temp_log"
+            zcat "$log_file" 2>/dev/null | grep -a -F 'local data applied' | grep -a -E "$date_pattern" | grep -avE 'user: (127\.0\.0\.1|::1),' >> "$temp_log"
         else
-            grep -a -F 'info: rpz: applied' "$log_file" 2>/dev/null | grep -a -E "$date_pattern" | grep -av '127\.0\.0\.1@' >> "$temp_log"
+            grep -a -F 'local data applied' "$log_file" 2>/dev/null | grep -a -E "$date_pattern" | grep -avE 'user: (127\.0\.0\.1|::1),' >> "$temp_log"
         fi
     done
     [[ ! -s "$temp_log" ]] && echo "Advertencia: No se encontraron bloqueos del DNS Firewall en el periodo $TIME_DESCRIPTION"
     FILTERED_LOG="$temp_log"
 }
 
-# Parsear a:  lista|ip_cliente|dominio
-# Solo se cuentan BLOQUEOS reales (se excluye rpz-passthru / lista blanca) y
-# solo de zonas RPZ marcadas como "on" en el archivo dnsbl (se ignoran zonas
-# ajenas como "adGuard" o "allow" que no estén en la configuración).
+# Parsear a:  categoria|ip_cliente|dominio
+# 1) Extrae (cliente, dominio) de cada línea de bloqueo de kresd.
+# 2) Determina la categoría de cada dominio buscándolo (y sus dominios padre,
+#    para cubrir los comodines "*.dominio") en los ficheros de zona RPZ locales,
+#    quedándose con la coincidencia más específica.
+# 3) Solo se cuentan dominios presentes en alguna zona RPZ (bloqueos reales);
+#    los overrides locales de DNS que no son listas RPZ se descartan.
 parse_blocks() {
     PARSED="/var/tmp/dnsfw_parsed.$$"
-    local on_lists
-    on_lists=$(grep -aE '^[^,]+,on,' "$DNSBL_FILE" 2>/dev/null | cut -d',' -f1)
-    # Campos extraídos: zona | acción | ip_cliente | dominio_consultado
-    sed -nE 's/.*applied \[([^]]+)\] [^ ]+ ([^ ]+) ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)@[0-9]+ ([^ ]+).*/\1|\2|\3|\4/p' "$FILTERED_LOG" \
-        | awk -F'|' -v ok="$on_lists" '
-            BEGIN { n=split(ok,a,"\n"); for(i=1;i<=n;i++) if(a[i]!="") allow[a[i]]=1 }
-            $2 !~ /passthru/ && ($1 in allow) { d=$4; sub(/\.$/,"",d); print $1"|"$3"|"d }
-          ' > "$PARSED"
+    local pairs="/var/tmp/dnsfw_pairs.$$"
+    local map="/var/tmp/dnsfw_catmap.$$"
+
+    # (cliente | dominio) por cada línea de bloqueo (dominio sin punto final)
+    sed -nE 's/.*local data applied, user: ([^,]+), name: ([^ ]+).*/\1|\2/p' "$FILTERED_LOG" \
+        | awk -F'|' '{ c=$1; d=$2; gsub(/\r/,"",d); sub(/\.+$/,"",d); gsub(/ /,"",c); if(c!="" && d!="") print c"|"d }' > "$pairs"
+
+    if [[ ! -s "$pairs" ]]; then
+        : > "$PARSED"; rm -f "$pairs" "$map"; return
+    fi
+
+    # Dominios únicos -> categoría, con una sola pasada por cada zona RPZ local.
+    local zones=( "$ZONES_DIR"/*.rpz.ipfire.org.zone )
+    if [[ -e "${zones[0]}" ]]; then
+        cut -d'|' -f2 "$pairs" | sort -u | awk '
+            # Primer fichero (stdin): dominios consultados. Registra cada dominio
+            # y todos sus dominios padre (para casar con los comodines).
+            FNR==NR {
+                q=$0; order[++nq]=q; want[q]=1;
+                a=q; while((i=index(a,"."))>0){ a=substr(a,i+1); if(a!="") want[a]=1 }
+                next
+            }
+            # Ficheros de zona: líneas "<owner> CNAME ."
+            {
+                owner=$1; sub(/\.$/,"",owner); sub(/^\*\./,"",owner);
+                if(owner !~ /\.rpz\.ipfire\.org$/) next;
+                sub(/\.rpz\.ipfire\.org$/,"",owner);   # -> "<dominio>.<categoría>"
+                di=0; for(k=length(owner);k>=1;k--) if(substr(owner,k,1)=="."){ di=k; break }
+                if(di==0) next;
+                base=substr(owner,1,di-1); cat=substr(owner,di+1);
+                if((base in want) && !(base in cat2)) cat2[base]=cat;
+            }
+            END {
+                for(qi=1;qi<=nq;qi++){
+                    q=order[qi]; a=q; bcat="";
+                    do { if(a in cat2){ bcat=cat2[a]; break }
+                         i=index(a,"."); if(i==0) break; a=substr(a,i+1) } while(a!="");
+                    if(bcat!="") print q"|"bcat;
+                }
+            }
+        ' - "${zones[@]}" > "$map"
+    else
+        : > "$map"
+    fi
+
+    # Unir: por cada (cliente, dominio) con categoría conocida -> categoria|cliente|dominio
+    awk -F'|' '
+        FNR==NR { cat[$1]=$2; next }
+        ($2 in cat) { print cat[$2]"|"$1"|"$2 }
+    ' "$map" "$pairs" > "$PARSED"
+
+    rm -f "$pairs" "$map"
 }
 
 # Procesar argumentos
@@ -154,6 +208,10 @@ fi
 filter_logs_by_time
 parse_blocks
 
+# Conjunto de dominios que sí son bloqueos RPZ reales (para el mapa de calor)
+BLOCK_DOMAINS="/var/tmp/dnsfw_domains.$$"
+cut -d'|' -f3 "$PARSED" 2>/dev/null | grep -v '^$' | sort -u > "$BLOCK_DOMAINS"
+
 OUTPUT_DIR=$(dirname "$OUTPUT_FILE")
 [[ -d "$OUTPUT_DIR" ]] || mkdir -p "$OUTPUT_DIR"
 
@@ -172,33 +230,10 @@ LIST_COUNTS=$(cut -d'|' -f1 "$PARSED" 2>/dev/null | sort | uniq -c | sort -nr)
 DOMAIN_COUNTS=$(cut -d'|' -f3 "$PARSED" 2>/dev/null | grep -v '^$' | sort | uniq -c | sort -nr)
 CLIENT_COUNTS=$(cut -d'|' -f2 "$PARSED" 2>/dev/null | sort | uniq -c | sort -nr)
 
-# Nombres descriptivos de categorías RPZ, localizados según el idioma del GUI.
-# Se construye "id=Nombre;..." y se pasa a awk con -v cats=
-CAT_KV=""
-for _cid in porn ads dating doh gambling games malware phishing piracy shopping smart-tv social streaming violence; do
-    case "$_cid" in
-        porn)      _cdef="Pornografía";;
-        ads)       _cdef="Publicidad";;
-        dating)    _cdef="Citas";;
-        doh)       _cdef="DNS-over-HTTPS público";;
-        gambling)  _cdef="Apuestas";;
-        games)     _cdef="Juegos";;
-        malware)   _cdef="Malware";;
-        phishing)  _cdef="Phishing";;
-        piracy)    _cdef="Piratería";;
-        shopping)  _cdef="Compras";;
-        smart-tv)  _cdef="Smart TV";;
-        social)    _cdef="Redes sociales";;
-        streaming) _cdef="Streaming";;
-        violence)  _cdef="Violencia";;
-    esac
-    CAT_KV+="${_cid}=$(t "reports cat ${_cid}" "$_cdef");"
-done
-
-# friendly(): traduce el ID de lista RPZ a su nombre localizado (lee la var awk "cats")
-DNS_FRIENDLY='function friendly(id,  n,i,nc,arr,eq){
-    if(!_cm_done){ nc=split(cats,arr,";"); for(i=1;i<=nc;i++){ if(arr[i]!=""){ eq=index(arr[i],"="); _cm[substr(arr[i],1,eq-1)]=substr(arr[i],eq+1) } } _cm_done=1 }
-    n=id; sub(/\..*/,"",n); return (n in _cm)?_cm[n]:n }'
+# Diccionario de nombres de categoría y función awk friendly() (compartidos con
+# el URL Filter; definidos en report-lib.sh). Se pasan a awk con -v cats=…
+CAT_KV="$(ipfr_cat_kv)"
+DNS_FRIENDLY="$(ipfr_awk_friendly)"
 
 # ----------------------- Generación del informe ----------------------------
 SEC_TOPDOMAINS="TOP $NUMBER $(t 'reports dnsfw sec topdomains' 'dominios bloqueados')"
@@ -206,30 +241,37 @@ TH_BLOCKS="$(t 'reports th blocks' 'Bloqueos')"
 TH_PCT="$(t 'reports th pct' '%')"
 {
 ipfr_doc_open "dns" "&#x1F6AB;" "$(t 'reports dnsfw title' 'Informe del DNS Firewall') &mdash; TOP $NUMBER" \
-    "$(t 'reports generated on' 'Generado el') $(date '+%d/%m/%Y %H:%M') &middot; $(t 'reports period word' 'Periodo'): $TIME_DESCRIPTION &middot; RPZ / unbound"
+    "$(t 'reports generated on' 'Generado el') $(date '+%d/%m/%Y %H:%M') &middot; $(t 'reports period word' 'Periodo'): $TIME_DESCRIPTION &middot; DNS Firewall / kresd"
 
 ipfr_stats_open
 ipfr_stat red    "$(t 'reports dnsfw stat blocks' 'Bloqueos totales')"  "$FORMATTED_TOTAL"   "$(t 'reports dnsfw stat blocks d' 'Consultas DNS bloqueadas')"
 ipfr_stat blue   "$(t 'reports dnsfw stat domains' 'Dominios únicos')"  "$FORMATTED_DOMAINS" "$(t 'reports dnsfw stat domains d' 'Dominios distintos bloqueados')"
 ipfr_stat purple "$(t 'reports dnsfw stat clients' 'Clientes únicos')"  "$FORMATTED_CLIENTS" "$(t 'reports dnsfw stat clients d' 'Equipos que solicitaron')"
-ipfr_stat green  "$(t 'reports dnsfw stat lists' 'Listas activas')"     "$ACTIVE_LISTS"      "$(t 'reports dnsfw stat lists d' 'Listas RPZ habilitadas')"
+ipfr_stat green  "$(t 'reports dnsfw stat lists' 'Listas activas')"     "$ACTIVE_LISTS"      "$(t 'reports dnsfw stat lists d' 'Listas del DNS Firewall habilitadas')"
 ipfr_stats_close
 
 ipfr_section "&#x1F4CA;" "$(t 'reports sec overview' 'Visión general')"
 ipfr_grid_open
 echo "$LIST_COUNTS" | awk -v cats="$CAT_KV" "$DNS_FRIENDLY"'BEGIN{split("#dc143c #0d6efd #22a559 #f59e0b #6f42c1 #17a2b8",c," ")} NF>=2 && NR<=6 { print friendly($2)"|"$1"|"c[((NR-1)%6)+1] }' \
-    | ipfr_donut "$(t 'reports dnsfw donut title' 'Bloqueos por lista')" "$(t 'reports dnsfw donut sub' 'Reparto por lista RPZ (TOP 6)')" "$(t 'reports dnsfw unit blocks' 'bloqueos')"
+    | ipfr_donut "$(t 'reports dnsfw donut title' 'Bloqueos por lista')" "$(t 'reports dnsfw donut sub' 'Reparto por lista del DNS Firewall (TOP 6)')" "$(t 'reports dnsfw unit blocks' 'bloqueos')"
 echo "$DOMAIN_COUNTS" | awk 'NF>=2{print $2"|"$1}' \
     | ipfr_hbars "$SEC_TOPDOMAINS" "$(t 'reports dnsfw bars sub' 'Dominios con más bloqueos')" "#0d9488"
 ipfr_grid_close
 
-# Mapa de calor día x hora (mismas reglas: listas "on" del dnsbl, sin passthru)
+# Mapa de calor día x hora (solo bloqueos RPZ reales, coherente con los conteos)
 if [[ "$TIME_SCOPE" != "hour" ]]; then
     case "$TIME_SCOPE" in day) _HN=1 ;; week) _HN=7 ;; month) _HN=30 ;; *) _HN=7 ;; esac
     _HDAYS=""; for ((_i=_HN-1; _i>=0; _i--)); do _HDAYS+="$(date -d "$_i days ago" '+%Y-%m-%d') "; done
-    _ON=$(grep -aE '^[^,]+,on,' "$DNSBL_FILE" 2>/dev/null | cut -d',' -f1)
     ipfr_section "&#x1F4C5;" "$(t 'reports heatmap title' 'Actividad por hora y día')"
-    awk -v year="$(date '+%Y')" -v ok="$_ON" 'BEGIN{split("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec",mm," ");for(i=1;i<=12;i++)mn[mm[i]]=sprintf("%02d",i); n=split(ok,a,"\n");for(i=1;i<=n;i++)if(a[i]!="")allow[a[i]]=1} { zone=$10; gsub(/^\[|\]$/,"",zone); if(($1 in mn) && (zone in allow) && $12 !~ /passthru/) printf "%s-%s-%02d\t%s\n",year,mn[$1],$2,substr($3,1,2) }' "$FILTERED_LOG" \
+    awk -v year="$(date '+%Y')" '
+        BEGIN{ split("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec",mm," "); for(i=1;i<=12;i++) mn[mm[i]]=sprintf("%02d",i) }
+        FNR==NR { bd[$0]=1; next }
+        {
+            if(!($1 in mn)) next;
+            dom="";
+            if(match($0,/name: [^ ]+/)){ dom=substr($0,RSTART+6,RLENGTH-6); sub(/\.+$/,"",dom) }
+            if(dom!="" && (dom in bd)) printf "%s-%s-%02d\t%s\n",year,mn[$1],$2,substr($3,1,2);
+        }' "$BLOCK_DOMAINS" "$FILTERED_LOG" \
         | ipfr_heatmap "" "$(t 'reports heatmap caption' 'Cada celda es una hora de un día concreto; cuanto más oscuro, mayor actividad. Útil para ver si hay franjas más activas.')" "#0d9488" "$_HDAYS"
 fi
 
@@ -261,7 +303,7 @@ else
 fi
 echo '</tbody></table>'
 
-ipfr_section "&#x1F6E1;&#xFE0F;" "$(t 'reports dnsfw sec listactivity' 'Actividad por lista RPZ')"
+ipfr_section "&#x1F6E1;&#xFE0F;" "$(t 'reports dnsfw sec listactivity' 'Actividad por lista del DNS Firewall')"
 echo "<table class=\"ipfr-table\"><thead><tr><th>#</th><th>$(t 'reports dnsfw th list' 'Lista')</th><th>$TH_BLOCKS</th><th>$TH_PCT</th></tr></thead><tbody>"
 if [[ "$TOTAL_BLOCKS" -gt 0 ]]; then
     echo "$LIST_COUNTS" | awk -v total="$TOTAL_BLOCKS" -v cats="$CAT_KV" "$DNS_FRIENDLY"'BEGIN{pos=1} NF>=2 {
@@ -274,13 +316,14 @@ else
 fi
 echo '</tbody></table>'
 
-ipfr_doc_close "<strong>IPFire</strong> $(t 'reports footer system' 'Reports System') &middot; DNS Firewall (RPZ / unbound) &middot; $(t 'reports footer period' 'periodo'): <strong>$TIME_DESCRIPTION</strong> &middot; $(t 'reports dnsfw footer lists' 'listas activas'): $ACTIVE_LISTS"
+ipfr_doc_close "<strong>IPFire</strong> $(t 'reports footer system' 'Reports System') &middot; DNS Firewall (kresd) &middot; $(t 'reports footer period' 'periodo'): <strong>$TIME_DESCRIPTION</strong> &middot; $(t 'reports dnsfw footer lists' 'listas activas'): $ACTIVE_LISTS"
 } > "$OUTPUT_FILE"
 
 # Limpieza (solo nuestros temporales)
 [[ -f "$FILTERED_LOG" ]] && rm -f "$FILTERED_LOG"
 [[ -f "$PARSED" ]] && rm -f "$PARSED"
-rm -f /var/tmp/filtered_dnsfw_log.$$ /var/tmp/dnsfw_parsed.$$ 2>/dev/null
+[[ -f "$BLOCK_DOMAINS" ]] && rm -f "$BLOCK_DOMAINS"
+rm -f /var/tmp/filtered_dnsfw_log.$$ /var/tmp/dnsfw_parsed.$$ /var/tmp/dnsfw_pairs.$$ /var/tmp/dnsfw_catmap.$$ /var/tmp/dnsfw_domains.$$ 2>/dev/null
 
 echo "Informe del DNS Firewall generado: $OUTPUT_FILE"
 exit 0
