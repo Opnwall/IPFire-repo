@@ -1,3 +1,9 @@
+
+<div align="center">
+  <a href="README.md">中文</a> |
+  <a href="README_US.md">English</a>
+</div>
+
 # IPFire Captive Portal Enhanced
 
 A community-maintained enhanced Captive Portal plugin for IPFire, featuring a Chinese interface, multilingual guest authentication, coupons, manual client authorization, custom branding, terms and conditions, and Chinese PDF export.
