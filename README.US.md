@@ -58,6 +58,7 @@ ipfrepo upgrade                    # Upgrade installed packages
 | --- | --- | --- |
 | `adguardhome` | 1.0.3 | AdGuard Home DNS filtering and management |
 | `backup` | 1.0.2 | Firewall configuration backup manager |
+| `captive-enhanced` | 1.1.9 | Multilingual Captive Portal with coupons, manual client authorization, and PDF export |
 | `dns-firewall-custom-lists` | 1.1.2 | Custom HTTPS RPZ list management for the DNS Firewall |
 | `ipfire-dyndns` | 1.0.2 | DDNS patch for Cloudflare, Alibaba Cloud and Tencent Cloud |
 | `lang` | 1.0.3 | Chinese localization update tool |

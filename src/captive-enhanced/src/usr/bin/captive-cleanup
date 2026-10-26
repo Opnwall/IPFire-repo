@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+###############################################################################
+#                                                                             #
+# IPFire.org - A linux based firewall                                         #
+# Copyright (C) 2007-2022  IPFire Team  <info@ipfire.org>                     #
+#                                                                             #
+# This program is free software: you can redistribute it and/or modify        #
+# it under the terms of the GNU General Public License as published by        #
+# the Free Software Foundation, either version 3 of the License, or           #
+# (at your option) any later version.                                         #
+#                                                                             #
+# This program is distributed in the hope that it will be useful,             #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of              #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               #
+# GNU General Public License for more details.                                #
+#                                                                             #
+# You should have received a copy of the GNU General Public License           #
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.       #
+#                                                                             #
+###############################################################################
+
+use strict;
+use warnings;
+require '/var/ipfire/general-functions.pl';
+require '/var/ipfire/captive-lib.pl';
+my $state_lock = Captive::lock();
+my %clients;
+Captive::read_rows('/var/ipfire/captive/clients', \%clients);
+my $changed = 0;
+for my $key (keys %clients) {
+    my $row = $clients{$key};
+    next if ($row->[3] // '') eq '0';
+    next unless ($row->[2] // '') =~ /^\d+$/ && ($row->[3] // '') =~ /^\d+$/;
+    if ($row->[2] + $row->[3] <= time()) {
+        General::log('Captive', "Expired authorization for $row->[1]");
+        delete $clients{$key};
+        $changed = 1;
+    }
+}
+if ($changed) { Captive::write_rows('/var/ipfire/captive/clients', \%clients); }
+# Also repairs rules after an interrupted transaction; retain native scheduler.
+exit(Captive::reload() ? 0 : 1);

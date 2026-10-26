@@ -1,0 +1,19 @@
+#!/bin/bash
+# Enable every configured Captive Portal zone except RED.
+set -euo pipefail
+
+settings=${1:-/var/ipfire/captive/settings}
+network=${2:-/var/ipfire/ethernet/settings}
+
+[[ -f $settings && -f $network ]] || exit 1
+
+for zone in GREEN BLUE; do
+    device=$(awk -F= -v key="${zone}_DEV" '$1 == key { value=substr($0,index($0,"=")+1) } END { print value }' "$network")
+    value=off
+    [[ -n $device ]] && value=on
+    ZONE_KEY="ENABLE_${zone}" ZONE_VALUE="$value" perl -0pi -e '
+        my $key=$ENV{ZONE_KEY}; my $value=$ENV{ZONE_VALUE};
+        if (s/^\Q$key\E=.*/$key=$value/m) { }
+        else { $_ .= "\n" unless $_ eq "" || /\n\z/; $_ .= "$key=$value\n"; }
+    ' "$settings"
+done

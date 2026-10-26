@@ -56,6 +56,7 @@ ipfrepo upgrade                    # 升级已安装插件
 | --- | --- | --- |
 | `adguardhome` | 1.0.3 | AdGuard Home DNS 过滤与管理工具 |
 | `backup` | 1.0.2 | 防火墙配置备份管理 |
+| `captive-enhanced` | 1.1.9 | 多语言强制门户、上网劵、手动客户端授权及 PDF 导出 |
 | `dns-firewall-custom-lists` | 1.1.2 | DNS 防火墙自定义 HTTPS RPZ 列表管理 |
 | `ipfire-dyndns` | 1.0.2 | Cloudflare、阿里云和腾讯云 DDNS 补丁 |
 | `lang` | 1.0.3 | 中文本地化更新工具 |

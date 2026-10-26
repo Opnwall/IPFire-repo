@@ -1,0 +1,12 @@
+Derived from Google Fonts Noto Sans SC variable TrueType font.
+Source: https://github.com/google/fonts/tree/main/ofl/notosanssc
+Source file: NotoSansSC[wght].ttf
+Source SHA-256: a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da
+Instantiated at weight 400 using fontTools; renamed Captive Sans CJK.
+License: SIL Open Font License 1.1; see OFL.txt.
+Merged additional glyphs from Google Fonts Noto Sans at weight 400 width 100.
+Source: https://github.com/google/fonts/tree/main/ofl/notosans
+Source SHA-256: bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d
+Layout and vertical-metrics tables removed for horizontal Unicode glyph rendering.
+Additional license: OFL-NotoSans.txt.
+Duplicated 497 Unicode alias glyphs so copy/search preserves original characters.
