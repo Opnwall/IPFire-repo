@@ -1,3 +1,9 @@
+<div align="center">
+  <a href="README.md">中文</a> |
+  <a href="README.US.md">English</a>
+</div>
+
+
 # IPFire Captive Portal Enhanced
 
 面向 IPFire 的社区版强制门户增强插件，提供中文界面、多语言访客认证、上网劵、手动客户端授权、品牌徽标、条款展示及中文 PDF 导出。
