@@ -91,6 +91,18 @@ mkdir -p "${tmpdir}/src/ddns"
 cp -p "${PROVIDERS}" "${tmpdir}/src/ddns/providers.py"
 cp -p "${SYSTEM}" "${tmpdir}/src/ddns/system.py"
 
+# Core 204 already imports json. Normalize only the staged copy so the
+# ddns-014 patch works with both Core 203 and 204 without patch fuzz.
+python3 - "${tmpdir}/src/ddns/providers.py" <<'PY'
+import pathlib
+import sys
+path = pathlib.Path(sys.argv[1])
+text = path.read_text()
+if text.count("\nimport json\n") > 1:
+    raise SystemExit("Unexpected duplicate json imports; refusing to patch")
+path.write_text(text.replace("\nimport json\n", "\n"))
+PY
+
 (
 	cd "${tmpdir}"
 	patch -Np1 -i "${PATCH_FILE}"

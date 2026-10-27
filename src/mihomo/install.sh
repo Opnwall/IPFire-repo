@@ -54,6 +54,12 @@ for dir in etc srv usr var; do
     cp -R -f "src/$dir/." "/$dir/"
 done
 
+# Keep the source filename lowercase for case-insensitive/synchronized working
+# copies, but install the exact case required by the Linux core.
+if [[ -f src/usr/local/etc/mihomo/geosite.dat ]]; then
+    install -m 644 src/usr/local/etc/mihomo/geosite.dat /usr/local/etc/mihomo/GeoSite.dat
+fi
+
 if [[ -n "$tmp_config" && -f "$tmp_config" ]]; then
     install -m 660 "$tmp_config" /usr/local/etc/mihomo/config.yaml
     rm -f "$tmp_config"

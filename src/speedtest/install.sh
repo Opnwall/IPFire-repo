@@ -2,7 +2,7 @@
 set -euo pipefail
 
 BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
-ASSET="$BASE_DIR/src/usr/local/bin/speedtest-go_1.7.10_Linux_x86_64.tar.gz"
+ASSET="$BASE_DIR/src/usr/local/bin/speedtest-go_1.8.3_Linux_x86_64.tar.gz"
 TMPDIR=""
 die(){ echo "Error: $*" >&2; exit 1; }
 cleanup(){ [[ -z "$TMPDIR" || ! -d "$TMPDIR" ]] || rm -rf "$TMPDIR"; }

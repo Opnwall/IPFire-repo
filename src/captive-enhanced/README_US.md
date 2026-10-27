@@ -8,8 +8,8 @@
 
 A community-maintained enhanced Captive Portal plugin for IPFire, featuring a Chinese interface, multilingual guest authentication, coupons, manual client authorization, custom branding, terms and conditions, and Chinese PDF export.
 
-> Current version: **1.1.9**  
-> Verified environment: **IPFire 2.29 Core Update 203, x86_64**  
+> Current version: **1.1.10**  
+> Verified environment: **IPFire 2.29 Core Update 204, x86_64**  
 > This is a community-maintained project and is not officially endorsed by IPFire. Test it in a non-production environment before using it with other Core Updates.
 
 ![Portal settings](image/setting1.png)
@@ -24,7 +24,7 @@ A community-maintained enhanced Captive Portal plugin for IPFire, featuring a Ch
 - Provides a single Terms & Conditions editor displayed in a collapsible section on the guest portal.
 - Generates secure 16-character hexadecimal coupon codes using a cryptographically secure random source.
 - Supports Simplified and Traditional Chinese, extended Latin characters, and Cyrillic text in PDFs, with up to eight coupons per page.
-- Redirects operating-system connectivity checks to `https://www.bing.com/` after successful authentication, while ordinary URLs return to their original destination.
+- Both coupon and Terms authentication redirect to `https://www.bing.com/`, avoiding reuse of intercepted HTTP connections that can display the portal again.
 - Uses IPFire's native `captivectrl` and `wirelessctrl` tools to apply rules; no additional daemon is installed.
 - Automatically creates snapshots for installation, upgrades, and rollback.
 
@@ -61,7 +61,7 @@ The Captive Portal provides authentication and access control only. It does not 
 
 ## Requirements
 
-- IPFire 2.29. This release has been verified on Core Update 203 x86_64.
+- IPFire 2.29. This release has been verified on Core Update 204 x86_64.
 - The native IPFire Captive Portal must be installed, including `/usr/local/bin/captivectrl` and `/etc/httpd/conf/vhosts.d/captive.conf`.
 - Perl modules: `CGI`, `HTML::Template`, `PDF::API2`, `File::LibMagic`, `JSON::PP`, and `Digest::SHA`.
 - Bash, `flock`, `tar`, Apache administration commands, and `/usr/local/bin/update-lang-cache`.
@@ -175,7 +175,7 @@ Current baseline results:
 - 43 language-resource tests passed.
 - 10 logo front-end state tests passed.
 - Installation scenarios for GREEN only, GREEN plus BLUE, and missing legacy configuration keys passed.
-- Installation, rollback, Terms authentication, coupon redemption, manual client authorization, Windows redirect behavior, and Chinese PDF export were verified on a real Core Update 203 system.
+- Installation, rollback, Terms authentication, coupon redemption, manual client authorization, Windows redirect behavior, and Chinese PDF export were verified on a real Core Update 204 system.
 
 BLUE/AP deployments, other Core Updates, and different hardware platforms should still be validated separately on the target device.
 
@@ -208,7 +208,7 @@ captive-enhanced/
 
 ## Known Limitations
 
-- Full hardware validation currently covers IPFire 2.29 Core Update 203 x86_64 only.
+- Full hardware validation currently covers IPFire 2.29 Core Update 204 x86_64 only.
 - The Captive Portal cannot isolate guest devices on the same Layer 2 network.
 - Administrator-provided welcome titles, company names, and terms text are not translated automatically.
 - The bundled font cannot guarantee coverage for every Unicode character or complex text layout.

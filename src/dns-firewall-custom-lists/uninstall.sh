@@ -15,6 +15,14 @@ if [[ ${EUID} -ne 0 ]]; then
 	exit 1
 fi
 
+core="$(cat /opt/pakfire/db/core/mine 2>/dev/null || true)"
+baseline_core="$(cat "${ORIGINAL_DIR}/core" 2>/dev/null || true)"
+if [[ -z "${core}" || "${baseline_core}" != "${core}" ]]; then
+	echo "Refusing to restore DNS Firewall files from Core ${baseline_core:-unknown} onto Core ${core:-unknown}." >&2
+	echo "Recover a verified official baseline for the current Core first; no changes made." >&2
+	exit 1
+fi
+
 if [[ ! -s "${ORIGINAL_DIR}/dnsbl.cgi" || ! -s "${ORIGINAL_DIR}/update-rpzs" ]]; then
 	echo "Original IPFire files are missing from ${ORIGINAL_DIR}; refusing an incomplete uninstall." >&2
 	exit 1
@@ -23,6 +31,9 @@ fi
 perl -c "${ORIGINAL_DIR}/dnsbl.cgi" >/dev/null
 bash -n "${ORIGINAL_DIR}/update-rpzs"
 perl -c "${PACKAGE_DIR}/uninstall-lang-entries.pl" >/dev/null
+
+exec 9<>/var/ipfire/dns/rpz-update.lock
+flock -x 9
 
 mkdir -p "${BACKUP_DIR}/zones"
 [[ ! -e "${CONFIG}" ]] || cp -a "${CONFIG}" "${BACKUP_DIR}/"
@@ -41,7 +52,7 @@ if [[ -s "${CONFIG}" ]]; then
 	done <<< "$(jq -r '.[] | select(.custom == true) | .zone' "${CONFIG}")"
 fi
 
-rm -f "${CONFIG}" /usr/local/bin/update-custom-rpzs /etc/fcron.minutely/update-custom-rpzs /var/ipfire/dns/rpz-update.lock
+rm -f "${CONFIG}" /usr/local/bin/update-custom-rpzs /etc/fcron.minutely/update-custom-rpzs
 
 install -m 0755 "${ORIGINAL_DIR}/dnsbl.cgi" /srv/web/ipfire/cgi-bin/dnsbl.cgi
 install -m 0755 "${ORIGINAL_DIR}/update-rpzs" /usr/local/bin/update-rpzs
@@ -49,7 +60,7 @@ install -m 0755 "${ORIGINAL_DIR}/update-rpzs" /usr/local/bin/update-rpzs
 perl "${PACKAGE_DIR}/uninstall-lang-entries.pl" /var/ipfire/langs/en.pl
 perl "${PACKAGE_DIR}/uninstall-lang-entries.pl" /var/ipfire/langs/zh.pl
 /usr/local/bin/update-lang-cache
-/usr/local/bin/dnsctrl reload
+/usr/local/bin/dnsctrl reload 9>&-
 
 echo "Uninstallation completed."
 echo "Custom-list data backup: ${BACKUP_DIR}"

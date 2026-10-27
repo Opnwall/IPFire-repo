@@ -101,7 +101,7 @@ download_package() {
     package="$CACHE_DIR/$file"
     if [ ! -f "$package" ] || [ "$(sha256sum "$package" | awk '{print $1}')" != "$expected" ]; then
         rm -f "$package"
-        echo "Downloading $file..."
+        echo "Downloading $file..." >&2
         fetch_file "$BASE_URL/repo/$ARCH/All/$file" "$package"
     fi
     actual="$(sha256sum "$package" | awk '{print $1}')"
@@ -119,7 +119,7 @@ install_package() {
     version="$(field "$record" 2)"
     file="$(field "$record" 3)"
     sha="$(field "$record" 4)"
-    package="$(download_package "$record" | tail -n 1)"
+    package="$(download_package "$record")"
     tmp="$(mktemp -d /tmp/ipfrepo-install.XXXXXX)"
     trap 'rm -rf "$tmp"' EXIT HUP INT TERM
     tar -xzf "$package" -C "$tmp"

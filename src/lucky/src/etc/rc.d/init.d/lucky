@@ -77,10 +77,25 @@ start()
 	return 1
 }
 
+cleanup_empty_firewall_chain()
+{
+	# Lucky can create an empty INPUT chain even without forwarding rules.
+	# Remove only that empty chain; never flush unknown/non-empty rules.
+	for tool in iptables ip6tables; do
+		command -v "$tool" >/dev/null 2>&1 || continue
+		[ "$("$tool" -S LUCKY 2>/dev/null | wc -l)" -eq 1 ] || continue
+		while "$tool" -C INPUT -j LUCKY 2>/dev/null; do
+			"$tool" -D INPUT -j LUCKY || break
+		done
+		"$tool" -X LUCKY 2>/dev/null || true
+	done
+}
+
 stop()
 {
 	if ! is_running; then
 		rm -f "$PIDFILE"
+		cleanup_empty_firewall_chain
 		echo "lucky is not running."
 		return 0
 	fi
@@ -92,6 +107,7 @@ stop()
 		kill -9 "$pid" 2>/dev/null || true
 	fi
 	rm -f "$PIDFILE"
+	cleanup_empty_firewall_chain
 	echo "lucky stopped."
 }
 

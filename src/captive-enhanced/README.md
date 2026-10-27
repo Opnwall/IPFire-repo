@@ -1,15 +1,15 @@
+
 <div align="center">
   <a href="README.md">中文</a> |
   <a href="README_US.md">English</a>
 </div>
 
-
 # IPFire Captive Portal Enhanced
 
 面向 IPFire 的社区版强制门户增强插件，提供中文界面、多语言访客认证、上网劵、手动客户端授权、品牌徽标、条款展示及中文 PDF 导出。
 
-> 当前版本：**1.1.9**  
-> 已验证环境：**IPFire 2.29 Core Update 203，x86_64**  
+> 当前版本：**1.1.10**  
+> 已验证环境：**IPFire 2.29 Core Update 204，x86_64**  
 > 本项目由社区维护，不代表 IPFire 官方认证。其他 Core 版本请先在测试环境验证。
 
 ![门户设置](image/setting1.png)
@@ -24,7 +24,7 @@
 - 单一“条款与条件”编辑框，访客页以可折叠区域显示。
 - 使用安全随机源生成 16 位十六进制上网劵号码。
 - PDF 支持简繁中文、拉丁扩展和西里尔文字，每页最多 8 张访问劵。
-- 客户端联网探测认证成功后跳转至 `https://www.bing.com/`，普通网址仍恢复原始目标。
+- 上网券和条款认证成功后统一跳转至 `https://www.bing.com/`，不返回认证前被拦截的 HTTP 地址，避免旧连接再次显示门户。
 - 使用 IPFire 原生 `captivectrl` 和 `wirelessctrl` 应用规则，不安装额外守护进程。
 - 安装、升级和回退均自动保存快照。
 
@@ -61,7 +61,7 @@
 
 ## 系统要求
 
-- IPFire 2.29；本版本已在 Core Update 203 x86_64 上验证。
+- IPFire 2.29；本版本已在 Core Update 204 x86_64 上验证。
 - 系统原生 Captive Portal 已安装，并存在 `/usr/local/bin/captivectrl` 和 `/etc/httpd/conf/vhosts.d/captive.conf`。
 - Perl 模块：`CGI`、`HTML::Template`、`PDF::API2`、`File::LibMagic`、`JSON::PP`、`Digest::SHA`。
 - Bash、`flock`、`tar`、Apache 管理命令及 `/usr/local/bin/update-lang-cache`。
@@ -174,7 +174,7 @@ bash uninstall.sh /var/backups/captive-enhanced/<日期时间>-<PID>
 - 语言资源测试：43 项通过。
 - Logo 前端状态测试：10 项通过。
 - GREEN、GREEN+BLUE 及缺少旧配置键三种安装场景通过。
-- 已在真实 Core 203 主机验证安装、回退、条款认证、上网劵兑换、手动客户端授权、Windows 跳转和中文 PDF。
+- 已在真实 Core 204 主机验证安装、回退、条款认证、上网劵兑换、手动客户端授权、Windows 跳转和中文 PDF。
 
 BLUE/AP、跨 Core 版本和不同硬件平台仍应在对应设备上单独验收。
 
@@ -207,7 +207,7 @@ captive-enhanced/
 
 ## 已知限制
 
-- 当前完整实机验证基于 IPFire 2.29 Core Update 203 x86_64。
+- 当前完整实机验证基于 IPFire 2.29 Core Update 204 x86_64。
 - Captive Portal 不能隔离同一二层网络中的访客设备。
 - 管理员填写的欢迎标题、公司和条款正文不会自动翻译。
 - 捆绑字体不能保证覆盖所有 Unicode 字符或复杂文字排版。

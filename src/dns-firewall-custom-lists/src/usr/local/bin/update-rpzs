@@ -72,6 +72,7 @@ update_custom_rpzs() {
 			"--silent" "--show-error" "--fail" "--location"
 			"--proto" "=https" "--proto-redir" "=https"
 			"--connect-timeout" "30" "--retry" "2"
+			"--max-time" "300" "--speed-limit" "1024" "--speed-time" "30"
 			"--remote-time" "--etag-save" "${etag_new}"
 			"--output" "${tmp}" "--write-out" "%{http_code}"
 		)
@@ -180,7 +181,7 @@ main() {
 	update_custom_rpzs || failed=$?
 
 	# Reload DNS
-	/usr/local/bin/dnsctrl reload
+	/usr/local/bin/dnsctrl reload 9>&-
 
 	return ${failed}
 }

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install the DNS Firewall custom-list community plugin on IPFire 2.29 Core 203.
+# Install the DNS Firewall custom-list community plugin on Core 203/204.
 
 set -Eeuo pipefail
 
@@ -26,9 +26,28 @@ if [[ ! -f /srv/web/ipfire/cgi-bin/dnsbl.cgi || ! -f /usr/local/bin/update-rpzs 
 fi
 
 core="$(cat /opt/pakfire/db/core/mine 2>/dev/null || true)"
-if [[ "${core}" != "203" ]]; then
-	echo "Unsupported IPFire Core Update: ${core:-unknown}. This package was tested on Core 203." >&2
+if [[ "${core}" != "203" && "${core}" != "204" ]]; then
+	echo "Unsupported IPFire Core Update: ${core:-unknown}. Supported: 203 and 204." >&2
 	exit 1
+fi
+
+# Do not silently reuse an official-file baseline from another Core Update.
+baseline_needs_core_marker=0
+if [[ -s "${ORIGINAL_DIR}/dnsbl.cgi" && -s "${ORIGINAL_DIR}/update-rpzs" ]]; then
+	baseline_core="$(cat "${ORIGINAL_DIR}/core" 2>/dev/null || true)"
+	# Verified against the official Core 204 x86_64 installation ISO, not HEAD.
+	# This permits a legacy unmarked baseline only when BOTH files are exact.
+	if [[ -z "${baseline_core}" && "${core}" == "204" &&
+		"$(sha256sum "${ORIGINAL_DIR}/dnsbl.cgi" | cut -d' ' -f1)" == "91a0d59e947ac455404c8b548b84cabd7a30a5823c7de532a437eaf57116503f" &&
+		"$(sha256sum "${ORIGINAL_DIR}/update-rpzs" | cut -d' ' -f1)" == "95c23bda9f4aa5f63f03cf64913f7333987a35bd6aee9cf8888222fcf0bb09ce" ]]; then
+		baseline_core=204
+		baseline_needs_core_marker=1
+	fi
+	if [[ "${baseline_core}" != "${core}" ]]; then
+		echo "Existing DNS Firewall baseline is from Core ${baseline_core:-unknown}; current Core is ${core}." >&2
+		echo "Obtain verified official files for the current Core before reinstalling; baseline preserved." >&2
+		exit 1
+	fi
 fi
 
 echo
@@ -45,19 +64,26 @@ bash -n "${PACKAGE_DIR}/src/usr/local/bin/update-rpzs"
 perl -c "${PACKAGE_DIR}/install-lang-entries.pl" >/dev/null
 perl -c "${PACKAGE_DIR}/uninstall-lang-entries.pl" >/dev/null
 
+# Keep the same lock inode across installation, updates, and removal.
+exec 9<>"${LOCK_FILE}"
+flock -x 9
+
+if [[ "${baseline_needs_core_marker}" == 1 ]]; then
+	printf '%s\n' "${core}" > "${ORIGINAL_DIR}/core"
+fi
+
 # Preserve the pre-extension CGI and official updater once. Upgrades must never
 # overwrite this baseline, because uninstall.sh uses it for restoration.
 if [[ ! -s "${ORIGINAL_DIR}/dnsbl.cgi" || ! -s "${ORIGINAL_DIR}/update-rpzs" ]]; then
-	mkdir -p "${ORIGINAL_DIR}"
-	oldest_backup="$(find /root -maxdepth 1 -type d -name 'dns-firewall-custom-lists-backup-*' | LC_ALL=C sort | head -n 1)"
-	if [[ -n "${oldest_backup}" && -s "${oldest_backup}/cgi/dnsbl.cgi" && -s "${oldest_backup}/bin/update-rpzs" ]]; then
-		cp -a "${oldest_backup}/cgi/dnsbl.cgi" "${ORIGINAL_DIR}/dnsbl.cgi"
-		cp -a "${oldest_backup}/bin/update-rpzs" "${ORIGINAL_DIR}/update-rpzs"
-	else
-		cp -a /srv/web/ipfire/cgi-bin/dnsbl.cgi "${ORIGINAL_DIR}/dnsbl.cgi"
-		cp -a /usr/local/bin/update-rpzs "${ORIGINAL_DIR}/update-rpzs"
+	if grep -q 'custom_dnsbl.json' /srv/web/ipfire/cgi-bin/dnsbl.cgi /usr/local/bin/update-rpzs; then
+		echo "Cannot capture an official baseline from already extended DNS Firewall files." >&2
+		exit 1
 	fi
+	mkdir -p "${ORIGINAL_DIR}"
+	cp -a /srv/web/ipfire/cgi-bin/dnsbl.cgi "${ORIGINAL_DIR}/dnsbl.cgi"
+	cp -a /usr/local/bin/update-rpzs "${ORIGINAL_DIR}/update-rpzs"
 	chmod 0755 "${ORIGINAL_DIR}/dnsbl.cgi" "${ORIGINAL_DIR}/update-rpzs"
+	printf '%s\n' "${core}" > "${ORIGINAL_DIR}/core"
 fi
 
 mkdir -p "${BACKUP_DIR}/cgi" "${BACKUP_DIR}/bin" "${BACKUP_DIR}/lang" "${BACKUP_DIR}/fcron" "${BACKUP_DIR}/dns"
@@ -97,7 +123,7 @@ chmod 0660 "${LOCK_FILE}"
 
 perl -c /srv/web/ipfire/cgi-bin/dnsbl.cgi >/dev/null
 bash -n /usr/local/bin/update-rpzs
-/usr/local/bin/dnsctrl reload
+/usr/local/bin/dnsctrl reload 9>&-
 
 echo "Installation completed."
 echo "Backup: ${BACKUP_DIR}"

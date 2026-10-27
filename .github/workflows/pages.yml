@@ -25,7 +25,7 @@ jobs:
       - name: Prepare static repository
         run: |
           mkdir -p _site
-          rsync -aL --exclude '.git/' --exclude '.github/' --exclude 'src/' ./ _site/
+          rsync -aL --exclude '.git/' --exclude '.github/' --exclude 'src/' --exclude 'work/' --exclude 'tools/' --exclude '_site/' --exclude '.DS_Store' --exclude '._*' ./ _site/
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

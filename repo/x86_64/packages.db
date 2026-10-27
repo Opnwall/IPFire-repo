@@ -1,17 +1,17 @@
 # Opnwall IPFire package catalog v1
 # name|version|file|sha256|category|description_zh|description_en
-adguardhome|1.0.3|adguardhome-1.0.3-x86_64.tar.gz|c8dcf7a580399334e4b9db45f9408b0553fb774a01133af0851031bec8ddc9fd|dns|适配 Core 203 的 AdGuard Home DNS 过滤与管理界面|AdGuard Home DNS filtering and WebUI integration for Core 203
-backup|1.0.2|backup-1.0.2-x86_64.tar.gz|5bcbf9d9b7f4fc41017df7730047b2edb739ffea819c05c913c95859e7356614|system|适配 Core 203 的防火墙配置备份管理页面|Firewall configuration backup manager for Core 203
-captive-enhanced|1.1.9|captive-enhanced-1.1.9-x86_64.tar.gz|497db5adc782d449fb470c6cdb9cb7f1e08723b4421a040ffbfb0816fa903cf6|network|多语言强制门户、上网劵、手动客户端授权、品牌徽标及 PDF 导出|Multilingual Captive Portal with coupons, manual client authorization, branding, and PDF export
-dns-firewall-custom-lists|1.1.2|dns-firewall-custom-lists-1.1.2-x86_64.tar.gz|d6c83d7443217e7e8fa804194c32a61815df5f50928f6eb42f5ba1dd1c436287|dns|为 DNS 防火墙增加自定义 HTTPS RPZ 列表管理|Custom HTTPS RPZ list management for the DNS Firewall
-ipfire-dyndns|1.0.2|ipfire-dyndns-1.0.2-x86_64.tar.gz|f728a110189e307ababd01081ebca91ae1e0c525e8a6179c958600021ffb0288|network|适配 Core 203 的 Cloudflare、阿里云和腾讯云 DDNS 提供商补丁|Cloudflare, Aliyun and Tencent Cloud DDNS provider patch for Core 203
-lang|1.0.3|lang-1.0.3-x86_64.tar.gz|c8d25e494c8b121bdcb9e2615a597067ef192ec286efb111bb028f2ab483a2f1|localization|适配 Core 203 的 IPFire 中文本地化更新工具|Chinese localization updater for IPFire Core 203
-lucky|1.0.3|lucky-1.0.3-x86_64.tar.gz|53aa79764100f468cd7bd44c519ecb4b21d0e0cf7140846e5f08886d6126659e|network|适配 Core 203 的 Lucky 网络工具箱与 WebUI|Lucky network toolbox and WebUI integration for Core 203
-mihomo|1.0.3|mihomo-1.0.3-x86_64.tar.gz|172db9081b07e1eecb1aabfbe9255591fa1454913a432a9c1b9b46e2c2c25e25|proxy|适配 Core 203 的 Mihomo 代理服务与透明代理管理|Mihomo proxy and transparent proxy management for Core 203
-reports|1.0.5|reports-1.0.5-x86_64.tar.gz|233b30025d2b4d9cbb143383b0e5f4c8252acb328838caf44fade9e443b02ed6|reporting|位于服务菜单的防火墙、IDS、URL Filter 和 DNS Firewall 报告页面|Firewall, IDS, URL Filter and DNS Firewall reporting pages under Services
-sing-box|1.0.3|sing-box-1.0.3-x86_64.tar.gz|f4ec302fd628c2885e8e1fbb0fa64a93eab741824b2466baff367f0d90f8253d|proxy|适配 Core 203 的 sing-box 代理服务与 WebUI|sing-box proxy service and WebUI integration for Core 203
-speedtest|1.0.3|speedtest-1.0.3-x86_64.tar.gz|90aeefbe46148061eeb28fd078176eb863c575a7cd85e2bb803d06d7bd8511de|network|适配 Core 203 的互联网测速与手动服务器选择|Internet speed test with manual server selection for Core 203
-syncthing|1.0.3|syncthing-1.0.3-x86_64.tar.gz|e5071d307355d56a4aa5c913cbee0a896f139c3d40022c08e93cca285951956e|service|适配 Core 203 的 Syncthing 文件同步服务与管理页面|Syncthing file synchronization service and WebUI for Core 203
-tailscale|1.0.3|tailscale-1.0.3-x86_64.tar.gz|aa99195928f115a5194b77964fde161011001a4d12d8e353d585012be33577b7|vpn|适配 Core 203 的 Tailscale VPN 服务与管理页面|Tailscale VPN service and WebUI integration for Core 203
-ttyd|1.0.3|ttyd-1.0.3-x86_64.tar.gz|57f7a114d62f6af90cd627dc04d310fb265ec297574acc382cdb9e43d17719df|system|适配 Core 203 的 ttyd 网页终端集成|ttyd web terminal integration for Core 203
-zerotier|1.0.3|zerotier-1.0.3-x86_64.tar.gz|e829b6d42893e92d597a08e80a83e45de00b2a34b5409cc6f561976e47533782|vpn|适配 Core 203 的 ZeroTier VPN 服务与管理页面|ZeroTier VPN service and WebUI integration for Core 203
+adguardhome|1.0.4|adguardhome-1.0.4-x86_64.tar.gz|a525ccb6ab568236fad5c3dc46a2e333be3b10b40c2b29e4db8da469735d4389|dns|适配 Core 204 的 AdGuard Home DNS 过滤与管理界面|AdGuard Home DNS filtering and WebUI integration for Core 204
+backup|1.0.3|backup-1.0.3-x86_64.tar.gz|f943fd8f95ec667b04642129210c8626b74a6cacbdf77628454add7350232370|system|适配 Core 204 的防火墙配置备份管理页面|Firewall configuration backup manager for Core 204
+captive-enhanced|1.1.10|captive-enhanced-1.1.10-x86_64.tar.gz|5c5a21520b590873d5a66701bcba54dff1b016aa975e234ba9932208408d9e68|network|多语言强制门户、上网劵、手动客户端授权、品牌徽标及 PDF 导出|Multilingual Captive Portal with coupons, manual client authorization, branding, and PDF export
+dns-firewall-custom-lists|1.1.3|dns-firewall-custom-lists-1.1.3-x86_64.tar.gz|642aa5b6cc69f4d8c1d30c865933c029c5a849ae0d4409cb046b35c59515e51b|dns|为 DNS 防火墙增加自定义 HTTPS RPZ 列表管理|Custom HTTPS RPZ list management for the DNS Firewall
+ipfire-dyndns|1.0.3|ipfire-dyndns-1.0.3-x86_64.tar.gz|5037679b124d6e977911cdf31c0749b1bb57c631a0da0047f9822a12bb09965c|network|适配 Core 204 的 Cloudflare、阿里云和腾讯云 DDNS 提供商补丁|Cloudflare, Aliyun and Tencent Cloud DDNS provider patch for Core 204
+lang|1.0.4|lang-1.0.4-x86_64.tar.gz|c43631f5a57cae733d4b11518716ca6ad4228de5b3f8a2f1287ee27ff9afcfba|localization|适配 Core 204 的 IPFire 中文本地化更新工具|Chinese localization updater for IPFire Core 204
+lucky|1.0.4|lucky-1.0.4-x86_64.tar.gz|8394b990ddddc778c7aa823ff1dbd63a4ead8889f66e4fc7efbea88ab4a06133|network|适配 Core 204 的 Lucky 网络工具箱与 WebUI|Lucky network toolbox and WebUI integration for Core 204
+mihomo|1.0.4|mihomo-1.0.4-x86_64.tar.gz|1f29639eb8ecbf7179752c6fa742106c323781f2785e2a111179cb8e3d73b6ef|proxy|适配 Core 204 的 Mihomo 代理服务与透明代理管理|Mihomo proxy and transparent proxy management for Core 204
+reports|1.0.6|reports-1.0.6-x86_64.tar.gz|5dc0ff741604ca1066dd1ff82fc974bbbc8330f8a93a7a69704fc064626fba9a|reporting|位于服务菜单的防火墙、IDS、URL Filter 和 DNS Firewall 报告页面|Firewall, IDS, URL Filter and DNS Firewall reporting pages under Services
+sing-box|1.0.4|sing-box-1.0.4-x86_64.tar.gz|5eff74b2265abb51f5caa8dfa2236d42e23720d6db61b0ef33dbf7926c5f6753|proxy|适配 Core 204 的 sing-box 代理服务与 WebUI|sing-box proxy service and WebUI integration for Core 204
+speedtest|1.0.4|speedtest-1.0.4-x86_64.tar.gz|6a40025f1cd11f033ec5c7fe821e3a8bf936b4631ebdc947d9749714fb67ca5f|network|适配 Core 204 的互联网测速与手动服务器选择|Internet speed test with manual server selection for Core 204
+syncthing|1.0.4|syncthing-1.0.4-x86_64.tar.gz|21ffaf0f64ea548d3832b85132b5052c9f35eb3bbe96304fa2320701b33e7877|service|适配 Core 204 的 Syncthing 文件同步服务与管理页面|Syncthing file synchronization service and WebUI for Core 204
+tailscale|1.0.4|tailscale-1.0.4-x86_64.tar.gz|a4639a97818459017fdf1ab1c597080fab0fca2d14136a0ff8ddc9c2a72c082e|vpn|适配 Core 204 的 Tailscale VPN 服务与管理页面|Tailscale VPN service and WebUI integration for Core 204
+ttyd|1.0.4|ttyd-1.0.4-x86_64.tar.gz|e378ba84e6ba3fba4f1ebd194f1ad7cb07d15d1763513fc01170e65eb42f9ff8|system|适配 Core 204 的 ttyd 网页终端集成|ttyd web terminal integration for Core 204
+zerotier|1.0.4|zerotier-1.0.4-x86_64.tar.gz|a86e83e193d7d0f1eb81ca595517e47950df20e125ec1df2cac315efbf4e129c|vpn|适配 Core 204 的 ZeroTier VPN 服务与管理页面|ZeroTier VPN service and WebUI integration for Core 204

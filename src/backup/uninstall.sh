@@ -29,6 +29,7 @@ rm -f \
 	/var/ipfire/addon-lang/firewall_backup.de.pl \
 	/var/ipfire/addon-lang/firewall_backup.en.pl \
 	/var/ipfire/addon-lang/firewall_backup.es.pl \
+	/var/ipfire/addon-lang/firewall_backup.it.pl \
 	/var/ipfire/addon-lang/firewall_backup.tw.pl \
 	/var/ipfire/addon-lang/firewall_backup.zh.pl
 

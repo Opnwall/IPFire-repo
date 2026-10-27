@@ -207,18 +207,11 @@ sub safe_url {
     return 'http://www.ipfire.org/' unless defined($url) && length($url)<=2048 && $url !~ /[\x00-\x20\x7f<>"'\\]/ && $url =~ m{^https?://[a-zA-Z0-9\[\].:-]+(?:[/?#]|$)}i;
     return $url;
 }
-# Connectivity-check URLs are machine probes, not useful landing pages. Their
-# original HTTP connection may also retain the pre-authentication DNAT mapping.
-# Start a new HTTPS connection after authorization while preserving normal URLs.
+# Always start a new HTTPS connection after either authentication method.
+# Returning to an intercepted HTTP URL can reuse its pre-authentication DNAT
+# mapping and display the portal again. Never use an untrusted return URL here.
 sub post_auth_url {
-    my ($url) = @_;
-    $url = safe_url($url);
-    return 'https://www.bing.com/' if $url =~ m{^https?://(?:
-        edge-http\.microsoft\.com/captiveportal/generate_204|
-        www\.msftconnecttest\.com/connecttest\.txt|
-        www\.msftncsi\.com/ncsi\.txt
-    )(?:[?#].*)?\z}ix;
-    return $url;
+    return 'https://www.bing.com/';
 }
 # Token bucket per source, persistent under the shared lock, bounded by expiry.
 sub attempt {
