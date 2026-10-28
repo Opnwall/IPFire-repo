@@ -5,7 +5,7 @@
 
 # IPFire Community Repository
 
-> **适配 Core 204 版本**
+> **适配 Core 204 **
 
 正式下载目录每个插件只保留最新版。升级前请备份配置并保留 `/opt/ipfrepo/cache/`：旧版卸载依赖缓存的旧安装包；缓存缺失时应先升级到最新版再卸载。历史包可从 Git 历史恢复。
 
