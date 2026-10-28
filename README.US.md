@@ -5,7 +5,7 @@
 
 # IPFire Community Repository
 
-> **Core 204 release.** All 15 plugins passed source-installer installation, removal/restoration, and reinstallation checks on the target host. Bundled binaries were refreshed, and coupon/Terms authentication with automatic redirects was tested on a real client. See the [validation report](CORE204-VALIDATION.md) and [binary versions](BINARY-VERSIONS.md) (Chinese), including pending BLUE, cross-peer VPN, and file synchronization tests.
+> **Core 204 release.** 
 
 Only the latest package for each plugin is retained in the download directory. Back up configuration and preserve `/opt/ipfrepo/cache/`: removing an older installation requires its cached archive. If that cache is missing, upgrade to the latest version before uninstalling. Historical packages remain recoverable from Git history.
 
