@@ -1,3 +1,8 @@
+<div align="center">
+  <a href="README.md">中文</a> |
+  <a href="README_US.md">English</a>
+</div>
+
 # EasyTier for IPFire
 
 A community EasyTier mesh VPN plugin for IPFire. Configure a network name, password and peers through the Web UI to connect devices across locations and optionally access remote LANs.
