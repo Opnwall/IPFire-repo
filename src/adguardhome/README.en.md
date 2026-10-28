@@ -8,7 +8,7 @@
 # AdGuard Home for IPFire
 
 <p>
-  <img src="https://img.shields.io/badge/IPFire-2.29%20Core%20203-orange" alt="IPFire">
+  <img src="https://img.shields.io/badge/IPFire-2.29%20Core%20204-orange" alt="IPFire">
   <img src="https://img.shields.io/badge/Platform-x86__64-blue" alt="Platform">
   <img src="https://img.shields.io/badge/AdGuard%20Home-Supported-67b279" alt="AdGuard Home">
 </p>
@@ -17,7 +17,7 @@ AdGuard Home is a network-wide DNS filtering solution that provides ad blocking 
 
 This project integrates AdGuard Home with the IPFire firewall and provides a native management experience on IPFire. It includes service management scripts, an IPFire Web UI menu entry, CGI management pages and a persistent configuration directory, allowing users to install, configure and maintain AdGuard Home as if it were a built-in IPFire component.
 
-Tested on IPFire 2.29 (x86_64) - Core Update 203.
+Tested on IPFire 2.29 (x86_64) - Core Update 204.
 
 ## screenshot
 
@@ -25,7 +25,7 @@ Tested on IPFire 2.29 (x86_64) - Core Update 203.
 
 ## Recommended DNS Flow
 
-In IPFire Core 203 and later, the system DNS resolver is provided by Knot Resolver, which listens on port `53` by default. To make AdGuard Home effective for LAN clients, the recommended flow is:
+In IPFire Core 204 and later, the system DNS resolver is provided by Knot Resolver, which listens on port `53` by default. To make AdGuard Home effective for LAN clients, the recommended flow is:
 
 ```text
 Client -> AdGuard Home:53 -> Knot Resolver:5353 -> Upstream DNS

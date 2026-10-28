@@ -5,7 +5,7 @@
 
 # IPFire DNS Firewall Custom Lists Extension
 
-For **IPFire 2.29 Core Update 203**. This extension adds user-managed RPZ feeds to the existing DNS Firewall page while preserving the enable/disable and access-control behavior of the official lists.
+For **IPFire 2.29 Core Update 204**. This extension adds user-managed RPZ feeds to the existing DNS Firewall page while preserving the enable/disable and access-control behavior of the official lists.
 
 ![DNS Firewall custom list](images/custom_dnsbl.png)
 
@@ -37,7 +37,7 @@ cd dns-firewall-custom-lists
 ./install.sh
 ```
 
-The installer validates Core Update 203 and required commands, checks script syntax, creates a timestamped backup under `/root`, installs the files and translations, rebuilds the language cache, prepares the shared lock, and reloads DNS. Existing custom-list configuration is preserved.
+The installer validates Core Update 204 and required commands, checks script syntax, creates a timestamped backup under `/root`, installs the files and translations, rebuilds the language cache, prepares the shared lock, and reloads DNS. Existing custom-list configuration is preserved.
 
 ## Uninstallation
 
@@ -102,6 +102,6 @@ Manual update check:
 
 ## Validation
 
-Validated on IPFire 2.29 x86_64 Core Update 203: installer and script syntax, English/Chinese UI, add/edit/delete, enable/disable, live DNS blocking, HTTP 304 conditional updates, failed-download preservation, atomic replacement, unified official/custom updates, and normal-domain DNS regression.
+Validated on IPFire 2.29 x86_64 Core Update 204: installer and script syntax, English/Chinese UI, add/edit/delete, enable/disable, live DNS blocking, HTTP 304 conditional updates, failed-download preservation, atomic replacement, unified official/custom updates, and normal-domain DNS regression.
 
 > Feed content, availability, and licensing remain the responsibility of each feed provider.

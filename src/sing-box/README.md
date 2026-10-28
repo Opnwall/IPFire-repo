@@ -7,7 +7,7 @@ sing-box 是一款功能强大、性能优秀的开源网络代理平台，支�
 
 本插件将 sing-box 无缝集成到 IPFire WebUI，支持透明代理，并提供配置编辑、服务管理、状态监控和日志查看等功能，使用户能够通过图形界面轻松管理 sing-box。
 
-已在IPFire-2.29-x86_64-Core-Update-203上测试通过。
+已在IPFire-2.29-x86_64-Core-Update-204上测试通过。
 
 ![](image/sing-box.png)
 

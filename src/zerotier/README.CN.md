@@ -11,7 +11,7 @@
 ![License](https://img.shields.io/badge/License-GPLv3-green)
 
 本项目为 IPFire WebUI 添加了一个 ZeroTier VPN 管理页面。CGI 页面直接内嵌了英文、简体中文和繁体中文语言包。
-在 IPFire 2.29 (x86_64) -203 上测试通过。
+在 IPFire 2.29 (x86_64) -204 上测试通过。
 
 ![](image/zerotier.cn.png)
 

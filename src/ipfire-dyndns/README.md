@@ -1,6 +1,6 @@
 # IPFire DDNS Provider Patch
 
-Tested on **IPFire 2.29 - Core Update 203** with Python 3.10 and `ddns-014`, including install, provider registration, uninstall restoration, and reinstall checks.
+Tested on **IPFire 2.29 - Core Update 204** with Python 3.10 and `ddns-014`, including install, provider registration, uninstall restoration, and reinstall checks.
 
 This package adds extra DDNS providers to IPFire's `ddns` package:
 
@@ -34,7 +34,7 @@ The installer will:
 - run Python syntax checks
 - verify the new providers are listed by `/usr/bin/ddns`
 
-The installer discovers the active Python `ddns` package automatically. On Core Update 203, the path is:
+The installer discovers the active Python `ddns` package automatically. On Core Update 204, the path is:
 
 ```text
 /usr/lib/python3.10/site-packages/ddns

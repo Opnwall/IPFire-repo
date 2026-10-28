@@ -6,7 +6,7 @@ Mihomo（原 Clash Meta）是一款高性能、功能丰富的开源代理核心
 
 本项目是一个用于 IPFire 的 Mihomo 插件，用于在 IPFire 上运行 Mihomo 并实现透明代理功能。
 
-在IPFire-2.29-x86_64-Core-Update-203上测试通过。
+在IPFire-2.29-x86_64-Core-Update-204上测试通过。
 
 ![](image/mihomo.png)
 

@@ -1,7 +1,7 @@
 # Lucky for IPFire
 
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-red)
-![Core Update](https://img.shields.io/badge/Core%20Update-203-orange)
+![Core Update](https://img.shields.io/badge/Core%20Update-204-orange)
 ![Architecture](https://img.shields.io/badge/Architecture-x86__64-blue)
 ![Lucky](https://img.shields.io/badge/Lucky-v2.27.2-green)
 
@@ -66,7 +66,7 @@ sh uninstall.sh
 
 | IPFire 版本 | 架构 | 状态 |
 |------------|------|------|
-| 2.29 Core 203 | x86_64 | ✅ 已测试 |
+| 2.29 Core 204 | x86_64 | ✅ 已测试 |
 
 
 ## 免责

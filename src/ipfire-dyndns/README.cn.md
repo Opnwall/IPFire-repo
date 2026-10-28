@@ -1,6 +1,6 @@
 # IPFire DDNS 服务商补丁
 
-已在 **IPFire 2.29 - Core Update 203**（Python 3.10、`ddns-014`）上完成安装、服务商注册、卸载恢复和重新安装验证。
+已在 **IPFire 2.29 - Core Update 204**（Python 3.10、`ddns-014`）上完成安装、服务商注册、卸载恢复和重新安装验证。
 
 这个补丁包为 IPFire 的 `ddns` 动态域名组件增加以下服务商支持：
 
@@ -36,7 +36,7 @@ chmod +x install.sh uninstall.sh
 - 执行 Python 语法检查
 - 验证新服务商是否已被 `/usr/bin/ddns` 识别
 
-安装脚本会通过 Python 自动识别当前 `ddns` 包目录。Core Update 203 的路径为：
+安装脚本会通过 Python 自动识别当前 `ddns` 包目录。Core Update 204 的路径为：
 
 ```text
 /usr/lib/python3.10/site-packages/ddns

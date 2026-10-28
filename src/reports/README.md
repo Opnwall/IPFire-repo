@@ -1,7 +1,7 @@
 # Reports for IPFire
 
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
-![Core Update](https://img.shields.io/badge/Core_Update-203-red)
+![Core Update](https://img.shields.io/badge/Core_Update-204-red)
 ![Reports](https://img.shields.io/badge/Reports-WebUI-blue)
 
 本项目将 Reports 集成到 IPFire WebUI 中，用于生成和查看防火墙、IDS、URL Filter、DNS Firewall 等报告。
@@ -18,7 +18,7 @@
 - 按小时、每日、每周、每月执行的计划任务
 - 多语言文件集成，包含适配 IPFire `LANGUAGE=zh` 的完整简体中文报告翻译
 
-当前版本基于 `reports.ipfire` 2026-08-31 源码更新，并在 IPFire 2.29 Core Update 203（x86_64）上完成安装和报告生成测试。
+当前版本基于 `reports.ipfire` 2026-08-31 源码更新，并在 IPFire 2.29 Core Update 204（x86_64）上完成安装和报告生成测试。
 
 ## 安装命令
 

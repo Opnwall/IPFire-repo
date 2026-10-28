@@ -6,7 +6,7 @@
 
 # Syncthing for IPFire
 
-![IPFire](https://img.shields.io/badge/IPFire-2.29%20Core%20Update%20203-red)
+![IPFire](https://img.shields.io/badge/IPFire-2.29%20Core%20Update%20204-red)
 ![Architecture](https://img.shields.io/badge/Architecture-x86__64-blue)
 ![Platform](https://img.shields.io/badge/Platform-IPFire-orange)
 ![Status](https://img.shields.io/badge/Status-Tested-success)
@@ -20,7 +20,7 @@ Syncthing 是一款免费开源的持续文件同步工具，无需依赖中央�
 - 快速安装与卸载
 - 原生集成于 IPFire 系统
 - 基于浏览器的 Syncthing 管理界面
-- 已在 **IPFire 2.29 (x86_64) Core Update 203** 上测试通过
+- 已在 **IPFire 2.29 (x86_64) Core Update 204** 上测试通过
 
 ## 截图
 
