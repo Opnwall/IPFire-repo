@@ -1,0 +1,5 @@
+#!/bin/sh
+case "${1:-}" in
+  start|stop|restart|status) exec /usr/local/sbin/easytierctrl "$1" ;;
+  *) echo 'Usage: easytier {start|stop|restart|status}' >&2; exit 2 ;;
+esac

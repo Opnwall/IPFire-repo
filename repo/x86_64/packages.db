@@ -1,5 +1,6 @@
 # Opnwall IPFire package catalog v1
 # name|version|file|sha256|category|description_zh|description_en
+easytier|1.0.0|easytier-1.0.0-x86_64.tar.gz|a126340ea0f3a3942dac82b1677bb221b747f209f54909824d1d84164351db32|vpn|EasyTier 私有组网、原生 WAN 放行、LAN 转发与可选 NAT|EasyTier private mesh VPN with native WAN rules, LAN forwarding and optional NAT
 adguardhome|1.0.4|adguardhome-1.0.4-x86_64.tar.gz|a525ccb6ab568236fad5c3dc46a2e333be3b10b40c2b29e4db8da469735d4389|dns|适配 Core 204 的 AdGuard Home DNS 过滤与管理界面|AdGuard Home DNS filtering and WebUI integration for Core 204
 backup|1.0.3|backup-1.0.3-x86_64.tar.gz|f943fd8f95ec667b04642129210c8626b74a6cacbdf77628454add7350232370|system|适配 Core 204 的防火墙配置备份管理页面|Firewall configuration backup manager for Core 204
 captive-enhanced|1.1.10|captive-enhanced-1.1.10-x86_64.tar.gz|5c5a21520b590873d5a66701bcba54dff1b016aa975e234ba9932208408d9e68|network|多语言强制门户、上网劵、手动客户端授权、品牌徽标及 PDF 导出|Multilingual Captive Portal with coupons, manual client authorization, branding, and PDF export

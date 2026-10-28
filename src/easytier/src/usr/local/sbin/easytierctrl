@@ -1,0 +1,327 @@
+#!/usr/bin/python3
+"""Root-only bounded control interface. No shell commands or arbitrary arguments."""
+import fcntl
+import ipaddress
+import json
+import os
+import re
+from pathlib import Path
+import signal
+import subprocess
+import sys
+import tempfile
+import time
+from urllib.parse import urlsplit
+
+BASE = Path('/var/ipfire/easytier')
+RUN = Path('/run/easytier')
+CORE = '/usr/local/bin/easytier-core'
+CLI = '/usr/local/bin/easytier-cli'
+RPC = '127.0.0.1:15889'
+HOOK = '''
+# BEGIN IPFIRE EASYTIER MANAGED HOOK
+if [ -x /usr/local/sbin/easytierctrl ]; then
+    case "$1" in
+        start|reload) /usr/local/sbin/easytierctrl firewall-start ;;
+        stop) /usr/local/sbin/easytierctrl firewall-stop ;;
+    esac
+fi
+# END IPFIRE EASYTIER MANAGED HOOK
+'''
+DEFAULT = dict(network_name='', network_secret='', ipv4='', dhcp=True,
+               peers='', proxy_networks='', listener_port=0, boot=False,
+               wan_access=False, lan_forward=False, lan_nat=False)
+
+def atomic(path, text):
+    fd, name = tempfile.mkstemp(dir=path.parent, prefix='.new-')
+    try:
+        with os.fdopen(fd, 'w') as stream:
+            stream.write(text)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(name, path)
+    finally:
+        if os.path.exists(name):
+            os.unlink(name)
+
+def load():
+    p = BASE / 'settings.json'
+    return dict(DEFAULT, **json.loads(p.read_text())) if p.exists() else dict(DEFAULT)
+
+def validate(data, old):
+    if not isinstance(data, dict) or set(data) != set(DEFAULT):
+        raise ValueError('Invalid configuration fields')
+    for key in ('network_name', 'network_secret', 'ipv4', 'peers', 'proxy_networks'):
+        if not isinstance(data[key], str) or len(data[key]) > 2048 or any(ord(c) < 32 for c in data[key]):
+            raise ValueError('Invalid text field')
+    if not data['network_secret']:
+        data['network_secret'] = old['network_secret']
+    for key in ('network_name', 'network_secret'):
+        if not 1 <= len(data[key]) <= 128:
+            raise ValueError('Network name and password are required (1-128 characters)')
+    for key in ('dhcp', 'boot', 'wan_access', 'lan_forward', 'lan_nat'):
+        if type(data[key]) is not bool:
+            raise ValueError('Invalid boolean')
+    if type(data['listener_port']) is not int or not 0 <= data['listener_port'] <= 65535:
+        raise ValueError('Invalid listener port')
+    if data['wan_access'] and not data['listener_port']:
+        raise ValueError('WAN access requires a listener port')
+    if data['lan_nat'] and not data['lan_forward']:
+        raise ValueError('LAN NAT requires LAN forwarding')
+    if not data['dhcp']:
+        address = ipaddress.IPv4Interface(data['ipv4'])
+        if address.ip.is_multicast or address.ip.is_unspecified or address.ip.is_loopback:
+            raise ValueError('Invalid virtual IPv4 address')
+    elif data['ipv4']:
+        raise ValueError('Leave IPv4 empty in DHCP mode')
+    peers = data['peers'].split()
+    if len(peers) > 16:
+        raise ValueError('Too many peers')
+    for peer in peers:
+        u = urlsplit(peer)
+        if u.scheme not in ('tcp', 'udp', 'ws', 'wss', 'quic') or not u.hostname or not u.port or u.username or u.password or u.query or u.fragment or u.path not in ('', '/'):
+            raise ValueError('Invalid peer URL')
+    networks = data['proxy_networks'].split()
+    if len(networks) > 16:
+        raise ValueError('Too many advertised networks')
+    for network in networks:
+        ipaddress.IPv4Network(network, strict=True)
+    return data
+
+def config(data):
+    quote = lambda value: json.dumps(value, ensure_ascii=False)
+    rows = ['instance_name = "ipfire-easytier"', 'hostname = "ipfire-easytier"',
+            'dhcp = ' + str(data['dhcp']).lower()]
+    if data['ipv4']:
+        rows.append('ipv4 = ' + quote(data['ipv4']))
+    listeners = [] if not data['listener_port'] else [f'{p}://0.0.0.0:{data["listener_port"]}' for p in ('tcp', 'udp')]
+    rows += ['listeners = ' + json.dumps(listeners), '[network_identity]',
+             'network_name = ' + quote(data['network_name']),
+             'network_secret = ' + quote(data['network_secret']),
+             '[flags]', 'dev_name = "easytier0"', 'enable_encryption = true',
+             'default_protocol = "tcp"']
+    for peer in data['peers'].split():
+        rows += ['[[peer]]', 'uri = ' + quote(peer)]
+    for network in data['proxy_networks'].split():
+        rows += ['[[proxy_network]]', 'cidr = ' + quote(network)]
+    return '\n'.join(rows) + '\n'
+
+def pid():
+    try:
+        value = int((RUN / 'pid').read_text())
+        if value <= 1 or os.readlink(f'/proc/{value}/exe') != CORE:
+            return None
+        args = Path(f'/proc/{value}/cmdline').read_bytes().split(b'\0')
+        return value if str(BASE / 'config.toml').encode() in args else None
+    except (OSError, ValueError):
+        return None
+
+def firewall(enabled):
+    """Own only dedicated chains; never flush user or system chains."""
+    ipt = '/sbin/iptables'
+    def run(*args, check=True):
+        return subprocess.run([ipt, '-w', '5', *args], check=check,
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
+    while run('-t', 'nat', '-D', 'POSTROUTING', '-o', 'easytier0', '-j', 'ETIER_NAT', check=False).returncode == 0:
+        pass
+    run('-t', 'nat', '-F', 'ETIER_NAT', check=False)
+    run('-t', 'nat', '-X', 'ETIER_NAT', check=False)
+    for parent, chain in [('CUSTOMINPUT', 'ETIER_INPUT'), ('CUSTOMFORWARD', 'ETIER_FORWARD')]:
+        while run('-D', parent, '-j', chain, check=False).returncode == 0:
+            pass
+        run('-F', chain, check=False)
+        run('-X', chain, check=False)
+    if not enabled:
+        return
+    data = load()
+    settings = {}
+    for line in Path('/var/ipfire/ethernet/settings').read_text().splitlines():
+        key, sep, value = line.partition('=')
+        if sep:
+            settings[key] = value.strip("'\"")
+    def device(key):
+        value = settings.get(key, '')
+        if not re.fullmatch(r'[a-zA-Z0-9_.:-]{1,15}', value) or value == 'easytier0':
+            raise ValueError('Invalid firewall interface')
+        return value
+    rules = []
+    # WAN permissions are generated by the native IPFire INPUTFW rules.
+    nat_networks = []
+    if data['lan_forward']:
+        if Path('/proc/sys/net/ipv4/ip_forward').read_text().strip() != '1':
+            raise ValueError('System IPv4 forwarding is disabled')
+        for zone in ('GREEN', 'BLUE'):
+            if not settings.get(zone + '_DEV'):
+                continue
+            dev = device(zone + '_DEV')
+            net = str(ipaddress.IPv4Network(settings[zone + '_NETADDRESS'] + '/' +
+                                          settings[zone + '_NETMASK'], strict=False))
+            nat_networks.append(net)
+            rules.extend([('CUSTOMFORWARD', 'ETIER_FORWARD', ['-i', 'easytier0', '-o', dev, '-d', net, '-j', 'ACCEPT']),
+                          ('CUSTOMFORWARD', 'ETIER_FORWARD', ['-i', dev, '-o', 'easytier0', '-s', net, '-j', 'ACCEPT'])])
+    for parent, chain in dict.fromkeys((parent, chain) for parent, chain, _ in rules):
+        run('-N', chain)
+        run('-A', parent, '-j', chain)
+    try:
+        for _, chain, rule in rules:
+            run('-A', chain, *rule)
+        if data['lan_nat'] and nat_networks:
+            run('-t', 'nat', '-N', 'ETIER_NAT')
+            for net in nat_networks:
+                run('-t', 'nat', '-A', 'ETIER_NAT', '-s', net, '-j', 'MASQUERADE')
+            run('-t', 'nat', '-I', 'POSTROUTING', '1', '-o', 'easytier0', '-j', 'ETIER_NAT')
+    except Exception:
+        firewall(False)
+        raise
+
+def stop():
+    firewall(False)
+    value = pid()
+    if value:
+        os.kill(value, signal.SIGTERM)
+        for _ in range(50):
+            if not pid():
+                break
+            time.sleep(.1)
+        if pid() == value:
+            os.kill(value, signal.SIGKILL)
+    (RUN / 'pid').unlink(missing_ok=True)
+
+def native_wan():
+    """Preserve unrelated native rows; manage only exact plugin remarks."""
+    path = Path('/var/ipfire/firewall/input')
+    original = path.read_text()
+    remarks = {'EasyTier managed WAN TCP', 'EasyTier managed WAN UDP'}
+    rows = []
+    for line in original.splitlines():
+        fields = line.split(',')
+        if len(fields) > 17 and fields[17] in remarks:
+            continue
+        rows.append(line)
+    data = load()
+    if pid() and data['wan_access']:
+        keys = [int(line.split(',')[0]) for line in rows if line.split(',')[0].isdigit()]
+        key = max(keys, default=0)
+        for protocol in ('TCP', 'UDP'):
+            key += 1
+            fields = [''] * 38
+            for index, value in {0:'ACCEPT', 1:'INPUTFW', 2:'ON', 3:'std_net_src',
+                                 4:'RED', 5:'ipfire', 6:'RED1', 8:protocol,
+                                 11:'ON', 14:'TGT_PORT', 15:str(data['listener_port']),
+                                 16:'EasyTier managed WAN ' + protocol,
+                                 17:'OFF', 18:'OFF', 26:'00:00', 27:'00:00',
+                                 28:'OFF', 32:'OFF', 34:'OFF', 36:'second', 37:'OFF'}.items():
+                fields[index] = value
+            rows.append(str(key) + ',' + ','.join(fields))
+    updated = '\n'.join(rows) + ('\n' if rows else '')
+    if updated != original:
+        stat = path.stat()
+        # Do not overwrite a concurrent GUI edit observed during preparation.
+        if path.read_text() != original:
+            raise ValueError('Firewall configuration changed concurrently')
+        atomic(path, updated)
+        os.chown(path, stat.st_uid, stat.st_gid)
+        path.chmod(stat.st_mode & 0o777)
+
+def start():
+    if pid():
+        return
+    data = validate(load(), load())
+    if not Path('/dev/net/tun').exists():
+        subprocess.run(['/sbin/modprobe', 'tun'], check=True, timeout=10)
+    if not Path('/dev/net/tun').exists():
+        raise ValueError('TUN device is unavailable')
+    # Do not overwrite an interface or RPC endpoint owned by another instance.
+    if Path('/sys/class/net/easytier0').exists():
+        raise ValueError('easytier0 is already in use')
+    import socket
+    with socket.socket() as sock:
+        sock.bind(('127.0.0.1', 15889))
+    atomic(BASE / 'config.toml', config(data))
+    logfd = os.open('/var/log/easytier.log', os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+    with os.fdopen(logfd, 'ab') as log:
+        proc = subprocess.Popen([CORE, '-c', str(BASE / 'config.toml'), '--rpc-portal', RPC,
+                                 '--disable-env-parsing'],
+                                stdin=subprocess.DEVNULL, stdout=log, stderr=log,
+                                start_new_session=True, env={'PATH':'/usr/bin:/bin', 'RUST_LOG':'warn'})
+    atomic(RUN / 'pid', str(proc.pid))
+    time.sleep(2)
+    if proc.poll() is not None:
+        (RUN / 'pid').unlink(missing_ok=True)
+        raise ValueError('Startup failed; check /var/log/easytier.log as root')
+    try:
+        firewall(True)
+    except Exception:
+        stop()
+        raise
+
+def main():
+    if os.geteuid() != 0 or len(sys.argv) != 2:
+        raise ValueError('Root and one action required')
+    action = sys.argv[1]
+    if action not in ('save', 'start', 'stop', 'restart', 'status', 'peers', 'routes', 'firewall-start', 'firewall-stop', 'hook-install', 'hook-remove'):
+        raise ValueError('Unknown action')
+    os.umask(0o077)
+    BASE.mkdir(mode=0o750, exist_ok=True)
+    RUN.mkdir(mode=0o700, exist_ok=True)
+    with open(RUN / 'lock', 'a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        if action in ('hook-install', 'hook-remove'):
+            path = Path('/etc/sysconfig/firewall.local')
+            text = path.read_text()
+            if '# BEGIN IPFIRE EASYTIER MANAGED HOOK' in text and HOOK not in text:
+                raise ValueError('Modified firewall hook; refusing overwrite')
+            text = text.replace(HOOK, '')
+            if action == 'hook-install':
+                text += HOOK
+            mode = path.stat().st_mode & 0o777
+            atomic(path, text)
+            path.chmod(mode)
+        elif action == 'save':
+            raw = sys.stdin.buffer.read(16385)
+            if len(raw) > 16384:
+                raise ValueError('Request too large')
+            data = validate(json.loads(raw), load())
+            # Save does not restart or create network/firewall rules.
+            link = Path('/etc/rc.d/rc3.d/S95easytier')
+            if link.exists() or link.is_symlink():
+                if not link.is_symlink() or os.readlink(link) != '/etc/rc.d/init.d/easytier':
+                    raise ValueError('Unexpected startup entry')
+            atomic(BASE / 'settings.json', json.dumps(data))
+            if link.exists() or link.is_symlink():
+                if not data['boot']:
+                    link.unlink()
+            elif data['boot']:
+                link.symlink_to('/etc/rc.d/init.d/easytier')
+            firewall(bool(pid()))
+        elif action in ('firewall-start', 'firewall-stop'):
+            firewall(action == 'firewall-start' and bool(pid()))
+        elif action == 'status':
+            data = load()
+            secret = data.pop('network_secret', '')
+            print(json.dumps(dict(config=data, password_set=bool(secret), running=bool(pid()))))
+        elif action in ('peers', 'routes'):
+            if not pid():
+                raise ValueError('Service is stopped')
+            result = subprocess.run([CLI, '-p', RPC, 'peer' if action == 'peers' else 'route'],
+                                    stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=8)
+            if result.returncode:
+                raise ValueError('Status query failed')
+            print(result.stdout[:65536].decode(errors='replace'))
+        else:
+            if action in ('stop', 'restart'):
+                stop()
+            if action in ('start', 'restart'):
+                start()
+    # firewallctrl invokes firewall.local, which acquires our lock: release first.
+    if action in ('save', 'start', 'stop', 'restart'):
+        native_wan()
+        subprocess.run(['/usr/local/bin/firewallctrl'], check=True, timeout=60)
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (ValueError, OSError, subprocess.SubprocessError) as exc:
+        # Validation errors must never contain user passwords or full config.
+        print('EasyTier action failed: ' + type(exc).__name__, file=sys.stderr)
+        sys.exit(1)

@@ -1,0 +1,1 @@
+nobody ALL=(root) NOPASSWD: /usr/local/sbin/easytierctrl save, /usr/local/sbin/easytierctrl start, /usr/local/sbin/easytierctrl stop, /usr/local/sbin/easytierctrl restart, /usr/local/sbin/easytierctrl status, /usr/local/sbin/easytierctrl peers, /usr/local/sbin/easytierctrl routes

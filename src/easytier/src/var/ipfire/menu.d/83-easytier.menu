@@ -1,0 +1,6 @@
+$subservices->{'17.easytier'} = {
+    'caption' => 'EasyTier',
+    'uri' => '/cgi-bin/easytier.cgi',
+    'title' => 'EasyTier',
+    'enabled' => 1,
+};
