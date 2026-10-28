@@ -5,7 +5,7 @@
 
 # IPFire Community Repository
 
-> **Core 204 release.** 
+> **Supports core 204** 
 
 Only the latest package for each plugin is retained in the download directory. Back up configuration and preserve `/opt/ipfrepo/cache/`: removing an older installation requires its cached archive. If that cache is missing, upgrade to the latest version before uninstalling. Historical packages remain recoverable from Git history.
 
