@@ -62,7 +62,7 @@ ipfrepo upgrade                    # 升级已安装插件
 | `backup` | 1.0.3 | 防火墙配置备份管理 |
 | `captive-enhanced` | 1.1.10 | 多语言强制门户、上网劵、手动客户端授权及 PDF 导出 |
 | `dns-firewall-custom-lists` | 1.1.3 | DNS 防火墙自定义 HTTPS RPZ 列表管理 |
-| `easytier` | 1.0.0 | EasyTier 私有组网、WAN 放行、LAN 转发与可选 NAT |
+| `easytier` | 1.0.0 | EasyTier 私有组网 |
 | `ipfire-dyndns` | 1.0.3 | Cloudflare、阿里云和腾讯云 DDNS 补丁 |
 | `lang` | 1.0.4 | 中文本地化更新工具 |
 | `lucky` | 1.0.4 | Lucky 网络工具箱 |
