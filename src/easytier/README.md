@@ -1,3 +1,8 @@
+<div align="center">
+  <a href="README.md">中文</a> |
+  <a href="README_US.md">English</a>
+</div>
+
 # EasyTier for IPFire
 
 IPFire 社区 EasyTier 异地组网插件。通过 Web 界面配置网络名称、密码和对端地址，将不同位置的设备加入同一虚拟网络，并按需访问远端局域网。
