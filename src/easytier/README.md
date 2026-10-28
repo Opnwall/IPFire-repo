@@ -178,6 +178,4 @@ bash uninstall.sh
 
 - [EasyTier 项目](https://github.com/EasyTier/EasyTier)
 - [捆绑版本 v2.6.4](https://github.com/EasyTier/EasyTier/releases/tag/v2.6.4)
-- [上游来源记录](UPSTREAM-SOURCE.md)
-- [上游许可证 LGPL-3.0](UPSTREAM-LICENSE.txt)
 
