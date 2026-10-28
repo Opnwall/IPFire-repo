@@ -176,5 +176,3 @@ Uninstall stops the service, backs up settings to /root/easytier-uninstall.XXXXX
 
 - [EasyTier project](https://github.com/EasyTier/EasyTier)
 - [Bundled v2.6.4 release](https://github.com/EasyTier/EasyTier/releases/tag/v2.6.4)
-- [Source provenance](UPSTREAM-SOURCE.md)
-- [Upstream LGPL-3.0 license](UPSTREAM-LICENSE.txt)
