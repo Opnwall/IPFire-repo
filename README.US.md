@@ -5,13 +5,11 @@
 
 # IPFire Community Repository
 
-> **Supports core 204** 
-
 Only the latest package for each plugin is retained in the download directory. Back up configuration and preserve `/opt/ipfrepo/cache/`: removing an older installation requires its cached archive. If that cache is missing, upgrade to the latest version before uninstalling. Historical packages remain recoverable from Git history.
 
 <p align="center">
 
-**An unofficial community package repository for IPFire 2.29 Core Update 204 (x86_64)**
+**An unofficial community package repository for IPFire 2.29 Core Update 205 (x86_64)**
 
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
 ![Core Update](https://img.shields.io/badge/Core_Update-204-red)
@@ -28,7 +26,7 @@ Only the latest package for each plugin is retained in the download directory. B
 - Unified package management with `ipfrepo`
 - Does not modify the official repository or GPG trust chain
 - Community-maintained with continuously expanding packages
-- Every current package has been install, syntax, and uninstall-restoration tested on IPFire 2.29 Core Update 204
+- Every current package has been install, syntax, and uninstall-restoration tested on IPFire 2.29 Core Update 205
 
 ## Install Repository
 
