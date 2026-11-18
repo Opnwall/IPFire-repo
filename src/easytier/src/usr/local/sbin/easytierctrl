@@ -28,7 +28,7 @@ if [ -x /usr/local/sbin/easytierctrl ]; then
 fi
 # END IPFIRE EASYTIER MANAGED HOOK
 '''
-DEFAULT = dict(network_name='', network_secret='', ipv4='', dhcp=True,
+DEFAULT = dict(hostname='ipfire-easytier', network_name='', network_secret='', ipv4='', dhcp=True,
                peers='', proxy_networks='', listener_port=0, boot=False,
                wan_access=False, lan_forward=False, lan_nat=False)
 
@@ -49,8 +49,18 @@ def load():
     return dict(DEFAULT, **json.loads(p.read_text())) if p.exists() else dict(DEFAULT)
 
 def validate(data, old):
+    if isinstance(data, dict) and 'hostname' not in data:
+        data = dict(data, hostname=old.get('hostname', DEFAULT['hostname']))
     if not isinstance(data, dict) or set(data) != set(DEFAULT):
         raise ValueError('Invalid configuration fields')
+    hostname = data['hostname']
+    if not isinstance(hostname, str):
+        raise ValueError('Invalid hostname')
+    hostname = hostname.strip() or DEFAULT['hostname']
+    if len(hostname) > 253 or any(not re.fullmatch(r'[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?', label)
+                                  for label in hostname.split('.')):
+        raise ValueError('Invalid hostname')
+    data['hostname'] = hostname
     for key in ('network_name', 'network_secret', 'ipv4', 'peers', 'proxy_networks'):
         if not isinstance(data[key], str) or len(data[key]) > 2048 or any(ord(c) < 32 for c in data[key]):
             raise ValueError('Invalid text field')
@@ -90,11 +100,13 @@ def validate(data, old):
 
 def config(data):
     quote = lambda value: json.dumps(value, ensure_ascii=False)
-    rows = ['instance_name = "ipfire-easytier"', 'hostname = "ipfire-easytier"',
+    rows = ['instance_name = "ipfire-easytier"', 'hostname = ' + quote(data.get('hostname', DEFAULT['hostname'])),
             'dhcp = ' + str(data['dhcp']).lower()]
     if data['ipv4']:
         rows.append('ipv4 = ' + quote(data['ipv4']))
     listeners = [] if not data['listener_port'] else [f'{p}://0.0.0.0:{data["listener_port"]}' for p in ('tcp', 'udp')]
+    stun = json.dumps([f'{primary}:3478' for primary, _ in STUN_SERVERS])
+    rows += ['stun_servers = ' + stun, 'stun_servers_v6 = []']
     rows += ['listeners = ' + json.dumps(listeners), '[network_identity]',
              'network_name = ' + quote(data['network_name']),
              'network_secret = ' + quote(data['network_secret']),
@@ -116,8 +128,101 @@ def pid():
     except (OSError, ValueError):
         return None
 
+
+# Primary RFC 5780 endpoints and their observed alternate reply addresses.
+STUN_SERVERS = (
+    ('111.206.174.2', '111.206.174.3'),
+    ('77.72.169.211', '77.72.169.210'),
+)
+
+def wan_endpoint():
+    settings = {}
+    for line in Path('/var/ipfire/ethernet/settings').read_text().splitlines():
+        key, sep, value = line.partition('=')
+        if sep:
+            settings[key] = value.strip("'\"")
+    iface_file = Path('/var/ipfire/red/iface')
+    address_file = Path('/var/ipfire/red/local-ipaddress')
+    device = iface_file.read_text().strip() if iface_file.exists() else settings.get('RED_DEV', '')
+    address = address_file.read_text().strip() if address_file.exists() else settings.get('RED_ADDRESS', '')
+    if not re.fullmatch(r'[A-Za-z0-9_.:-]{1,15}', device):
+        raise ValueError('Invalid RED interface')
+    address = ipaddress.IPv4Address(address)
+    if address.is_unspecified or address.is_loopback or address.is_multicast:
+        raise ValueError('Invalid RED address')
+    return device, str(address)
+
+def stun_network(enabled):
+    def run(command, *args, check=True):
+        return subprocess.run([command, *args], check=check, timeout=10,
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    def ipt(*args, check=True):
+        return run('/sbin/iptables', '-w', '5', *args, check=check)
+
+    for parent, chain in (('CUSTOMINPUT', 'ETIER_STUN_IN'), ('CUSTOMOUTPUT', 'ETIER_STUN_OUT')):
+        while ipt('-D', parent, '-j', chain, check=False).returncode == 0:
+            pass
+        ipt('-F', chain, check=False)
+        ipt('-X', chain, check=False)
+
+    tcp_route = ('pref', '8999', 'iif', 'lo', 'ipproto', 'tcp',
+                 'dport', '3478', 'lookup', 'main')
+    while run('/sbin/ip', '-4', 'rule', 'del', *tcp_route, check=False).returncode == 0:
+        pass
+    if enabled:
+        run('/sbin/ip', '-4', 'rule', 'add', *tcp_route)
+
+    for index, (primary, alternate) in enumerate(STUN_SERVERS):
+        port_set = f'etier_stun{index}'
+        routes = [
+            ('pref', '8999', 'iif', 'lo', 'to', address, 'ipproto', protocol,
+             'dport', port, 'lookup', 'main')
+            for address, protocol, port in (
+                (primary, 'udp', '3478'),
+                (primary, 'udp', '3479'), (alternate, 'udp', '3479'),
+                (alternate, 'udp', '3478'),
+            )
+        ]
+        for route in routes:
+            while run('/sbin/ip', '-4', 'rule', 'del', *route, check=False).returncode == 0:
+                pass
+            if enabled:
+                run('/sbin/ip', '-4', 'rule', 'add', *route)
+        run('/usr/sbin/ipset', 'destroy', port_set, check=False)
+        if enabled:
+            run('/usr/sbin/ipset', 'create', port_set, 'bitmap:port', 'range', '1-65535', 'timeout', '20')
+
+    if not enabled:
+        return
+
+    red_device, red_address = wan_endpoint()
+
+    # Match the binding message type and the STUN magic cookie after the UDP header.
+    request = '0>>22&0x3c@8>>16=0x0001&&0>>22&0x3c@12=0x2112a442'
+    success = '0>>22&0x3c@8>>16=0x0101&&0>>22&0x3c@12=0x2112a442'
+    ipt('-N', 'ETIER_STUN_OUT')
+    ipt('-N', 'ETIER_STUN_IN')
+    for index, (primary, alternate) in enumerate(STUN_SERVERS):
+        port_set = f'etier_stun{index}'
+        ipt('-A', 'ETIER_STUN_OUT', '-o', red_device, '-s', red_address,
+            '-d', primary, '-p', 'udp', '--dport', '3478', '-m', 'u32', '--u32', request,
+            '-j', 'SET', '--add-set', port_set, 'src', '--exist')
+        for address, port in ((primary, '3479'), (alternate, '3478'), (alternate, '3479')):
+            ipt('-A', 'ETIER_STUN_IN', '-i', red_device, '-s', address, '-d', red_address,
+                '-p', 'udp', '--sport', port, '-m', 'set', '--match-set', port_set, 'dst',
+                '-m', 'u32', '--u32', success, '-j', 'ACCEPT')
+    ipt('-A', 'CUSTOMOUTPUT', '-j', 'ETIER_STUN_OUT')
+    ipt('-A', 'CUSTOMINPUT', '-j', 'ETIER_STUN_IN')
+
+
 def firewall(enabled):
     """Own only dedicated chains; never flush user or system chains."""
+    try:
+        stun_network(enabled)
+    except Exception:
+        stun_network(False)
+        raise
     ipt = '/sbin/iptables'
     def run(*args, check=True):
         return subprocess.run([ipt, '-w', '5', *args], check=check,
@@ -238,6 +343,7 @@ def start():
     with socket.socket() as sock:
         sock.bind(('127.0.0.1', 15889))
     atomic(BASE / 'config.toml', config(data))
+    stun_network(True)
     logfd = os.open('/var/log/easytier.log', os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
     with os.fdopen(logfd, 'ab') as log:
         proc = subprocess.Popen([CORE, '-c', str(BASE / 'config.toml'), '--rpc-portal', RPC,
@@ -248,6 +354,7 @@ def start():
     time.sleep(2)
     if proc.poll() is not None:
         (RUN / 'pid').unlink(missing_ok=True)
+        stun_network(False)
         raise ValueError('Startup failed; check /var/log/easytier.log as root')
     try:
         firewall(True)

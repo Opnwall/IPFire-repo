@@ -13,9 +13,9 @@ IPFire 社区 EasyTier 异地组网插件。通过 Web 界面配置网络名称�
 
 | 项目 | 说明 |
 | --- | --- |
-| 插件版本 | 1.0.0 |
+| 插件版本 | 1.0.1 |
 | 内置程序 | EasyTier 2.6.4 core / CLI |
-| 已验证系统 | IPFire 2.29 Core Update 204 |
+| 支持系统 | IPFire 2.29 Core Update 204 / 205 |
 | 架构 | x86_64 |
 | 管理入口 | 服务 → EasyTier |
 | 界面语言 | 简体中文、繁体中文、英文，跟随 GUI 设置 |
@@ -57,7 +57,7 @@ ipfrepo install easytier
 需要离线安装时，可从仓库下载并核对安装包校验值，上传到 IPFire 后执行：
 
 ```sh
-tar -xzf easytier-1.0.0-x86_64.tar.gz
+tar -xzf easytier-1.0.1-x86_64.tar.gz
 cd easytier
 bash install.sh
 ```
@@ -65,6 +65,15 @@ bash install.sh
 按提示确认后，进入 **服务 → EasyTier**。安装器拒绝覆盖非本插件管理的同名文件；升级会保留已有插件配置，但会停止服务。
 
 ## 快速配置
+
+### 1.0.1 更新
+
+- 新增“节点主机名”字段，支持简体、繁体和英文；只改变 EasyTier 节点名称，不修改系统主机名。保存后需重启 EasyTier 进程生效。
+- 保留旧配置，未设置主机名时仍显示 `ipfire-easytier`；旧页面保存不会丢失已设名称。
+- 保留 STUN 适配，并改为动态读取 RED 接口与 IPv4 地址，不将测试设备 WAN 地址写入安装包。运行时会创建专属 STUN 规则及优先级 8999 的 STUN 路由例外，停止时清理。
+- 安装器支持 Core 204/205。Core 205 已验证字段渲染、校验及配置序列化；未进行本版本完整卸载/重装和整机重启复测。
+
+升级已有仓库安装：执行 `ipfrepo update`、`ipfrepo install easytier`。升级会停止服务，完成后检查设置并手动启动；更改主机名后点击的是插件“重启”，无需重启 IPFire。
 
 1. 填写与其他成员一致的网络名称和密码。
 2. 填写可达对端，每行一个，例如 `tcp://vpn.example.net:11010`。
@@ -80,6 +89,7 @@ bash install.sh
 | 配置项 | 说明 |
 | --- | --- |
 | 网络名称 | 私有网络标识，各成员保持一致 |
+| 节点主机名 | VPN 中显示的节点名称；使用字母、数字、连字符或点分名称，留空恢复 ipfire-easytier；保存后重启 EasyTier 生效，不修改系统主机名 |
 | 网络密码 | 私有网络密码；保存时留空保留原密码 |
 | 虚拟 IPv4 | 静态地址及前缀，例如 `10.126.0.10/24`；自动模式留空 |
 | 监听端口 | 配置 TCP/UDP 传输监听；0 表示不配置传输监听 |
@@ -175,6 +185,8 @@ bash uninstall.sh
 卸载会停止服务，先将配置备份到 `/root/easytier-uninstall.XXXXXX/config/`，再清理插件程序、菜单、sudo 规则、启动项、托管防火墙规则和钩子。保留 root 私有日志 `/var/log/easytier.log` 及配置备份；不卸载共享 TUN 模块。
 
 ## 上游与许可证
+
+随包提供 EasyTier 上游 LGPL-3.0 许可证：[LICENSE.EasyTier](LICENSE.EasyTier)。
 
 - [EasyTier 项目](https://github.com/EasyTier/EasyTier)
 - [捆绑版本 v2.6.4](https://github.com/EasyTier/EasyTier/releases/tag/v2.6.4)

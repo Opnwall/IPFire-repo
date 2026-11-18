@@ -13,9 +13,9 @@ This is not an official IPFire or EasyTier plugin.
 
 | Item | Details |
 | --- | --- |
-| Plugin version | 1.0.0 |
+| Plugin version | 1.0.1 |
 | Bundled binaries | EasyTier 2.6.4 core / CLI |
-| Validated system | IPFire 2.29 Core Update 204 |
+| Supported system | IPFire 2.29 Core Update 204 / 205 |
 | Architecture | x86_64 |
 | Menu | Services → EasyTier |
 | UI languages | Simplified Chinese, Traditional Chinese and English, following the GUI setting |
@@ -57,7 +57,7 @@ Skip repository setup if ipfrepo is already installed. The client verifies the p
 For offline installation, download and verify the archive, transfer it to IPFire, then run:
 
 ```sh
-tar -xzf easytier-1.0.0-x86_64.tar.gz
+tar -xzf easytier-1.0.1-x86_64.tar.gz
 cd easytier
 bash install.sh
 ```
@@ -65,6 +65,15 @@ bash install.sh
 Open **Services → EasyTier** after confirming installation. Unmanaged conflicting files are not overwritten. Upgrades retain plugin settings but stop the service.
 
 ## Quick setup
+
+### Changes in 1.0.1
+
+- Added a node hostname field in all three UI languages. It changes only the EasyTier node name, not the system hostname. Save and restart the EasyTier process to apply.
+- Existing settings remain compatible; the default stays ipfire-easytier, and saving an older form preserves a configured name.
+- Retained STUN integration with dynamically discovered RED interface/IPv4 instead of a hardcoded test-device WAN address. Dedicated STUN rules and priority 8999 STUN routing exceptions are removed on stop.
+- Installer accepts Core 204/205. Core 205 field rendering, validation and serialization were checked; full uninstall/reinstall and whole-device reboot were not repeated for this version.
+
+For an existing repository installation, run `ipfrepo update` then `ipfrepo install easytier`. Upgrading stops the service: inspect settings and start it afterward. The plugin Restart button restarts EasyTier, not IPFire.
 
 1. Enter the same network name and password as the other members.
 2. Enter a reachable peer, one per line, such as `tcp://vpn.example.net:11010`.
@@ -80,6 +89,7 @@ Automatic addresses may change after a restart. Use a verified unused static add
 | Setting | Description |
 | --- | --- |
 | Network name | Private network identifier, shared by members |
+| Node hostname | VPN node name; letters, digits, hyphens and dotted names are supported. Blank restores ipfire-easytier. Save and restart EasyTier to apply; the system hostname is unchanged |
 | Network password | Private network password; blank preserves the saved value |
 | Virtual IPv4 | Static address/prefix, such as 10.126.0.10/24; empty in automatic mode |
 | Listener port | Configures TCP/UDP listeners; 0 means no configured transport listeners |
@@ -173,6 +183,8 @@ bash uninstall.sh
 Uninstall stops the service, backs up settings to /root/easytier-uninstall.XXXXXX/config/, and removes plugin programs, menu, sudo rules, startup entries, managed firewall rules and hooks. Root-only /var/log/easytier.log and configuration backups are retained. Shared TUN modules are not unloaded.
 
 ## Upstream and license
+
+The upstream LGPL-3.0 license is included as [LICENSE.EasyTier](LICENSE.EasyTier).
 
 - [EasyTier project](https://github.com/EasyTier/EasyTier)
 - [Bundled v2.6.4 release](https://github.com/EasyTier/EasyTier/releases/tag/v2.6.4)

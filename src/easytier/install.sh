@@ -2,7 +2,10 @@
 set -euo pipefail
 base=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 [[ $(id -u) == 0 && $(uname -m) == x86_64 ]] || { echo 'Requires root on x86_64'; exit 1; }
-[[ $(cat /opt/pakfire/db/core/mine) == 204 ]] || { echo 'Validated for Core 204 only'; exit 1; }
+case "$(cat /opt/pakfire/db/core/mine)" in
+    204|205) ;;
+    *) echo 'Supported on Core 204/205 only'; exit 1 ;;
+esac
 for file in easytier-core easytier-cli; do
     [[ $(od -An -tx1 -N4 "$base/src/usr/local/bin/$file" | tr -d ' \n') == 7f454c46 ]] || exit 1
 done

@@ -48,6 +48,7 @@ if (($ENV{REQUEST_METHOD}//'') eq 'POST') {
     my $ok;
     if ($action eq 'save') {
         my %data=map {$_=>($params{$_}//'')} qw(network_name network_secret ipv4 peers proxy_networks);
+        $data{hostname}=$params{hostname} if exists $params{hostname};
         for (qw(peers proxy_networks)) {$data{$_}=join(' ',split /\s+/,$data{$_});}
         $data{dhcp}=($params{dhcp}//'') eq 'on' ? JSON::PP::true : JSON::PP::false;
         $data{boot}=($params{boot}//'') eq 'on' ? JSON::PP::true : JSON::PP::false;
@@ -72,6 +73,7 @@ my $language=$main{LANGUAGE}//'en';
 my %traditional=(
     'Status: '=>'執行狀態：', 'Running'=>'執行中', 'Stopped'=>'已停止',
     'Network name'=>'網路名稱', 'Network password (blank keeps existing)'=>'網路密碼（留空保留）',
+    'Node hostname (restart to apply)'=>'節點主機名稱（重新啟動後生效）',
     'Virtual IPv4 (empty with DHCP)'=>'虛擬 IPv4（自動位址時留空）',
     'Listener port (0 disables listeners)'=>'監聽連接埠（0 為不監聽）',
     'Automatic virtual IP'=>'自動虛擬位址', 'Start at boot'=>'開機啟動',
@@ -99,13 +101,15 @@ out('<p>'.label('运行状态：','Status: ').($status->{running} ? label('运�
 out('<p>'.label('保存不重启进程，但立即更新防火墙选项。放行 WAN 需设置非零监听端口；LAN 转发允许私有网络成员与本机 GREEN/BLUE 网段双向互访，不添加 NAT。RPC 始终仅监听本机。','Saving does not restart the process, but applies firewall options immediately. WAN access requires a nonzero listener port. LAN forwarding permits bidirectional access between trusted mesh members and local GREEN/BLUE subnets, without NAT. RPC remains loopback-only.').'</p>');
 out("<form method='post'><input type='hidden' name='CSRF_TOKEN' value='$csrf'><table>");
 for my $field (
+    ['hostname',label('节点主机名（重启后生效）','Node hostname (restart to apply)'),'text'],
     ['network_name',label('网络名称','Network name'),'text'],
     ['network_secret',label('网络密码（留空保留）','Network password (blank keeps existing)'),'password'],
     ['ipv4',label('虚拟 IPv4（自动地址时留空）','Virtual IPv4 (empty with DHCP)'),'text'],
     ['listener_port',label('监听端口（0 为不监听）','Listener port (0 disables listeners)'),'number']) {
     my ($name,$label,$type)=@$field;
     my $value=$name eq 'network_secret' ? '' : esc($s->{$name});
-    out("<tr><td>$label</td><td><input name='$name' type='$type' value='$value' maxlength='128' autocomplete='off'></td></tr>");
+    my $maxlength=$name eq 'hostname' ? 253 : 128;
+    out("<tr><td>$label</td><td><input name='$name' type='$type' value='$value' maxlength='$maxlength' autocomplete='off'></td></tr>");
 }
 my %checks=(dhcp=>label('自动虚拟地址','Automatic virtual IP'), boot=>label('开机启动','Start at boot'),
             wan_access=>label('放行 WAN 端口','Allow WAN listener port'), lan_forward=>label('开启 LAN 转发（GREEN/BLUE）','Enable LAN forwarding (GREEN/BLUE)'),

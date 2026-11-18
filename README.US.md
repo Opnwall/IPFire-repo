@@ -73,7 +73,7 @@ ipfrepo upgrade                    # Upgrade installed packages
 | `speedtest` | 1.0.4 | Internet speed test |
 | `syncthing` | 1.0.4 | Syncthing file synchronization |
 | `tailscale` | 1.0.4 | Tailscale VPN integration |
-| `easytier` | 1.0.0 | EasyTier mesh VPN |
+| `easytier` | 1.0.1 | [EasyTier mesh VPN with custom node hostname](https://github.com/Opnwall/IPFire-repo/blob/main/src/easytier/README_US.md) |
 | `ttyd` | 1.0.4 | Web-based terminal |
 | `zerotier` | 1.0.4 | ZeroTier VPN integration |
 
