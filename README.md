@@ -9,7 +9,7 @@
 
 <p align="center">
 
-**适用于 IPFire 2.29 Core Update 204（x86_64）的非官方社区插件仓库**
+**适用于 IPFire 2.29 Core Update 205（x86_64）的非官方社区插件仓库**
 
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
 ![Core Update](https://img.shields.io/badge/Core_Update-204-red)
