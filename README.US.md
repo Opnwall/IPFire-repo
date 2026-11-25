@@ -57,9 +57,9 @@ ipfrepo upgrade                    # Upgrade installed packages
 | `adguardhome` | [1.0.5](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/adguardhome-1.0.5-x86_64.tar.gz) | AdGuard Home DNS filtering and management |
 | `backup` | [1.0.4](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/backup-1.0.4-x86_64.tar.gz) | Firewall configuration backup manager |
 | `captive-enhanced` | [1.1.13](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/captive-enhanced-1.1.13-x86_64.tar.gz) | Multilingual Captive Portal with coupons, manual client authorization, and PDF export |
-| `dns-firewall-custom-lists` | [1.1.4](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/dns-firewall-custom-lists-1.1.4-x86_64.tar.gz) | Custom HTTPS RPZ list management for the DNS Firewall |
+| `dns-firewall-custom-lists` | [1.1.5](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/dns-firewall-custom-lists-1.1.5-x86_64.tar.gz) | Custom HTTPS RPZ list management for the DNS Firewall |
 | `ipfire-dyndns` | [1.0.4](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/ipfire-dyndns-1.0.4-x86_64.tar.gz) | DDNS patch for Cloudflare, Alibaba Cloud and Tencent Cloud |
-| `lang` | [1.0.7](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/lang-1.0.7-x86_64.tar.gz) | Chinese localization update tool |
+| `lang` | [1.0.8](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/lang-1.0.8-x86_64.tar.gz) | Chinese localization update tool |
 | `lucky` | [1.0.5](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/lucky-1.0.5-x86_64.tar.gz) | Lucky network toolbox |
 | `mihomo` | [1.0.5](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/mihomo-1.0.5-x86_64.tar.gz) | Mihomo proxy and transparent proxy manager |
 | `reports` | [1.0.7](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/reports-1.0.7-x86_64.tar.gz) | Firewall, IDS, URL Filter and DNS Firewall reporting |

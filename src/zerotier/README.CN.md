@@ -3,15 +3,18 @@
   <a href="README.CN.md">中文</a>
 </div>
 
-
 # IPFire 的 ZeroTier 插件
+
+> 插件版本：**1.0.5** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
+> 界面语言：English / 简体中文 / 繁體中文；识别 Core 206 的语言代码。
+
+2026-11-25 验证：本轮通过 Core 206 x86_64 的语法、翻译资源和英、简、繁初始页面隔离检查；未在本轮执行该服务的真实联网、重启及完整安装卸载回归。
 
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
 ![Architecture](https://img.shields.io/badge/Arch-x86__64-blue)
 ![License](https://img.shields.io/badge/License-GPLv3-green)
 
 本项目为 IPFire WebUI 添加了一个 ZeroTier VPN 管理页面。CGI 页面直接内嵌了英文、简体中文和繁体中文语言包。
-在 IPFire 2.29 (x86_64) -204 上测试通过。
 
 ![](image/zerotier.cn.png)
 

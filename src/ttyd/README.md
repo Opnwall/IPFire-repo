@@ -1,6 +1,11 @@
 # ttyd for IPFire
 
-[![IPFire](https://img.shields.io/badge/IPFire-2.29%20Core%20204-red)](https://www.ipfire.org/)
+> Plugin version: **1.0.5** · Target: **IPFire 2.29 Core Update 206 (x86_64)**
+> UI languages: English / Simplified Chinese / Traditional Chinese, including Core 206 locale identifiers.
+
+Validation on 2026-11-25: Core 206 x86_64 syntax, translation-resource and initial English/Simplified/Traditional CGI checks passed in isolation. Live service connectivity, reboot and complete install/uninstall regression were not repeated in this run.
+
+[![IPFire](https://img.shields.io/badge/IPFire-2.29%20Core%20206-red)](https://www.ipfire.org/)
 [![ttyd](https://img.shields.io/badge/ttyd-Web%20Terminal-blue)](https://github.com/tsl0922/ttyd)
 
 ttyd is a lightweight command-line tool that shares a terminal over the web. It allows users to access and interact with a shell session directly from a web browser using modern web technologies such as WebSockets. ttyd is easy to deploy, supports secure remote access, and is useful for web-based administration, troubleshooting, and remote system management.
@@ -15,8 +20,6 @@ This unofficial plugin integrates the excellent ttyd web terminal into the IPFir
 * Installs disabled-at-boot and stopped by default, so the terminal can be enabled only when needed
 * Browser-based terminal access
 * Simple installation and removal scripts
-
-Tested on IPFire 2.29 (x86_64) Core Update 204
 
 ![](image/ttyd.png)
 

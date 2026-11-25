@@ -5,12 +5,16 @@
 
 # ZeroTier for IPFire
 
+> Plugin version: **1.0.5** · Target: **IPFire 2.29 Core Update 206 (x86_64)**
+> UI languages: English / Simplified Chinese / Traditional Chinese, including Core 206 locale identifiers.
+
+Validation on 2026-11-25: Core 206 x86_64 syntax, translation-resource and initial English/Simplified/Traditional CGI checks passed in isolation. Live service connectivity, reboot and complete install/uninstall regression were not repeated in this run.
+
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
 ![Architecture](https://img.shields.io/badge/Arch-x86__64-blue)
 ![License](https://img.shields.io/badge/License-GPLv3-green)
 
 This project adds a ZeroTier VPN management page to the IPFire WebUI. The CGI page directly embeds language packs for English, Simplified Chinese, and Traditional Chinese.
-Tested and verified on IPFire 2.29 (x86_64) -202.
 
 ![](image/zerotier.png)
 

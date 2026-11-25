@@ -449,8 +449,12 @@ print <<END;
 END
         	# Loop through the available blocklists.
         	foreach my $list (@{ $dnsbl }) {
-			my $name = &html_escape($list->{"name"});
-			my $description = &html_escape($list->{"description"});
+			my $name = $list->{"name"};
+                $name = main::_($name) if !$list->{"custom"} && defined(&main::_);
+                $name = &html_escape($name);
+			my $description = $list->{"description"};
+                $description = main::_($description) if !$list->{"custom"} && defined(&main::_);
+                $description = &html_escape($description);
 			my $zone = $list->{"zone"};
 			my $form_id = "list-" . substr(sha256_hex($zone), 0, 16);
 			my $checked;

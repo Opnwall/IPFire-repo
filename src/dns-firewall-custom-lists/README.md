@@ -5,7 +5,12 @@
 
 # IPFire DNS Firewall Custom Lists Extension
 
-For **IPFire 2.29 Core Update 204**. This extension adds user-managed RPZ feeds to the existing DNS Firewall page while preserving the enable/disable and access-control behavior of the official lists.
+> Plugin version: **1.1.5** · Target: **IPFire 2.29 Core Update 206 (x86_64)**
+> UI languages: English / Simplified Chinese / Traditional Chinese, including Core 206 locale identifiers.
+
+Validation on 2026-11-25: Upgrade, all three UI languages, the add-list form and DNS resolution were checked; a secure official RPZ zone transfer probe succeeded.
+
+For **IPFire 2.29 Core Update 206**. This extension adds user-managed RPZ feeds to the existing DNS Firewall page while preserving the enable/disable and access-control behavior of the official lists.
 
 ![DNS Firewall custom list](images/custom_dnsbl.png)
 
@@ -37,7 +42,7 @@ cd dns-firewall-custom-lists
 ./install.sh
 ```
 
-The installer validates Core Update 204 and required commands, checks script syntax, creates a timestamped backup under `/root`, installs the files and translations, rebuilds the language cache, prepares the shared lock, and reloads DNS. Existing custom-list configuration is preserved.
+The installer validates Core Update 206 and required commands, checks script syntax, creates a timestamped backup under `/root`, installs the files and translations, rebuilds the language cache, prepares the shared lock, and reloads DNS. Existing custom-list configuration is preserved.
 
 ## Uninstallation
 
@@ -102,6 +107,8 @@ Manual update check:
 
 ## Validation
 
-Validated on IPFire 2.29 x86_64 Core Update 204: installer and script syntax, English/Chinese UI, add/edit/delete, enable/disable, live DNS blocking, HTTP 304 conditional updates, failed-download preservation, atomic replacement, unified official/custom updates, and normal-domain DNS regression.
+Validated on IPFire 2.29 x86_64 Core Update 206: installer and script syntax, English/Chinese UI, add/edit/delete, enable/disable, live DNS blocking, HTTP 304 conditional updates, failed-download preservation, atomic replacement, unified official/custom updates, and normal-domain DNS regression.
 
 > Feed content, availability, and licensing remain the responsibility of each feed provider.
+
+The full RPZ batch encountered an upstream TLS connection reset and was not counted as passed. A single secure zone transfer and normal DNS resolution succeeded. Transfers use bounded concurrency and a 180-second batch deadline; failure does not clear existing rules.

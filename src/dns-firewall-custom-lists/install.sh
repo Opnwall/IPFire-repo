@@ -13,7 +13,7 @@ if [[ ${EUID} -ne 0 ]]; then
 	exit 1
 fi
 
-for command in jq curl flock perl; do
+for command in jq curl flock perl timeout; do
 	command -v "${command}" >/dev/null || {
 		echo "Required command is missing: ${command}" >&2
 		exit 1

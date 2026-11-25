@@ -29,6 +29,8 @@ exec 9>"${UPDATE_LOCK}"
 /usr/bin/flock 9
 
 readonly ZONE_SYNC_ARGS=(
+	# Bound concurrent TLS transfers to avoid exhausting primary connection limits.
+	"--parallel=1"
 	# Be quiet
 	"--quiet"
 
@@ -172,7 +174,7 @@ main() {
 
 		# Run the sync as unprivileged user
 		setpriv --reuid="knot-resolver" --regid="knot-resolver" --init-groups \
-			zone-sync "${ZONE_SYNC_ARGS[@]}" --primary="${primary}"  "${zones[@]}" || failed=$?
+			timeout --kill-after=5s 180s zone-sync "${ZONE_SYNC_ARGS[@]}" --primary="${primary}"  "${zones[@]}" || failed=$?
 	done
 
 	# HTTPS custom feeds follow the same update entrypoint and lock as the

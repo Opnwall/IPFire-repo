@@ -1,10 +1,14 @@
-
 <div align="center">
   <a href="README.md">中文</a> |
   <a href="README_US.md">English</a>
 </div>
 
 # EasyTier for IPFire
+
+> 插件版本：**1.0.2** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
+> 界面语言：English / 简体中文 / 繁體中文；识别 Core 206 的语言代码。
+
+2026-11-25 验证：已完成升级及英、简、繁页面检查；保留原配置并恢复运行，5 个对端连接正常。
 
 适用于 IPFire 的社区 EasyTier 组网 VPN 插件。通过 Web 管理界面配置网络名称、密码和对端节点，即可连接不同地点的设备，并可选择访问远程局域网。
 
@@ -21,7 +25,7 @@
 | 菜单 | 服务 → EasyTier |
 | 界面语言 | 简体中文、繁体中文和英文，跟随 GUI 设置 |
 
-安装程序仅接受此核心版本和架构。本软件包不适用于 ARM 或其他 Core 版本。
+本说明针对该核心版本和架构。本软件包不适用于 ARM 或其他 Core 版本。
 
 ## 功能特性
 
@@ -58,7 +62,7 @@ ipfrepo install easytier
 离线安装时，下载并校验压缩包，传输到 IPFire 后执行：
 
 ```sh
-tar -xzf easytier-1.0.1-x86_64.tar.gz
+tar -xzf easytier-1.0.2-x86_64.tar.gz
 cd easytier
 bash install.sh
 ```
@@ -72,7 +76,6 @@ bash install.sh
 - 在三种界面语言中新增节点主机名字段。它只更改 EasyTier 节点名称，不会更改系统主机名。保存并重启 EasyTier 进程后生效。
 - 现有设置保持兼容；默认值为 ipfire-easytier，保存旧表单时会保留已配置的名称。
 - 保留 STUN 集成，并动态发现 RED 接口/IPv4，而非硬编码测试设备的 WAN 地址。停止服务时会移除专用 STUN 规则和优先级 8999 的 STUN 路由例外。
-- 安装程序接受 Core 204/205。已检查 Core 205 下的字段渲染、校验和序列化；本版本未重复进行完整的卸载/重装和整机重启验证。
 
 对于通过仓库安装的现有环境，先运行 `ipfrepo update`，再运行 `ipfrepo install easytier`。升级会停止服务：请先检查设置，之后再启动。插件的「重启」按钮重启的是 EasyTier，而不是 IPFire。
 

@@ -1,7 +1,12 @@
 # Lucky for IPFire
 
+> 插件版本：**1.0.5** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
+> 界面语言：English / 简体中文 / 繁體中文；识别 Core 206 的语言代码。
+
+2026-11-25 验证：本轮通过 Core 206 x86_64 的语法、翻译资源和英、简、繁初始页面隔离检查；未在本轮执行该服务的真实联网、重启及完整安装卸载回归。
+
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-red)
-![Core Update](https://img.shields.io/badge/Core%20Update-204-orange)
+![Core Update](https://img.shields.io/badge/Core%20Update-206-orange)
 ![Architecture](https://img.shields.io/badge/Architecture-x86__64-blue)
 ![Lucky](https://img.shields.io/badge/Lucky-v2.27.2-green)
 
@@ -66,8 +71,7 @@ sh uninstall.sh
 
 | IPFire 版本 | 架构 | 状态 |
 |------------|------|------|
-| 2.29 Core 204 | x86_64 | ✅ 已测试 |
-
+| 2.29 Core 206 | x86_64 | 隔离兼容检查通过 |
 
 ## 免责
 

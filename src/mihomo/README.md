@@ -1,3 +1,9 @@
+
+> 插件版本：**1.0.5** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
+> 界面语言：English / 简体中文 / 繁體中文；识别 Core 206 的语言代码。
+
+2026-11-25 验证：已完成升级及英、简、繁页面检查；原配置保持不变，配置校验通过，SOCKS 代理访问返回 HTTP 204。
+
 ## Mihomo for IPFire
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
 ![Mihomo](https://img.shields.io/badge/Mihomo-MetaCubeX-purple)
@@ -5,8 +11,6 @@
 Mihomo（原 Clash Meta）是一款高性能、功能丰富的开源代理核心，兼容 Clash 配置格式，并在此基础上扩展了更多协议和高级功能，支持多种代理协议，提供灵活的规则分流、DNS 管理、负载均衡和透明代理功能。凭借其优秀的性能和广泛的兼容性，Mihomo 已成为构建现代网络代理和流量管理解决方案的重要工具之一。
 
 本项目是一个用于 IPFire 的 Mihomo 插件，用于在 IPFire 上运行 Mihomo 并实现透明代理功能。
-
-在IPFire-2.29-x86_64-Core-Update-204上测试通过。
 
 ![](image/mihomo.png)
 

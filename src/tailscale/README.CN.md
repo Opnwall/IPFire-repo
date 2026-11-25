@@ -5,6 +5,11 @@
 
 # Tailscale for IPFire
 
+> 插件版本：**1.0.5** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
+> 界面语言：English / 简体中文 / 繁體中文；识别 Core 206 的语言代码。
+
+2026-11-25 验证：本轮通过 Core 206 x86_64 的语法、翻译资源和英、简、繁初始页面隔离检查；未在本轮执行该服务的真实联网、重启及完整安装卸载回归。
+
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
 ![Architecture](https://img.shields.io/badge/Arch-x86__64-blue)
 ![License](https://img.shields.io/badge/License-GPLv3-green)
@@ -26,7 +31,7 @@ Tailscale for IPFire 为 IPFire 提供原生 Web 管理界面，可直接在 IPF
 
 | 平台 | 版本 |
 |------|------|
-| IPFire | 2.29 Core Update 202 |
+| IPFire | 2.29 Core Update 206 |
 | 架构 | x86_64 / amd64 |
 
 ## 安装

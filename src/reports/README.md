@@ -1,7 +1,12 @@
 # Reports for IPFire
 
+> 插件版本：**1.0.7** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
+> 界面语言：English / 简体中文 / 繁體中文；识别 Core 206 的语言代码。
+
+2026-11-25 验证：已完成升级及英、简、繁页面检查；使用隔离的样例配置验证三种语言的报告生成，未启用邮件发送。
+
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
-![Core Update](https://img.shields.io/badge/Core_Update-204-red)
+![Core Update](https://img.shields.io/badge/Core_Update-206-red)
 ![Reports](https://img.shields.io/badge/Reports-WebUI-blue)
 
 本项目将 Reports 集成到 IPFire WebUI 中，用于生成和查看防火墙、IDS、URL Filter、DNS Firewall 等报告。
@@ -17,8 +22,6 @@
 - 防火墙攻击模式、IDS 严重级别、URL 分类和 DNS 防火墙列表统计
 - 按小时、每日、每周、每月执行的计划任务
 - 多语言文件集成，包含适配 IPFire `LANGUAGE=zh` 的完整简体中文报告翻译
-
-当前版本基于 `reports.ipfire` 2026-08-31 源码更新，并在 IPFire 2.29 Core Update 204（x86_64）上完成安装和报告生成测试。
 
 ## 安装命令
 

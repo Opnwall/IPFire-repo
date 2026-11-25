@@ -1,4 +1,3 @@
-
 <div align="center">
   <a href="README.md">中文</a> |
   <a href="README_US.md">English</a>
@@ -6,10 +5,14 @@
 
 # IPFire Captive Portal Enhanced
 
+> Plugin version: **1.1.13** · Target: **IPFire 2.29 Core Update 206 (x86_64)**
+> UI languages: English / Simplified Chinese / Traditional Chinese, including Core 206 locale identifiers.
+
+Validation on 2026-11-25: Upgraded and checked in all three management languages, including test coupon PDF export; disabled GREEN/BLUE state, clients and coupon data were retained.
+Live portal authentication, coupon redemption and Windows redirects were not retested; upgrading does not enable explicitly disabled portal zones.
+
 A community-maintained enhanced Captive Portal plugin for IPFire, featuring a Chinese interface, multilingual guest authentication, coupons, manual client authorization, custom branding, terms and conditions, and Chinese PDF export.
 
-> Current version: **1.1.10**  
-> Verified environment: **IPFire 2.29 Core Update 204, x86_64**  
 > This is a community-maintained project and is not officially endorsed by IPFire. Test it in a non-production environment before using it with other Core Updates.
 
 ![Portal settings](image/setting1.png)
@@ -51,7 +54,7 @@ Coupon redemption and manual client authorization both write to the same authori
 ## Network Interface Behavior
 
 - The installer automatically reads the target device's network configuration during installation or upgrade.
-- `ENABLE_GREEN=on` is set by default when a GREEN interface exists.
+- On initial setup, a missing GREEN setting is initialized to `ENABLE_GREEN=on` when that interface exists; upgrades preserve existing selections.
 - `ENABLE_BLUE=on` is set by default when a BLUE interface exists.
 - Missing internal zones remain `off`; RED is never enabled as a Captive Portal interface.
 - GREEN and BLUE can be enabled or disabled manually from the administration page. Submissions from older pages do not accidentally overwrite the current state.
@@ -61,10 +64,9 @@ The Captive Portal provides authentication and access control only. It does not 
 
 ## Requirements
 
-- IPFire 2.29. This release has been verified on Core Update 204 x86_64.
 - The native IPFire Captive Portal must be installed, including `/usr/local/bin/captivectrl` and `/etc/httpd/conf/vhosts.d/captive.conf`.
 - Perl modules: `CGI`, `HTML::Template`, `PDF::API2`, `File::LibMagic`, `JSON::PP`, and `Digest::SHA`.
-- Bash, `flock`, `tar`, Apache administration commands, and `/usr/local/bin/update-lang-cache`.
+- Bash, `flock`, `tar`, and Apache administration commands. The legacy language-cache tool is not required on Core 206.
 
 ## Installation
 
@@ -169,15 +171,7 @@ Rollback restores the programs and Captive Portal data from the selected snapsho
 
 ## Testing
 
-Current baseline results:
-
-- 82 security and state tests passed.
-- 43 language-resource tests passed.
-- 10 logo front-end state tests passed.
-- Installation scenarios for GREEN only, GREEN plus BLUE, and missing legacy configuration keys passed.
-- Installation, rollback, Terms authentication, coupon redemption, manual client authorization, Windows redirect behavior, and Chinese PDF export were verified on a real Core Update 204 system.
-
-BLUE/AP deployments, other Core Updates, and different hardware platforms should still be validated separately on the target device.
+This Core 206 run checked upgrade, management pages in all three languages and three test PDF exports. Disabled portal zones, clients and coupons were retained. Live portal authentication, redemption and Windows redirects were not exercised.
 
 ## Security Design
 
@@ -208,7 +202,7 @@ captive-enhanced/
 
 ## Known Limitations
 
-- Full hardware validation currently covers IPFire 2.29 Core Update 204 x86_64 only.
+- Full hardware validation currently covers IPFire 2.29 Core Update 206 x86_64 only.
 - The Captive Portal cannot isolate guest devices on the same Layer 2 network.
 - Administrator-provided welcome titles, company names, and terms text are not translated automatically.
 - The bundled font cannot guarantee coverage for every Unicode character or complex text layout.

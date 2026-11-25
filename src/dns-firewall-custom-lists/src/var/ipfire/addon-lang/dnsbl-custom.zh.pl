@@ -25,6 +25,7 @@ package Lang;
 'dnsbl list zone' => '区域（zone）',
 'dnsbl official list readonly' => '官方列表信息由 IPFire 提供，仅供查看；您仍可以修改下方访问控制。',
 'information' => '提示',
+'dnsbl custom block and allow list' => '自定义封锁和允许列表',
 
 );
 1;

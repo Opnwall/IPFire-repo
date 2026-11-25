@@ -104,4 +104,4 @@ apachectl -k graceful 9>&-
 install -d -m 700 /var/ipfire/captive-enhanced
 printf '%s\n' "$backup" > /var/ipfire/captive-enhanced/last-backup
 trap - ERR
-printf 'Installed. Existing GREEN/BLUE zones enabled; other settings preserved. Backup: %s\n' "$backup"
+printf 'Installed. Existing GREEN/BLUE selections and other settings preserved. Backup: %s\n' "$backup"

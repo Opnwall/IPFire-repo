@@ -54,10 +54,10 @@ ipfrepo upgrade                    # 升级已安装插件
 | `adguardhome` | [1.0.5](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/adguardhome-1.0.5-x86_64.tar.gz) | AdGuard Home DNS 过滤与管理工具 |
 | `backup` | [1.0.4](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/backup-1.0.4-x86_64.tar.gz) | 防火墙配置备份管理 |
 | `captive-enhanced` | [1.1.13](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/captive-enhanced-1.1.13-x86_64.tar.gz) | 多语言强制门户、上网劵、手动客户端授权及 PDF 导出 |
-| `dns-firewall-custom-lists` | [1.1.4](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/dns-firewall-custom-lists-1.1.4-x86_64.tar.gz) | DNS 防火墙自定义 HTTPS RPZ 列表管理 |
+| `dns-firewall-custom-lists` | [1.1.5](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/dns-firewall-custom-lists-1.1.5-x86_64.tar.gz) | DNS 防火墙自定义 HTTPS RPZ 列表管理 |
 | `easytier` | [1.0.2](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/easytier-1.0.2-x86_64.tar.gz) | EasyTier 私有组网与自定义节点主机名 |
 | `ipfire-dyndns` | [1.0.4](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/ipfire-dyndns-1.0.4-x86_64.tar.gz) | Cloudflare、阿里云和腾讯云 DDNS 补丁 |
-| `lang` | [1.0.7](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/lang-1.0.7-x86_64.tar.gz) | 中文本地化更新工具 |
+| `lang` | [1.0.8](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/lang-1.0.8-x86_64.tar.gz) | 中文本地化更新工具 |
 | `lucky` | [1.0.5](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/lucky-1.0.5-x86_64.tar.gz) | Lucky 网络工具箱 |
 | `mihomo` | [1.0.5](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/mihomo-1.0.5-x86_64.tar.gz) | Mihomo 代理与透明代理管理 |
 | `reports` | [1.0.7](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/reports-1.0.7-x86_64.tar.gz) | 防火墙、IDS、URL Filter 和 DNS Firewall 报告 |

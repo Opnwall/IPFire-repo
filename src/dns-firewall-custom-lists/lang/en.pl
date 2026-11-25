@@ -23,3 +23,4 @@
 'dnsbl list zone' => 'Zone (zone)',
 'dnsbl official list readonly' => 'Official list information is provided by IPFire and is read-only. You can still change the access control below.',
 'information' => 'Information',
+'dnsbl custom block and allow list' => 'Custom Block and Allow List',

@@ -134,8 +134,8 @@ def patch_display_sources():
         if not path.exists():
             continue
         original = path.read_text(encoding='utf-8')
-        if path.name == 'dnsbl.cgi' and '/var/ipfire/community-lang/dns-firewall-custom-lists.pl' in original:
-            continue  # The updated plugin supplies its own Core 206 language adapter.
+        if '/var/ipfire/community-lang/' in original:
+            continue  # Updated community plugins supply their own Core 206 language adapters.
         updated = original
         for old, new in replacements:
             if new in updated:

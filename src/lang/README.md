@@ -1,10 +1,15 @@
-# IPFire 汉化补丁 1.0.7
+# IPFire 汉化补丁 1.0.8
 
-Core 206 改用 GNU gettext，原来的 `langs/zh.pl`、`addon-lang/*.zh.pl` 和语言缓存更新程序不再用于系统页面。本插件识别实际语言后端：旧版继续下载和安装原来的 ZIP，gettext 系统从页面保存的地址下载新版 IPFire_lang.zip，读取简繁 JSON 词库并合并安装。旧格式 ZIP 会被明确拒绝。
+> 插件版本：**1.0.8** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
+> 界面语言：English / 简体中文 / 繁體中文；识别 Core 206 的语言代码。
+
+2026-11-25 验证：已在设备上完成升级；英、简、繁页面和远程词库安装输出验证通过，简繁各保留 2589 个词条。
+
+Core 206 改用 GNU gettext，原来的 `langs/zh.pl`、`addon-lang/*.zh.pl` 和语言缓存更新程序不再用于系统页面。本插件面向 Core 206 gettext，从页面保存的地址下载新版 IPFire_lang.zip，读取简繁 JSON 词库并合并安装。旧格式 ZIP 会被明确拒绝。
 
 `src/usr/local/share/ipfire-lang/zh_CN.json` 及 `zh_TW.json` 是可审阅的补充翻译。安装时合并到设备现有 `/usr/share/locale/zh_CN/LC_MESSAGES/ipfire.mo`，保留原有上下文、复数和元数据，校验后原子替换。首次安装保留 `ipfire.mo.before-community-zh`。国家/地区译名依据 Babel 的 CLDR 简体中文地区数据，并补充旧代码和特殊区域。
 
-`core206-compat.json` 为没有经过 gettext 的显示标签补充翻译调用，并修复 EasyTier/Mihomo 对 `zh_CN`、`zh-CN` 等语言代码的识别。仅匹配已知源码片段；未知版本报错，不猜测替换。每个修改过的文件旁保留 `.before-community-zh` 备份，替换前运行 Perl 语法检查。适配这些文件需要其所属插件已安装；未安装的文件跳过。
+`core206-compat.json` 为没有经过 gettext 的显示标签补充翻译调用，并修复 EasyTier/Mihomo 对 `zh_CN`、`zh-CN` 等语言代码的识别。已提供自身 Core 206 语言适配的社区插件会跳过旧源码替换规则；其余文件仅匹配已知片段，未知版本明确报错。每个修改过的文件旁保留 `.before-community-zh` 备份，替换前运行 Perl 语法检查。适配这些文件需要其所属插件已安装；未安装的文件跳过。
 
 安装：以 root 执行 `bash install.sh`，再在“系统 > 汉化补丁”中点击“立即汉化”。Core 206 请先上传新版 IPFire_lang.zip，然后在插件页面保存其 HTTPS 直接下载地址（目前限定 cloud.pfchina.org）。插件不执行下载包中的脚本，不直接覆盖下载包提供的任意路径。繁体中文补充词库 `zh_TW.json` 与简体词库同步提供 532 项补充（含六项菜单名称），使用繁体用语并保留已有上游译文；安装日志也按界面语言显示。上游系统更新可能覆盖词库及显示适配，需要重新安装；如源码变更，先重新核对匹配片段。
 

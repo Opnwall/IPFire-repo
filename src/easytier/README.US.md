@@ -5,6 +5,11 @@
 
 # EasyTier for IPFire
 
+> Plugin version: **1.0.2** · Target: **IPFire 2.29 Core Update 206 (x86_64)**
+> UI languages: English / Simplified Chinese / Traditional Chinese, including Core 206 locale identifiers.
+
+Validation on 2026-11-25: Upgraded and checked in all three UI languages; original configuration was retained and five peers reconnected.
+
 A community EasyTier mesh VPN plugin for IPFire. Configure a network name, password and peers through the Web UI to connect devices across locations and optionally access remote LANs.
 
 This is not an official IPFire or EasyTier plugin.
@@ -20,7 +25,7 @@ This is not an official IPFire or EasyTier plugin.
 | Menu | Services → EasyTier |
 | UI languages | Simplified Chinese, Traditional Chinese and English, following the GUI setting |
 
-The installer accepts only this Core version and architecture. This package is not suitable for ARM or other Core versions.
+This documentation targets this Core version and architecture. This package is not suitable for ARM or other Core versions.
 
 ## Features
 
@@ -57,7 +62,7 @@ Skip repository setup if ipfrepo is already installed. The client verifies the p
 For offline installation, download and verify the archive, transfer it to IPFire, then run:
 
 ```sh
-tar -xzf easytier-1.0.1-x86_64.tar.gz
+tar -xzf easytier-1.0.2-x86_64.tar.gz
 cd easytier
 bash install.sh
 ```
@@ -71,7 +76,6 @@ Open **Services → EasyTier** after confirming installation. Unmanaged conflict
 - Added a node hostname field in all three UI languages. It changes only the EasyTier node name, not the system hostname. Save and restart the EasyTier process to apply.
 - Existing settings remain compatible; the default stays ipfire-easytier, and saving an older form preserves a configured name.
 - Retained STUN integration with dynamically discovered RED interface/IPv4 instead of a hardcoded test-device WAN address. Dedicated STUN rules and priority 8999 STUN routing exceptions are removed on stop.
-- Installer accepts Core 204/205. Core 205 field rendering, validation and serialization were checked; full uninstall/reinstall and whole-device reboot were not repeated for this version.
 
 For an existing repository installation, run `ipfrepo update` then `ipfrepo install easytier`. Upgrading stops the service: inspect settings and start it afterward. The plugin Restart button restarts EasyTier, not IPFire.
 

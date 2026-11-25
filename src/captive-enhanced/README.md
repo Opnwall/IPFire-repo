@@ -1,4 +1,3 @@
-
 <div align="center">
   <a href="README.md">中文</a> |
   <a href="README_US.md">English</a>
@@ -6,10 +5,14 @@
 
 # IPFire Captive Portal Enhanced
 
+> 插件版本：**1.1.13** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
+> 界面语言：English / 简体中文 / 繁體中文；识别 Core 206 的语言代码。
+
+2026-11-25 验证：已完成升级及英、简、繁管理页面、测试上网券 PDF 导出检查；原有 GREEN/BLUE 关闭状态、客户端和上网券数据保留。
+实际接入认证、上网券兑换和 Windows 跳转未在本轮重新验证；升级不会主动开启原本关闭的门户区域。
+
 面向 IPFire 的社区版强制门户增强插件，提供中文界面、多语言访客认证、上网劵、手动客户端授权、品牌徽标、条款展示及中文 PDF 导出。
 
-> 当前版本：**1.1.10**  
-> 已验证环境：**IPFire 2.29 Core Update 204，x86_64**  
 > 本项目由社区维护，不代表 IPFire 官方认证。其他 Core 版本请先在测试环境验证。
 
 ![门户设置](image/setting1.png)
@@ -51,7 +54,7 @@
 ## 网络接口行为
 
 - 安装或升级时自动读取目标设备网络配置。
-- 存在 GREEN 接口时默认设置 `ENABLE_GREEN=on`。
+- 首次配置且缺少 GREEN 开关键时，存在 GREEN 接口会初始化 `ENABLE_GREEN=on`；升级保留已有开关值。
 - 存在 BLUE 接口时默认设置 `ENABLE_BLUE=on`。
 - 不存在的内部区域保持 `off`，RED 不会作为强制门户接口启用。
 - 管理页面可手动启停 GREEN/BLUE；旧页面提交不会意外覆盖当前状态。
@@ -61,10 +64,10 @@
 
 ## 系统要求
 
-- IPFire 2.29；本版本已在 Core Update 204 x86_64 上验证。
+- IPFire 2.29；本版本已在 Core Update 206 x86_64 上验证。
 - 系统原生 Captive Portal 已安装，并存在 `/usr/local/bin/captivectrl` 和 `/etc/httpd/conf/vhosts.d/captive.conf`。
 - Perl 模块：`CGI`、`HTML::Template`、`PDF::API2`、`File::LibMagic`、`JSON::PP`、`Digest::SHA`。
-- Bash、`flock`、`tar`、Apache 管理命令及 `/usr/local/bin/update-lang-cache`。
+- Bash、`flock`、`tar`、Apache 管理命令。Core 206 不要求旧语言缓存程序。
 
 ## 安装
 
@@ -168,15 +171,7 @@ bash uninstall.sh /var/backups/captive-enhanced/<日期时间>-<PID>
 
 ## 测试
 
-当前基础检查结果：
-
-- 安全及状态测试：82 项通过。
-- 语言资源测试：43 项通过。
-- Logo 前端状态测试：10 项通过。
-- GREEN、GREEN+BLUE 及缺少旧配置键三种安装场景通过。
-- 已在真实 Core 204 主机验证安装、回退、条款认证、上网劵兑换、手动客户端授权、Windows 跳转和中文 PDF。
-
-BLUE/AP、跨 Core 版本和不同硬件平台仍应在对应设备上单独验收。
+Core 206 本轮已验证升级、英简繁管理页面和三种语言的测试 PDF 导出；门户区域的关闭状态、客户端及上网券数据保持不变。未开启门户进行真实接入认证、兑换或 Windows 跳转测试。
 
 ## 安全设计
 
@@ -207,7 +202,6 @@ captive-enhanced/
 
 ## 已知限制
 
-- 当前完整实机验证基于 IPFire 2.29 Core Update 204 x86_64。
 - Captive Portal 不能隔离同一二层网络中的访客设备。
 - 管理员填写的欢迎标题、公司和条款正文不会自动翻译。
 - 捆绑字体不能保证覆盖所有 Unicode 字符或复杂文字排版。
