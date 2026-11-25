@@ -4,7 +4,7 @@
   <a href="README_US.md">English</a>
 </div>
 
-# IPFire 版 EasyTier
+# EasyTier for IPFire
 
 适用于 IPFire 的社区 EasyTier 组网 VPN 插件。通过 Web 管理界面配置网络名称、密码和对端节点，即可连接不同地点的设备，并可选择访问远程局域网。
 
