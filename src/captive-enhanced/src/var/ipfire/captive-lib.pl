@@ -28,6 +28,8 @@ sub ui_language {
 sub tr {
     my ($key) = @_;
     my $code = ui_language();
+    $code = 'tw' if $code =~ /^(?:tw|zh[-_](?:TW|HK|Hant))$/i;
+    $code = 'zh' if $code =~ /^(?:zh|zh[-_](?:CN|SG|Hans))$/i;
     $code = 'en' unless $code =~ /^[a-z]{2}(?:[-_][A-Za-z0-9]+)*\z/;
     my $cache_key = "$ADDON_DIR|$code";
     unless (exists $message_cache{$cache_key}) {

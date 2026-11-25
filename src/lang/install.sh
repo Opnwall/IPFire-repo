@@ -52,8 +52,12 @@ print_step "设置文件权限"
 chown root:root /srv/web/ipfire/cgi-bin/lang_install.cgi /usr/local/sbin/lang-install-helper /var/ipfire/menu.d/78-lang_install.menu /etc/sudoers.d/lang-install 2>/dev/null || true
 chmod 755 /srv/web/ipfire/cgi-bin/lang_install.cgi
 chmod 755 /usr/local/sbin/lang-install-helper
+chmod 755 /usr/local/sbin/lang-install-gettext
 chmod 644 /var/ipfire/menu.d/78-lang_install.menu
 chmod 440 /etc/sudoers.d/lang-install
+
+chown root:root /usr/local/sbin/lang-install-gettext /usr/local/share/ipfire-lang/zh_CN.json /usr/local/share/ipfire-lang/zh_TW.json /usr/local/share/ipfire-lang/core206-compat.json
+chmod 644 /usr/local/share/ipfire-lang/zh_CN.json /usr/local/share/ipfire-lang/zh_TW.json /usr/local/share/ipfire-lang/core206-compat.json
 
 print_step "校验 sudoers 配置"
 visudo -cf /etc/sudoers.d/lang-install >/dev/null || die "sudoers 配置校验失败"

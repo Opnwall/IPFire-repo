@@ -49,3 +49,7 @@ rm -rf /opt/ttyd
 rm -f /opt/pakfire/db/rootfiles/ttyd
 
 echo "ttyd for IPFire has been uninstalled."
+
+# Remove only this addon's Core 206 language adapter.
+rm -f /var/ipfire/community-lang/ttyd.pl
+rm -rf /var/ipfire/community-lang/ttyd

@@ -7,6 +7,7 @@ use Encode qw(encode);
 
 require '/var/ipfire/general-functions.pl';
 require "${General::swroot}/lang.pl";
+require '/var/ipfire/community-lang/adguardhome.pl';
 require "${General::swroot}/header.pl";
 
 my %settings = ();
@@ -91,10 +92,10 @@ sub agh_tr {
         'adguardhome first run' => '請在 AdGuard Home Web 介面完成首次執行精靈。',
     );
 
-    if (($Lang::language || '') eq 'tw' && exists $tw{$key}) {
+    if (($Lang::language || '') =~ /^(?:tw|zh[-_](?:TW|HK|Hant))$/i && exists $tw{$key}) {
         return utf8_bytes($tw{$key});
     }
-    if (($Lang::language || '') eq 'zh' && exists $zh{$key}) {
+    if (($Lang::language || '') =~ /^(?:zh|zh[-_](?:CN|SG|Hans))$/i && exists $zh{$key}) {
         return utf8_bytes($zh{$key});
     }
     if (exists $en{$key}) {

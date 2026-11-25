@@ -45,3 +45,7 @@ print_step "Reloading Web service"
 
 echo
 echo "sing-box uninstall completed."
+
+# Remove only this addon's Core 206 language adapter.
+rm -f /var/ipfire/community-lang/sing-box.pl
+rm -rf /var/ipfire/community-lang/sing-box

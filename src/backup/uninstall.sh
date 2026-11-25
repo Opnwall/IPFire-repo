@@ -44,3 +44,7 @@ print_step "Reloading Web service"
 
 echo
 echo "Firewall Backup uninstall completed."
+
+# Remove only this addon's Core 206 language adapter.
+rm -f /var/ipfire/community-lang/backup.pl
+rm -rf /var/ipfire/community-lang/backup

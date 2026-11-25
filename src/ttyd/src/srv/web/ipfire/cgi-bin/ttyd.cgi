@@ -8,6 +8,7 @@ use HTML::Entities qw(encode_entities);
 
 require "/var/ipfire/general-functions.pl";
 require "${General::swroot}/lang.pl";
+require '/var/ipfire/community-lang/ttyd.pl';
 require "${General::swroot}/header.pl";
 
 my $config_file = "/etc/sysconfig/ttyd";
@@ -108,11 +109,11 @@ sub ttyd_tr {
 		'ttyd not running' => 'ttyd 未執行。請確認 ttyd 已安裝、SSH 已啟用，並且 IPFire WebUI 憑證可用。',
 	);
 
-	if (($Lang::language || "") eq "tw" && exists $tw{$key}) {
+	if (($Lang::language || "") =~ /^(?:tw|zh[-_](?:TW|HK|Hant))$/i && exists $tw{$key}) {
 		return $tw{$key};
 	}
 
-	if (($Lang::language || "") eq "zh" && exists $zh{$key}) {
+	if (($Lang::language || "") =~ /^(?:zh|zh[-_](?:CN|SG|Hans))$/i && exists $zh{$key}) {
 		return $zh{$key};
 	}
 

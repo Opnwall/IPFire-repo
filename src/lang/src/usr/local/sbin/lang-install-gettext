@@ -1,0 +1,179 @@
+#!/usr/bin/python3
+"""Merge reviewed Core 206 translations into the installed gettext catalog."""
+import gettext
+import json
+import os
+from pathlib import Path
+import shutil
+import struct
+import tempfile
+import zipfile
+import argparse
+import re
+
+
+def message(text):
+    if os.environ.get('LANGTOOL_LANG') == 'zh-Hant':
+        for old, new in [('已更新', '已更新'), ('个补充条目，共', '個補充條目，共'), ('个条目', '個條目'),
+                         ('新建页面请求将直接使用更新后的词库，无需刷新旧版缓存。', '新的頁面請求將直接使用更新後的詞庫，無需重新整理舊版快取。'),
+                         ('已适配页面：', '已適配頁面：'), ('词库', '詞庫')]:
+            text = text.replace(old, new)
+    print(text)
+
+
+def compile_mo(catalog):
+    # GNU MO stores context as context\004msgid and plurals as NUL-separated strings.
+    pairs = sorted((k.encode('utf-8'), v.encode('utf-8')) for k, v in catalog.items())
+    count = len(pairs)
+    offset = 28 + 16 * count
+    originals = b''
+    translated = b''
+    original_table = []
+    translated_table = []
+    for key, value in pairs:
+        original_table.append((len(key), offset + len(originals)))
+        originals += key + b'\0'
+    translated_offset = offset + len(originals)
+    for key, value in pairs:
+        translated_table.append((len(value), translated_offset + len(translated)))
+        translated += value + b'\0'
+    return (struct.pack('<7I', 0x950412de, 0, count, 28, 28 + count * 8, 0, 0)
+            + b''.join(struct.pack('<2I', *row) for row in original_table + translated_table)
+            + originals + translated)
+
+
+def load_catalog(path):
+    with path.open('rb') as stream:
+        parsed = gettext.GNUTranslations(stream)
+    result = {}
+    # Read raw strings so plural originals and all metadata survive the merge.
+    data = path.read_bytes()
+    endian = '<' if data[:4] == b'\xde\x12\x04\x95' else '>'
+    _, revision, count, originals, translations, _, _ = struct.unpack_from(endian + '7I', data)
+    if revision >> 16 > 1:
+        raise ValueError('Unsupported GNU MO revision')
+    for i in range(count):
+        size, offset = struct.unpack_from(endian + '2I', data, originals + 8 * i)
+        key = data[offset:offset + size].decode('utf-8')
+        size, offset = struct.unpack_from(endian + '2I', data, translations + 8 * i)
+        result[key] = data[offset:offset + size].decode('utf-8')
+    if not parsed._catalog:
+        raise ValueError('Empty gettext catalog')
+    return result
+
+
+def validate_patch(patch):
+    if not isinstance(patch, dict) or not patch:
+        raise ValueError('Translation data must be a nonempty JSON object')
+    placeholders = re.compile(r'%(?:[1-9][0-9]*\$)?[-+#0 ]*(?:[0-9]+|\*)?(?:\.(?:[0-9]+|\*))?[hlLzjt]*[diouxXeEfFgGcs]')
+    for key, value in patch.items():
+        if not isinstance(key, str) or not key or not isinstance(value, str) or not value:
+            raise ValueError('Invalid translation entry')
+        if any(ord(c) < 32 and c not in '\n\r\t\x04' for c in key + value):
+            raise ValueError('Invalid control character in translation')
+        if sorted(placeholders.findall(key)) != sorted(placeholders.findall(value)):
+            raise ValueError('Translation changes format placeholders: ' + key)
+
+
+def read_patch_archive(path):
+    expected = {'format.json', 'gettext/zh_CN.json', 'gettext/zh_TW.json'}
+    with zipfile.ZipFile(path) as archive:
+        files = archive.infolist()
+        if len(files) != len(expected) or {i.filename for i in files} != expected:
+            raise ValueError('Expected a Core 206 gettext patch ZIP (format.json and two gettext JSON files)')
+        if any(i.file_size > 8 * 1024 * 1024 or i.flag_bits & 1 for i in files):
+            raise ValueError('Oversized or encrypted patch entry')
+        metadata = json.loads(archive.read('format.json').decode('utf-8'))
+        if metadata.get('format') != 'ipfire-gettext-patch' or metadata.get('version') != 1:
+            raise ValueError('Unsupported patch format')
+        patches = {locale: json.loads(archive.read('gettext/' + locale + '.json').decode('utf-8'))
+                   for locale in ('zh_CN', 'zh_TW')}
+        for patch in patches.values():
+            validate_patch(patch)
+        return patches
+
+
+def install(catalog_path, patch_path):
+    catalog = load_catalog(catalog_path)
+    patch = json.loads(patch_path.read_text(encoding='utf-8'))
+    validate_patch(patch)
+    catalog.update(patch)
+    payload = compile_mo(catalog)
+    fd, temporary = tempfile.mkstemp(prefix='.ipfire.mo.', dir=catalog_path.parent)
+    try:
+        with os.fdopen(fd, 'wb') as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        verified = load_catalog(Path(temporary))
+        if verified != catalog:
+            raise ValueError('Catalog round-trip verification failed')
+        backup = catalog_path.with_name('ipfire.mo.before-community-zh')
+        if not backup.exists():
+            shutil.copy2(catalog_path, backup)
+        os.chmod(temporary, 0o644)
+        os.replace(temporary, catalog_path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+    message(f'已更新 {catalog_path.parent.parent.name} gettext 词库：{len(patch)} 个补充条目，共 {len(catalog) - 1} 个条目。')
+    message('新建页面请求将直接使用更新后的词库，无需刷新旧版缓存。')
+
+
+def patch_display_sources():
+    import subprocess
+    patches = json.loads(Path('/usr/local/share/ipfire-lang/core206-compat.json').read_text())
+    for filename, replacements in patches.items():
+        path = Path(filename)
+        if not path.exists():
+            continue
+        original = path.read_text(encoding='utf-8')
+        if path.name == 'dnsbl.cgi' and '/var/ipfire/community-lang/dns-firewall-custom-lists.pl' in original:
+            continue  # The updated plugin supplies its own Core 206 language adapter.
+        updated = original
+        for old, new in replacements:
+            if new in updated:
+                continue
+            if old not in updated:
+                raise ValueError(f'Unrecognized source version: {filename}: {old}')
+            updated = updated.replace(old, new)
+        if updated == original:
+            continue
+        backup = path.with_name(path.name + '.before-community-zh')
+        if not backup.exists():
+            shutil.copy2(path, backup)
+        fd, temporary = tempfile.mkstemp(prefix='.community-zh.', dir=path.parent)
+        try:
+            with os.fdopen(fd, 'w', encoding='utf-8') as stream:
+                stream.write(updated)
+            check = subprocess.run(['/usr/bin/perl', '-c', temporary], capture_output=True)
+            if check.returncode:
+                raise ValueError(check.stderr.decode(errors='replace'))
+            shutil.copymode(path, temporary)
+            os.chown(temporary, path.stat().st_uid, path.stat().st_gid)
+            os.replace(temporary, path)
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
+        message('已适配页面：' + filename)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Install IPFire Chinese gettext translations')
+    parser.add_argument('--archive', type=Path)
+    args = parser.parse_args()
+    if args.archive:
+        patches = read_patch_archive(args.archive)
+        # Validate both installed catalogs before changing either language.
+        for locale in patches:
+            load_catalog(Path('/usr/share/locale') / locale / 'LC_MESSAGES/ipfire.mo')
+        with tempfile.TemporaryDirectory(prefix='ipfire-gettext-') as temporary:
+            for locale, patch in patches.items():
+                patch_file = Path(temporary) / (locale + '.json')
+                patch_file.write_text(json.dumps(patch, ensure_ascii=False), encoding='utf-8')
+                install(Path('/usr/share/locale') / locale / 'LC_MESSAGES/ipfire.mo', patch_file)
+    else:
+        for locale in ('zh_CN', 'zh_TW'):
+            install(Path('/usr/share/locale') / locale / 'LC_MESSAGES/ipfire.mo',
+                    Path('/usr/local/share/ipfire-lang') / (locale + '.json'))
+    patch_display_sources()

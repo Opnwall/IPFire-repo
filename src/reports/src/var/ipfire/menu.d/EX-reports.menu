@@ -1,3 +1,4 @@
+require '/var/ipfire/community-lang/reports.pl';
 	$subservices->{'80.reports'} = {'caption' => $Lang::tr{'Reports'},
 				  'uri' => '/cgi-bin/reports.cgi',
 				  'title' => 'Reports',

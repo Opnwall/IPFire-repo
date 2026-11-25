@@ -1,0 +1,156 @@
+{
+  "/srv/web/ipfire/cgi-bin/easytier.cgi": [
+    [
+      "my $language=$main{LANGUAGE}//'en';",
+      "my $language=$main{LANGUAGE}//'en';\n$language = 'tw' if $language =~ /^(?:tw|zh[-_](?:TW|Hant))/i;\n$language = 'zh' if $language =~ /^(?:zh|zh[-_](?:CN|Hans))$/i;"
+    ]
+  ],
+  "/srv/web/ipfire/cgi-bin/mihomo.cgi": [
+    [
+      "($Lang::language || '') eq 'tw'",
+      "($Lang::language || '') =~ /^(?:tw|zh[-_](?:TW|Hant))$/i"
+    ],
+    [
+      "($Lang::language || '') eq 'zh'",
+      "($Lang::language || '') =~ /^(?:zh|zh[-_](?:CN|Hans))$/i"
+    ]
+  ],
+  "/var/ipfire/location-functions.pl": [
+    [
+      "\treturn $name;",
+      "\treturn defined(&main::_) ? main::_($name) : $name;"
+    ]
+  ],
+  "/srv/web/ipfire/cgi-bin/dnsbl.cgi": [
+    [
+      "my $name = $list->{\"name\"};",
+      "my $name = _($list->{\"name\"});"
+    ],
+    [
+      "my $description = $list->{\"description\"};",
+      "my $description = _($list->{\"description\"});"
+    ],
+    [
+      "&Header::openbox('100%', 'center', $list->{\"name\"});",
+      "&Header::openbox('100%', 'center', _($list->{\"name\"}));"
+    ]
+  ],
+  "/srv/web/ipfire/cgi-bin/ipblocklist.cgi": [
+    [
+      "&CGI::escapeHTML( $IPblocklist::List::sources{$blocklist}{'name'} )",
+      "&CGI::escapeHTML( _($IPblocklist::List::sources{$blocklist}{'name'}) )"
+    ]
+  ],
+  "/srv/web/ipfire/cgi-bin/dhcp.cgi": [
+    [
+      ">root path:</td>",
+      ">@{[ _('root path:') ]}</td>"
+    ],
+    [
+      ">root path</b>",
+      ">@{[ _('root path') ]}</b>"
+    ],
+    [
+      ">filename</b>",
+      ">@{[ _('filename') ]}</b>"
+    ],
+    [
+      ">filename:</td>",
+      ">@{[ _('filename:') ]}</td>"
+    ],
+    [
+      ">next-server</b>",
+      ">@{[ _('next-server') ]}</b>"
+    ],
+    [
+      ">next-server:</td>",
+      ">@{[ _('next-server:') ]}</td>"
+    ]
+  ],
+  "/srv/web/ipfire/cgi-bin/mdstat.cgi": [
+    [
+      "\"MD Raid State\"",
+      "_('MD Raid State')"
+    ]
+  ],
+  "/srv/web/ipfire/cgi-bin/media.cgi": [
+    [
+      "Disk $disk status:",
+      "@{[ sprintf(_('Disk %s status:'), $disk) ]}"
+    ]
+  ],
+  "/srv/web/ipfire/cgi-bin/qos.cgi": [
+    [
+      ">Quality of Service:</b>",
+      ">@{[ _('Quality of Service:') ]}</b>"
+    ]
+  ],
+  "/srv/web/ipfire/cgi-bin/services.cgi": [
+    [
+      ">Boot</b>",
+      ">@{[ _('Boot') ]}</b>"
+    ]
+  ],
+  "/srv/web/ipfire/cgi-bin/logs.cgi/firewalllogcountry.dat": [
+    [
+      ">Count</b>",
+      ">@{[ _('Count') ]}</b>"
+    ]
+  ],
+  "/srv/web/ipfire/cgi-bin/connections.cgi": [
+    [
+      ">Multicast</b>",
+      ">@{[ _('Multicast') ]}</b>"
+    ]
+  ],
+  "/srv/web/ipfire/cgi-bin/logs.cgi/log.dat": [
+    [
+      "'dma' => 'Mail'",
+      "'dma' => _('Mail')"
+    ],
+    [
+      "'urlfilter bl' => 'URLFilter Blacklist'",
+      "'urlfilter bl' => _('URLFilter Blacklist')"
+    ],
+    [
+      "'wireless' => 'Wireless'",
+      "'wireless' => _('Wireless')"
+    ]
+  ],
+  "/var/ipfire/menu.d/20-status.menu": [
+    [
+      "_('Memory')",
+      "_('Memory', 'menu')"
+    ],
+    [
+      "_('OpenVPN: Roadwarrior Statistics')",
+      "_('OpenVPN: Roadwarrior Statistics', 'menu')"
+    ],
+    [
+      "_('OpenVPN: Net-to-Net Statistics')",
+      "_('OpenVPN: Net-to-Net Statistics', 'menu')"
+    ]
+  ],
+  "/var/ipfire/menu.d/30-network.menu": [
+    [
+      "_('Link Layer Discovery Protocol')",
+      "_('Link Layer Discovery Protocol', 'menu')"
+    ]
+  ],
+  "/var/ipfire/menu.d/50-firewall.menu": [
+    [
+      "_('DNS Firewall')",
+      "_('DNS Firewall', 'menu')"
+    ]
+  ],
+  "/var/ipfire/menu.d/78-lang_install.menu": [
+    [
+      "$Lang::language eq 'zh'",
+      "($Lang::language || '') =~ /^(?:zh|zh[-_](?:CN|Hans))$/i"
+    ],
+    [
+      "$Lang::language eq 'tw'",
+      "($Lang::language || '') =~ /^(?:tw|zh[-_](?:TW|Hant))$/i"
+    ]
+  ]
+}

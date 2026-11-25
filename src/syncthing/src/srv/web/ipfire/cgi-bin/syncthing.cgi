@@ -7,6 +7,7 @@ use Encode qw(encode);
 
 require '/var/ipfire/general-functions.pl';
 require "${General::swroot}/lang.pl";
+require '/var/ipfire/community-lang/syncthing.pl';
 require "${General::swroot}/header.pl";
 
 my %settings = ();
@@ -88,10 +89,10 @@ sub st_tr {
         'syncthing saved' => '設定已儲存',
     );
 
-    if (($Lang::language || '') eq 'tw' && exists $tw{$key}) {
+    if (($Lang::language || '') =~ /^(?:tw|zh[-_](?:TW|HK|Hant))$/i && exists $tw{$key}) {
         return utf8_bytes($tw{$key});
     }
-    if (($Lang::language || '') eq 'zh' && exists $zh{$key}) {
+    if (($Lang::language || '') =~ /^(?:zh|zh[-_](?:CN|SG|Hans))$/i && exists $zh{$key}) {
         return utf8_bytes($zh{$key});
     }
     if (exists $en{$key}) {

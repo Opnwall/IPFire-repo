@@ -1,3 +1,4 @@
+require '/var/ipfire/community-lang/backup.pl';
     $subservices->{'82.firewall_backup'} = {'caption' => $Lang::tr{'firewall backup title'},
 				  'uri' => '/cgi-bin/firewall_backup.cgi',
 				  'title' => "firewall_backup",

@@ -1,9 +1,9 @@
     my $lang_install_caption = 'Localization Patch';
     my $lang_install_title = 'IPFire Localization Patch';
-    if ($Lang::language eq 'zh') {
+    if (($Lang::language || '') =~ /^(?:zh|zh[-_](?:CN|Hans))$/i) {
 				$lang_install_caption = '汉化补丁';
 				$lang_install_title = 'IPFire 汉化补丁';
-    } elsif ($Lang::language eq 'tw') {
+    } elsif (($Lang::language || '') =~ /^(?:tw|zh[-_](?:TW|Hant))$/i) {
 				$lang_install_caption = '漢化補丁';
 				$lang_install_title = 'IPFire 漢化補丁';
     }

@@ -95,7 +95,7 @@ cat > /etc/httpd/conf/vhosts.d/captive-trial-management.conf <<'EOF'
 </Directory>
 EOF
 # Proper Perl addon translations participate in the standard IPFire language cache.
-/usr/local/bin/update-lang-cache
+if [[ -x /usr/local/bin/update-lang-cache ]]; then /usr/local/bin/update-lang-cache; fi
 apachectl -t
 apachectl -k graceful 9>&-
 /usr/local/bin/captivectrl

@@ -26,8 +26,8 @@ if [[ ! -f /srv/web/ipfire/cgi-bin/dnsbl.cgi || ! -f /usr/local/bin/update-rpzs 
 fi
 
 core="$(cat /opt/pakfire/db/core/mine 2>/dev/null || true)"
-if [[ "${core}" != "203" && "${core}" != "204" ]]; then
-	echo "Unsupported IPFire Core Update: ${core:-unknown}. Supported: 203 and 204." >&2
+if [[ "${core}" != "203" && "${core}" != "204" && "${core}" != "206" ]]; then
+	echo "Unsupported IPFire Core Update: ${core:-unknown}. Supported: 203, 204 and 206." >&2
 	exit 1
 fi
 
@@ -90,7 +90,9 @@ mkdir -p "${BACKUP_DIR}/cgi" "${BACKUP_DIR}/bin" "${BACKUP_DIR}/lang" "${BACKUP_
 cp -a /srv/web/ipfire/cgi-bin/dnsbl.cgi "${BACKUP_DIR}/cgi/"
 cp -a /usr/local/bin/update-rpzs "${BACKUP_DIR}/bin/"
 [[ ! -e /usr/local/bin/update-custom-rpzs ]] || cp -a /usr/local/bin/update-custom-rpzs "${BACKUP_DIR}/bin/"
-cp -a /var/ipfire/langs/en.pl /var/ipfire/langs/zh.pl "${BACKUP_DIR}/lang/"
+for language in en zh tw; do
+    [[ ! -f /var/ipfire/langs/$language.pl ]] || cp -a /var/ipfire/langs/$language.pl "${BACKUP_DIR}/lang/"
+done
 [[ ! -e /etc/fcron.minutely/update-custom-rpzs ]] || cp -a /etc/fcron.minutely/update-custom-rpzs "${BACKUP_DIR}/fcron/"
 [[ ! -e /var/ipfire/dns/custom_dnsbl.json ]] || cp -a /var/ipfire/dns/custom_dnsbl.json "${BACKUP_DIR}/dns/"
 
@@ -101,9 +103,15 @@ install -m 0755 "${PACKAGE_DIR}/src/usr/local/bin/update-rpzs" /usr/local/bin/up
 # legacy standalone updater and its minutely scheduler after backing them up.
 rm -f /usr/local/bin/update-custom-rpzs /etc/fcron.minutely/update-custom-rpzs
 
-perl "${PACKAGE_DIR}/install-lang-entries.pl" /var/ipfire/langs/en.pl "${PACKAGE_DIR}/lang/en.pl"
-perl "${PACKAGE_DIR}/install-lang-entries.pl" /var/ipfire/langs/zh.pl "${PACKAGE_DIR}/lang/zh.pl"
-/usr/local/bin/update-lang-cache
+install -d -m 755 /var/ipfire/community-lang /var/ipfire/addon-lang
+cp -R "${PACKAGE_DIR}/src/var/ipfire/community-lang/." /var/ipfire/community-lang/
+cp -R "${PACKAGE_DIR}/src/var/ipfire/addon-lang/." /var/ipfire/addon-lang/
+for language in en zh tw; do
+    if [[ -f /var/ipfire/langs/$language.pl ]]; then
+        perl "${PACKAGE_DIR}/install-lang-entries.pl" "/var/ipfire/langs/$language.pl" "${PACKAGE_DIR}/lang/$language.pl"
+    fi
+done
+if [[ -x /usr/local/bin/update-lang-cache ]]; then /usr/local/bin/update-lang-cache; fi
 
 if [[ ! -s /var/ipfire/dns/custom_dnsbl.json ]]; then
 	printf '[]\n' > /var/ipfire/dns/custom_dnsbl.json

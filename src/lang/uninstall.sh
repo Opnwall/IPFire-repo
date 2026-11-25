@@ -26,6 +26,9 @@ fi
 print_step "删除已安装文件"
 rm -f /srv/web/ipfire/cgi-bin/lang_install.cgi
 rm -f /usr/local/sbin/lang-install-helper
+rm -f /usr/local/sbin/lang-install-gettext
+rm -f /usr/local/share/ipfire-lang/zh_CN.json /usr/local/share/ipfire-lang/zh_TW.json
+rm -f /usr/local/share/ipfire-lang/core206-compat.json
 rm -f /var/ipfire/menu.d/78-lang_install.menu
 rm -f /etc/sudoers.d/lang-install
 rm -f /var/ipfire/lang_install.conf

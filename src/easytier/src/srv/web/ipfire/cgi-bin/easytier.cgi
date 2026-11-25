@@ -8,6 +8,7 @@ use Digest::SHA qw(hmac_sha256_hex);
 use Encode qw(encode decode FB_CROAK);
 require '/var/ipfire/general-functions.pl';
 require '/var/ipfire/lang.pl';
+require '/var/ipfire/community-lang/easytier.pl';
 require '/var/ipfire/header.pl';
 
 sub fail { print "Status: 403 Forbidden\r\nContent-Type: text/plain\r\n\r\nForbidden\n"; exit; }
@@ -70,6 +71,8 @@ die 'Status unavailable' unless $ok && ref($status) eq 'HASH';
 my $s=$status->{config};
 my %main; General::readhash('/var/ipfire/main/settings',\%main);
 my $language=$main{LANGUAGE}//'en';
+$language = 'tw' if $language =~ /^(?:tw|zh[-_](?:TW|Hant))/i;
+$language = 'zh' if $language =~ /^(?:zh|zh[-_](?:CN|Hans))$/i;
 my %traditional=(
     'Status: '=>'執行狀態：', 'Running'=>'執行中', 'Stopped'=>'已停止',
     'Network name'=>'網路名稱', 'Network password (blank keeps existing)'=>'網路密碼（留空保留）',
@@ -89,7 +92,7 @@ my %traditional=(
     'Saving does not restart the process, but applies firewall options immediately. WAN access requires a nonzero listener port. LAN forwarding permits bidirectional access between trusted mesh members and local GREEN/BLUE subnets, without NAT. RPC remains loopback-only.'=>
     '儲存不會重新啟動程序，但會立即更新防火牆選項。放行 WAN 須設定非零監聽連接埠；LAN 轉送允許私有網路成員與本機 GREEN/BLUE 網段雙向互訪，不新增 NAT。RPC 始終僅監聽本機。',
 );
-sub label {return $language eq 'tw' ? ($traditional{$_[1]}//$_[1]) : $language eq 'zh' ? $_[0] : $_[1];}
+sub label {return $language =~ /^(?:tw|zh[-_](?:TW|HK|Hant))$/i ? ($traditional{$_[1]}//$_[1]) : $language =~ /^(?:zh|zh[-_](?:CN|SG|Hans))$/i ? $_[0] : $_[1];}
 sub esc {my $v=$_[0]//''; $v =~ s/&/&amp;/g; $v =~ s/</&lt;/g; $v =~ s/>/&gt;/g; $v =~ s/"/&quot;/g; $v =~ s/'/&#39;/g; return $v;}
 sub out {print encode('UTF-8',$_[0]);}
 Header::showhttpheaders();

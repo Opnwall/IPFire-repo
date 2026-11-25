@@ -3,8 +3,8 @@ set -euo pipefail
 base=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 [[ $(id -u) == 0 && $(uname -m) == x86_64 ]] || { echo 'Requires root on x86_64'; exit 1; }
 case "$(cat /opt/pakfire/db/core/mine)" in
-    204|205) ;;
-    *) echo 'Supported on Core 204/205 only'; exit 1 ;;
+    204|205|206) ;;
+    *) echo 'Supported on Core 204/205/206 only'; exit 1 ;;
 esac
 for file in easytier-core easytier-cli; do
     [[ $(od -An -tx1 -N4 "$base/src/usr/local/bin/$file" | tr -d ' \n') == 7f454c46 ]] || exit 1
@@ -29,6 +29,8 @@ install -m755 "$base/src/usr/local/sbin/easytierctrl" /usr/local/sbin/easytierct
 install -m755 "$base/src/etc/rc.d/init.d/easytier" /etc/rc.d/init.d/easytier
 install -m755 "$base/src/srv/web/ipfire/cgi-bin/easytier.cgi" /srv/web/ipfire/cgi-bin/easytier.cgi
 install -m644 "$base/src/var/ipfire/menu.d/83-easytier.menu" /var/ipfire/menu.d/83-easytier.menu
+install -d -m755 /var/ipfire/community-lang
+cp -R "$base/src/var/ipfire/community-lang/." /var/ipfire/community-lang/
 install -m440 "$base/src/etc/sudoers.d/easytier" /etc/sudoers.d/easytier
 if [[ ! -e /var/ipfire/easytier/csrf.key ]]; then
     umask 027; openssl rand -hex 32 > /var/ipfire/easytier/csrf.key

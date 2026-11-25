@@ -16,3 +16,7 @@ rm -f /etc/rc.d/init.d/easytier /etc/sudoers.d/easytier /srv/web/ipfire/cgi-bin/
 rm -rf /var/ipfire/easytier /run/easytier
 /etc/init.d/apache reload
 echo "Removed plugin; private configuration backup: $backup"
+
+# Remove only this addon's Core 206 language adapter.
+rm -f /var/ipfire/community-lang/easytier.pl
+rm -rf /var/ipfire/community-lang/easytier

@@ -19,3 +19,7 @@ rm -rf /var/ipfire/speedtest
 /usr/local/bin/update-lang-cache >/dev/null 2>&1 || true
 /etc/init.d/apache reload >/dev/null 2>&1 || true
 echo "Speedtest uninstall completed."
+
+# Remove only this addon's Core 206 language adapter.
+rm -f /var/ipfire/community-lang/speedtest.pl
+rm -rf /var/ipfire/community-lang/speedtest

@@ -57,10 +57,18 @@ rm -f "${CONFIG}" /usr/local/bin/update-custom-rpzs /etc/fcron.minutely/update-c
 install -m 0755 "${ORIGINAL_DIR}/dnsbl.cgi" /srv/web/ipfire/cgi-bin/dnsbl.cgi
 install -m 0755 "${ORIGINAL_DIR}/update-rpzs" /usr/local/bin/update-rpzs
 
-perl "${PACKAGE_DIR}/uninstall-lang-entries.pl" /var/ipfire/langs/en.pl
-perl "${PACKAGE_DIR}/uninstall-lang-entries.pl" /var/ipfire/langs/zh.pl
-/usr/local/bin/update-lang-cache
+for language in en zh tw; do
+    if [[ -f /var/ipfire/langs/$language.pl ]]; then
+        perl "${PACKAGE_DIR}/uninstall-lang-entries.pl" "/var/ipfire/langs/$language.pl"
+    fi
+done
+if [[ -x /usr/local/bin/update-lang-cache ]]; then /usr/local/bin/update-lang-cache; fi
 /usr/local/bin/dnsctrl reload 9>&-
 
 echo "Uninstallation completed."
 echo "Custom-list data backup: ${BACKUP_DIR}"
+
+# Remove only this addon's Core 206 language adapter.
+rm -f /var/ipfire/community-lang/dns-firewall-custom-lists.pl
+rm -rf /var/ipfire/community-lang/dns-firewall-custom-lists
+rm -f /var/ipfire/addon-lang/dnsbl-custom.en.pl /var/ipfire/addon-lang/dnsbl-custom.zh.pl /var/ipfire/addon-lang/dnsbl-custom.tw.pl

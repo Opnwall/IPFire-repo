@@ -32,6 +32,7 @@ use HTML::Template;
 use Encode ();
 require '/var/ipfire/general-functions.pl';
 require '/var/ipfire/lang.pl';
+require '/var/ipfire/community-lang/captive-enhanced.pl';
 require '/var/ipfire/captive-lib.pl';
 my %visitor_languages = (en => 'English', de => 'Deutsch', es => 'Español', fr => 'Français', it => 'Italiano', nl => 'Nederlands', pl => 'Polski', ru => 'Русский', tr => 'Türkçe', zh => '简体中文', tw => '繁體中文');
 # Match standard browser tags (zh-CN/zh-TW/en-US) and quality preferences.

@@ -50,6 +50,7 @@ my $csrf_token = Captive::csrf('management');
 
 require '/var/ipfire/general-functions.pl';
 require "${General::swroot}/lang.pl";
+require '/var/ipfire/community-lang/captive-enhanced.pl';
 require "${General::swroot}/header.pl";
 Lang::reload('en') unless $Lang::tr{'save'};
 Captive::fail('500 Internal Server Error', 'language_unavailable') unless $Lang::tr{'save'} && $Lang::tr{'Captive generate coupons'};

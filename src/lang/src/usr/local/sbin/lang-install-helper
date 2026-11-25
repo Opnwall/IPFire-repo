@@ -47,7 +47,7 @@ t() {
                 step_copy) echo "[4/5] 复制文件到" ;;
                 step_cache) echo "[5/5] 刷新语言缓存 ..." ;;
                 cache_done) echo "语言缓存已刷新。" ;;
-                cache_skip) echo "未找到语言缓存刷新程序，跳过。" ;;
+                cache_skip) echo "gettext 中文词库已验证，无需刷新旧版语言缓存。旧版 .pl 补丁不参与当前系统翻译。" ;;
                 install_done) echo "汉化补丁安装完成。" ;;
                 usage) echo "用法：$0 save-url URL [LANG] | install [URL] [LANG]" ;;
             esac
@@ -77,7 +77,7 @@ t() {
                 step_copy) echo "[4/5] 複製檔案到" ;;
                 step_cache) echo "[5/5] 重新整理語言快取 ..." ;;
                 cache_done) echo "語言快取已重新整理。" ;;
-                cache_skip) echo "找不到語言快取重新整理程式，略過。" ;;
+                cache_skip) echo "gettext 中文詞庫已驗證，無需重新整理舊版語言快取。舊版 .pl 補丁不參與目前系統翻譯。" ;;
                 install_done) echo "漢化補丁安裝完成。" ;;
                 usage) echo "用法：$0 save-url URL [LANG] | install [URL] [LANG]" ;;
             esac
@@ -107,7 +107,7 @@ t() {
                 step_copy) echo "[4/5] Copying files to" ;;
                 step_cache) echo "[5/5] Refreshing language cache ..." ;;
                 cache_done) echo "Language cache refreshed." ;;
-                cache_skip) echo "Language cache refresh program was not found, skipped." ;;
+                cache_skip) echo "gettext Chinese catalog verified; no legacy cache refresh required. Legacy .pl patches are not used by this system." ;;
                 install_done) echo "Localization patch installation completed." ;;
                 usage) echo "Usage: $0 save-url URL [LANG] | install [URL] [LANG]" ;;
             esac
@@ -179,6 +179,40 @@ download_file() {
     fi
 }
 
+# The public share redirects to a separately cached DAV URL. Apply a fresh
+# query parameter on every hop, not just on the initial share URL.
+download_gettext_file() {
+    /usr/bin/python3 - "$1" "$2" <<'PYDOWNLOAD'
+import sys, time, urllib.request, urllib.parse
+stamp = str(time.time_ns())
+def fresh(url):
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme != 'https':
+        raise ValueError('HTTPS download required')
+    query = urllib.parse.parse_qsl(parts.query, keep_blank_values=True)
+    query = [(k, v) for k, v in query if k != '_ipfire_lang']
+    query.append(('_ipfire_lang', stamp))
+    return urllib.parse.urlunsplit(parts._replace(query=urllib.parse.urlencode(query)))
+class FreshRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, request, fp, code, message, headers, url):
+        return super().redirect_request(request, fp, code, message, headers, fresh(url))
+request = urllib.request.Request(fresh(sys.argv[1]), headers={
+    'Cache-Control': 'no-cache', 'Pragma': 'no-cache', 'User-Agent': 'IPFire-lang-installer/1.0.6'})
+with urllib.request.build_opener(FreshRedirect()).open(request, timeout=30) as response:
+    total = 0
+    with open(sys.argv[2], 'wb') as output:
+        while True:
+            chunk = response.read(65536)
+            if not chunk:
+                break
+            total += len(chunk)
+            if total > 16 * 1024 * 1024:
+                raise ValueError('Patch download exceeds 16 MiB')
+            output.write(chunk)
+    print('Download: HTTP ' + str(response.status) + ', ' + str(total) + ' bytes', flush=True)
+PYDOWNLOAD
+}
+
 validate_zip_entries() {
     local zip_file="$1"
     local entry
@@ -210,6 +244,20 @@ install_patch() {
         url="$(load_url)"
     fi
     validate_url "$url"
+
+    # Core 206 uses gettext; legacy Perl dictionaries are not its input.
+    if /usr/bin/perl -e 'require "/var/ipfire/lang.pl"; exit(defined(&Lang::reload) && defined(&main::_) && !defined(&Lang::BuildCacheLang) ? 0 : 1)'; then
+        tmp_dir="$(mktemp -d /tmp/lang-install.XXXXXX)"
+        chmod 700 "$tmp_dir"
+        trap "rm -rf -- '$tmp_dir'" EXIT
+        zip_file="$tmp_dir/IPFire_lang.zip"
+        echo "$(t start_install)"
+        echo "$(t download_url): $url"
+        download_gettext_file "$url" "$zip_file"
+        [[ -s "$zip_file" ]] || die "$(t empty_download)"
+        LANGTOOL_LANG="$LANGTOOL_LANG" /usr/bin/python3 /usr/local/sbin/lang-install-gettext --archive "$zip_file"
+        return
+    fi
 
     tmp_dir="$(mktemp -d /tmp/lang-install.XXXXXX)"
     chmod 700 "$tmp_dir"
@@ -268,8 +316,23 @@ install_patch() {
     elif [[ -x "$LANG_CACHE_ALT" ]]; then
         "$LANG_CACHE_ALT"
         echo "$(t cache_done)"
-    else
+    elif /usr/bin/perl -e 'require "/var/ipfire/lang.pl"; exit(defined(&Lang::BuildCacheLang) ? 0 : 1)'; then
+        /usr/bin/perl -e 'require "/var/ipfire/lang.pl"; Lang::BuildCacheLang();'
+        echo "$(t cache_done)"
+    elif /usr/bin/perl -e 'require "/var/ipfire/lang.pl"; exit(defined(&Lang::reload) && defined(&main::_) ? 0 : 1)'; then
+        /usr/bin/python3 - <<'PYGETTEXT'
+import gettext
+from pathlib import Path
+catalog = Path('/usr/share/locale/zh_CN/LC_MESSAGES/ipfire.mo')
+with catalog.open('rb') as stream:
+    translation = gettext.GNUTranslations(stream)
+if not any(key and value for key, value in translation._catalog.items()):
+    raise SystemExit('Chinese gettext catalog is empty')
+print('gettext: ' + str(catalog))
+PYGETTEXT
         echo "$(t cache_skip)"
+    else
+        die "Unsupported language backend: /var/ipfire/lang.pl"
     fi
 
     echo

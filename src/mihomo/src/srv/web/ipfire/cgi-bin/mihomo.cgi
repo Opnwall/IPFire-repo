@@ -9,6 +9,7 @@ use JSON::PP qw(encode_json);
 
 require '/var/ipfire/general-functions.pl';
 require "${General::swroot}/lang.pl";
+require '/var/ipfire/community-lang/mihomo.pl';
 require "${General::swroot}/header.pl";
 
 my %settings=();
@@ -120,10 +121,10 @@ my %fallback_tw = (
 
 sub L {
     my ($key) = @_;
-    if (($Lang::language || '') eq 'tw' && exists $fallback_tw{$key}) {
+    if (($Lang::language || '') =~ /^(?:tw|zh[-_](?:TW|Hant))$/i && exists $fallback_tw{$key}) {
         return utf8_bytes($fallback_tw{$key});
     }
-    if (($Lang::language || '') eq 'zh' && exists $fallback_zh{$key}) {
+    if (($Lang::language || '') =~ /^(?:zh|zh[-_](?:CN|Hans))$/i && exists $fallback_zh{$key}) {
         return utf8_bytes($fallback_zh{$key});
     }
     return utf8_bytes($fallback{$key} || $key);

@@ -32,3 +32,7 @@ rm -f \
 rm -rf /opt/lucky
 
 echo "Lucky for IPFire has been uninstalled. Configuration data remains in /var/ipfire/lucky/conf."
+
+# Remove only this addon's Core 206 language adapter.
+rm -f /var/ipfire/community-lang/lucky.pl
+rm -rf /var/ipfire/community-lang/lucky

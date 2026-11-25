@@ -53,3 +53,7 @@ print_step "Reloading Web service"
 
 echo
 echo "ZeroTier uninstall completed."
+
+# Remove only this addon's Core 206 language adapter.
+rm -f /var/ipfire/community-lang/zerotier.pl
+rm -rf /var/ipfire/community-lang/zerotier

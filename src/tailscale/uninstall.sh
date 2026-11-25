@@ -61,3 +61,7 @@ print_step "Reloading Web service"
 
 echo
 echo "Tailscale removal complete."
+
+# Remove only this addon's Core 206 language adapter.
+rm -f /var/ipfire/community-lang/tailscale.pl
+rm -rf /var/ipfire/community-lang/tailscale

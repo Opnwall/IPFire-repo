@@ -27,6 +27,7 @@ $CGI::DISABLE_UPLOADS = 0;
 
 require '/var/ipfire/general-functions.pl';
 require "${General::swroot}/lang.pl";
+require '/var/ipfire/community-lang/backup.pl';
 require "${General::swroot}/header.pl";
 require "/usr/lib/firewall/firewall-lib.pl";
 
@@ -41,7 +42,7 @@ eval {
     my @languages = ($language);
     if ($normalized eq 'cn' || $normalized eq 'zh_cn' || $normalized eq 'zh_hans' || $normalized eq 'zh_sg') {
         push @languages, 'zh';
-    } elsif ($normalized eq 'tw' || $normalized eq 'zh_tw' || $normalized eq 'zh_hant' || $normalized eq 'zh_hk' || $normalized eq 'zh_mo') {
+    } elsif ($normalized =~ /^(?:tw|zh[-_](?:TW|HK|Hant))$/i || $normalized eq 'zh_tw' || $normalized eq 'zh_hant' || $normalized eq 'zh_hk' || $normalized eq 'zh_mo') {
         push @languages, 'tw';
     }
     push @languages, 'en';

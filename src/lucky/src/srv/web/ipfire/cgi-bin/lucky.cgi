@@ -72,11 +72,11 @@ sub lucky_tr {
 		'lucky not running' => 'Lucky 未執行。請執行 <code>/etc/rc.d/init.d/lucky start</code> 後重新整理本頁。',
 	);
 
-	if (($Lang::language || "") eq "tw" && exists $tw{$key}) {
+	if (($Lang::language || "") =~ /^(?:tw|zh[-_](?:TW|HK|Hant))$/i && exists $tw{$key}) {
 		return $tw{$key};
 	}
 
-	if (($Lang::language || "") eq "zh" && exists $zh{$key}) {
+	if (($Lang::language || "") =~ /^(?:zh|zh[-_](?:CN|SG|Hans))$/i && exists $zh{$key}) {
 		return $zh{$key};
 	}
 

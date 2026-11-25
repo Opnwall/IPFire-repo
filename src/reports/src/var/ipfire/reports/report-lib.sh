@@ -41,6 +41,8 @@ ipfr_detect_lang() {
         l=$(grep -a '^LANGUAGE=' "$IPFR_MAIN_SETTINGS" 2>/dev/null | head -n1 | cut -d'=' -f2 | tr -d ' \r\n')
     case "$l" in
         en|es|de|fr|it) echo "$l" ;;
+        zh|zh_CN|zh-CN|zh_Hans|zh-Hans) echo zh ;;
+        tw|zh_TW|zh-TW|zh_Hant|zh-Hant) echo tw ;;
         *) echo "en" ;;
     esac
 }

@@ -7,6 +7,7 @@ use Encode qw(encode);
 
 require '/var/ipfire/general-functions.pl';
 require "${General::swroot}/lang.pl";
+require '/var/ipfire/community-lang/zerotier.pl';
 require "${General::swroot}/header.pl";
 
 my %settings = ();
@@ -142,10 +143,10 @@ sub zt_tr {
         'zerotier no peer info' => '暫無節點資訊',
     );
 
-    if (($Lang::language || '') eq 'tw' && exists $tw{$key}) {
+    if (($Lang::language || '') =~ /^(?:tw|zh[-_](?:TW|HK|Hant))$/i && exists $tw{$key}) {
         return utf8_bytes($tw{$key});
     }
-    if (($Lang::language || '') eq 'zh' && exists $zh{$key}) {
+    if (($Lang::language || '') =~ /^(?:zh|zh[-_](?:CN|SG|Hans))$/i && exists $zh{$key}) {
         return utf8_bytes($zh{$key});
     }
     if (exists $en{$key}) {

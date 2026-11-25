@@ -8,6 +8,7 @@ use JSON::PP qw(decode_json encode_json);
 
 require '/var/ipfire/general-functions.pl';
 require "${General::swroot}/lang.pl";
+require '/var/ipfire/community-lang/speedtest.pl';
 require "${General::swroot}/header.pl";
 
 my %form;
@@ -37,8 +38,8 @@ sub tr_text {
     my %tw = (
         title=>'Speedtest', settings=>'測速設定', result=>'測速結果', interface=>'出站介面', automatic=>'自動選擇', interface_help=>'僅顯示具有 IPv4 預設路由的介面。', server=>'測速伺服器', server_auto=>'自動選擇', server_help=>'變更出站介面後，請重新整理伺服器清單。', refresh=>'重新整理伺服器', threads=>'並行連線', run=>'開始測速', clear=>'清除結果', running=>'正在測速，請等待.......', refreshing=>'正在取得測速伺服器。', time=>'測試時間', isp=>'電信業者 / 公網 IP', test_server=>'測速伺服器', distance=>'距離', engine=>'測速引擎', latency=>'延遲', jitter=>'抖動', loss=>'封包遺失率', download=>'下載', upload=>'上傳', failed=>'網際網路測速失敗。'
     );
-    return utf8_bytes($tw{$key}) if ($Lang::language || '') eq 'tw' && exists $tw{$key};
-    return utf8_bytes($zh{$key}) if ($Lang::language || '') eq 'zh' && exists $zh{$key};
+    return utf8_bytes($tw{$key}) if ($Lang::language || '') =~ /^(?:tw|zh[-_](?:TW|HK|Hant))$/i && exists $tw{$key};
+    return utf8_bytes($zh{$key}) if ($Lang::language || '') =~ /^(?:zh|zh[-_](?:CN|SG|Hans))$/i && exists $zh{$key};
     return utf8_bytes($en{$key} // $key);
 }
 

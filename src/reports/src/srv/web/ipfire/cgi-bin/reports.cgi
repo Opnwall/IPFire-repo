@@ -17,6 +17,7 @@ use File::Basename;
 
 require '/var/ipfire/general-functions.pl';
 require "${General::swroot}/lang.pl";
+require '/var/ipfire/community-lang/reports.pl';
 require "${General::swroot}/header.pl";
 
 # ============================================================================

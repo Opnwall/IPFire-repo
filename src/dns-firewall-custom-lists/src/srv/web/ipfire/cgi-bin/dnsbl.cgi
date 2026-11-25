@@ -31,6 +31,7 @@ use File::Basename qw(basename);
 
 require '/var/ipfire/general-functions.pl';
 require "${General::swroot}/lang.pl";
+require '/var/ipfire/community-lang/dns-firewall-custom-lists.pl';
 require "${General::swroot}/header.pl";
 require "${General::swroot}/network-functions.pl";
 
@@ -345,14 +346,14 @@ if ($cgiparams{'ACTION'} eq "ADD_CUSTOM_LIST") {
 
 	# Check allowed domains
 	foreach my $domain (@ascii_allowed_domains) {
-		unless (&General::validfqdn($domain)) {
+		unless (&valid_domain($domain)) {
 			push(@errormessages, "$Lang::tr{'invalid domain name'}: ${domain}");
 		}
 	}
 
 	# Check blocked domains
 	foreach my $domain (@ascii_blocked_domains) {
-		unless (&General::validfqdn($domain)) {
+		unless (&valid_domain($domain)) {
 			push(@errormessages, "$Lang::tr{'invalid domain name'}: ${domain}");
 		}
 	}
@@ -868,4 +869,11 @@ sub format_domain_to_unicode($) {
 	}
 
 	return $unicode;
+}
+
+# Core 206 moved domain validation into Network; retain the older API fallback.
+sub valid_domain {
+    my ($domain) = @_;
+    return Network::check_fqdn($domain) if defined(&Network::check_fqdn);
+    return General::validfqdn($domain);
 }

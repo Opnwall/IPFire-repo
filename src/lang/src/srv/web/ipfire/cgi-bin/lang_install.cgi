@@ -62,9 +62,9 @@ sub t {
             zh_Hant => '下載位址',
         },
         url_hint => {
-            en => 'You can customize the download URL. After saving, this URL will be loaded automatically next time.',
-            zh_Hans => '可自定义下载地址，保存后，下次打开页面会自动载入该地址。',
-            zh_Hant => '可自訂下載位址，儲存後，下次開啟頁面會自動載入該位址。',
+            en => 'Core 206 downloads a gettext Chinese patch ZIP from this URL. Save the direct download URL of IPFire_lang.zip before installing.',
+            zh_Hans => 'Core 206 将从此地址下载 gettext 简繁汉化包。请上传新版 IPFire_lang.zip，并在此保存其直接下载地址。',
+            zh_Hant => 'Core 206 將從此位址下載 gettext 簡繁漢化包。請上傳新版 IPFire_lang.zip，並在此儲存其直接下載位址。',
         },
         save_url => {
             en => 'Save URL',
