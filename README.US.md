@@ -5,10 +5,6 @@
 
 # IPFire Community Repository
 
-Only the latest package for each plugin is retained in the download directory. Back up configuration and preserve `/opt/ipfrepo/cache/`: removing an older installation requires its cached archive. If that cache is missing, upgrade to the latest version before uninstalling. Historical packages remain recoverable from Git history.
-
-<p align="center">
-
 **An unofficial community package repository for IPFire 2.29 Core Update 206 (x86_64)**
 
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
@@ -108,8 +104,3 @@ This project is community-maintained; the plugins are largely AI-generated or so
 
 Third-party packages may modify firewall, DNS, proxy, or other system services. Please be sure to back up your configuration before installation and, whenever possible, test these packages in a non-production environment.
 
-## Core 206 release
-
-All 16 package downloads and SHA-256 values are updated. Localization 1.0.6 supports remote gettext patches and redirect-cache bypass. Other packages retain their existing service binaries and update Core 206/language compatibility.
-
-[Checksums](SHA256SUMS.txt) · [Validation scope](VALIDATION-Core206.md) · [Chinese translation data](https://opnwall.github.io/IPFire-repo/downloads/IPFire_lang.zip)
