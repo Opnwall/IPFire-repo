@@ -67,7 +67,7 @@ ipfrepo upgrade                    # Upgrade installed packages
 | `speedtest` | [1.0.5](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/speedtest-1.0.5-x86_64.tar.gz) | Internet speed test |
 | `syncthing` | [1.0.5](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/syncthing-1.0.5-x86_64.tar.gz) | Syncthing file synchronization |
 | `tailscale` | [1.0.5](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/tailscale-1.0.5-x86_64.tar.gz) | Tailscale VPN integration |
-| `easytier` | [1.0.2](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/easytier-1.0.2-x86_64.tar.gz) | [EasyTier mesh VPN with custom node hostname](https://github.com/Opnwall/IPFire-repo/blob/main/src/easytier/README_US.md) |
+| `easytier` | [1.0.2](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/easytier-1.0.2-x86_64.tar.gz) | EasyTier mesh VPN with custom node hostname |
 | `ttyd` | [1.0.5](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/ttyd-1.0.5-x86_64.tar.gz) | Web-based terminal |
 | `zerotier` | [1.0.5](https://opnwall.github.io/IPFire-repo/repo/x86_64/All/zerotier-1.0.5-x86_64.tar.gz) | ZeroTier VPN integration |
 
