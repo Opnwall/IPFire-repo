@@ -18,7 +18,9 @@ for language in br en es fr it pt; do
     printf 'var/ipfire/addon-lang/captive.%s.pl\n' "$language" >> "$backup/managed"
 done
 # Cache regeneration is part of installation, so include existing caches in rollback.
-find /var/ipfire/langs -maxdepth 1 -type f -name 'cache-lang.pl.*' -print | sed 's#^/##' >> "$backup/managed"
+if [[ -d /var/ipfire/langs ]]; then
+    find /var/ipfire/langs -maxdepth 1 -type f -name 'cache-lang.pl.*' -print | sed 's#^/##' >> "$backup/managed"
+fi
 : > "$backup/present"; : > "$backup/absent"
 while IFS= read -r file; do
     if [[ -e /$file ]]; then echo "$file" >> "$backup/present"; else echo "$file" >> "$backup/absent"; fi
