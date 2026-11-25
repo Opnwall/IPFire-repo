@@ -5,10 +5,6 @@
 
 # IPFire Community Repository
 
-正式下载目录每个插件只保留最新版。升级前请备份配置并保留 `/opt/ipfrepo/cache/`：旧版卸载依赖缓存的旧安装包；缓存缺失时应先升级到最新版再卸载。历史包可从 Git 历史恢复。
-
-<p align="center">
-
 **适用于 IPFire 2.29 Core Update 206（x86_64）的非官方社区插件仓库**
 
 ![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
@@ -26,7 +22,6 @@
 - 使用 `ipfrepo` 统一管理安装、升级与卸载
 - 不修改官方仓库及系统信任链
 - 社区维护，持续扩展插件生态
-- Core 206 已通过隔离语法、翻译资源与英简繁页面输出检查；详见 [验证范围](VALIDATION-Core206.md)
 
 ## 安装仓库
 
@@ -104,9 +99,5 @@ ipfrepo upgrade                    # 升级已安装插件
 ## 免责声明
 
 本项目为社区维护项目，插件大多为借助AI编写，或来源于社区提供，无 IPFire 官方技术支持。安装前，请务必备份配置，并建议优先在测试环境验证。
-
-## Core 206 发布
-
-全部 16 个插件已更新下载文件和 SHA-256。汉化补丁 1.0.6 支持 gettext 简繁远程下载及重定向缓存规避；其余插件保留原服务二进制，更新语言与 Core 206 兼容接口。
 
 [校验清单](SHA256SUMS.txt) · [验证范围](VALIDATION-Core206.md) · [简繁汉化数据包](https://opnwall.github.io/IPFire-repo/downloads/IPFire_lang.zip)
