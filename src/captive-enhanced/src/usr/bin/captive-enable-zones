@@ -8,6 +8,9 @@ network=${2:-/var/ipfire/ethernet/settings}
 [[ -f $settings && -f $network ]] || exit 1
 
 for zone in GREEN BLUE; do
+    if [[ ${3:-} == preserve-existing ]] && grep -Eq "^ENABLE_${zone}=(on|off)$" "$settings"; then
+        continue
+    fi
     device=$(awk -F= -v key="${zone}_DEV" '$1 == key { value=substr($0,index($0,"=")+1) } END { print value }' "$network")
     value=off
     [[ -n $device ]] && value=on

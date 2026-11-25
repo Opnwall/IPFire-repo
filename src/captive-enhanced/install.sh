@@ -49,7 +49,7 @@ for file in settings clients coupons terms.txt terms2.txt .state.lock; do
 done
 # RED is never a Captive Portal zone. Enable each supported internal zone only
 # when that interface exists on this appliance; this also handles BLUE systems.
-/usr/bin/captive-enable-zones /var/ipfire/captive/settings /var/ipfire/ethernet/settings
+/usr/bin/captive-enable-zones /var/ipfire/captive/settings /var/ipfire/ethernet/settings preserve-existing
 if [[ ! -s /var/ipfire/captive/.csrf-key ]]; then
     umask 077
     perl -e 'open(my $f,"<:raw","/dev/urandom") or die; read($f,my $s,32)==32 or die; print unpack("H*",$s)' > /var/ipfire/captive/.csrf-key

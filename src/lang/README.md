@@ -1,4 +1,4 @@
-# IPFire 汉化补丁 1.0.6
+# IPFire 汉化补丁 1.0.7
 
 Core 206 改用 GNU gettext，原来的 `langs/zh.pl`、`addon-lang/*.zh.pl` 和语言缓存更新程序不再用于系统页面。本插件识别实际语言后端：旧版继续下载和安装原来的 ZIP，gettext 系统从页面保存的地址下载新版 IPFire_lang.zip，读取简繁 JSON 词库并合并安装。旧格式 ZIP 会被明确拒绝。
 

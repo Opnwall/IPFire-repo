@@ -13,6 +13,12 @@ import re
 
 
 def message(text):
+    if os.environ.get('LANGTOOL_LANG') == 'en':
+        match = re.fullmatch(r'已更新 (\S+) gettext 词库：(\d+) 个补充条目，共 (\d+) 个条目。', text)
+        if match:
+            text = f'Updated {match[1]} gettext catalog: {match[2]} supplement entries, {match[3]} total entries.'
+        text = text.replace('新建页面请求将直接使用更新后的词库，无需刷新旧版缓存。', 'New page requests use the updated catalog; no legacy cache refresh is needed.')
+        text = text.replace('已适配页面：', 'Updated page: ')
     if os.environ.get('LANGTOOL_LANG') == 'zh-Hant':
         for old, new in [('已更新', '已更新'), ('个补充条目，共', '個補充條目，共'), ('个条目', '個條目'),
                          ('新建页面请求将直接使用更新后的词库，无需刷新旧版缓存。', '新的頁面請求將直接使用更新後的詞庫，無需重新整理舊版快取。'),
