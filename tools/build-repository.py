@@ -32,7 +32,10 @@ for i, line in enumerate(lines):
             with tarfile.open(fileobj=compressed, mode='w') as archive:
                 for path in sorted(package.rglob('*')):
                     if clean(path.relative_to(package)):
-                        archive.add(path, arcname=str(path.relative_to(package)), recursive=False, filter=metadata)
+                        archive.add(path, arcname=str(Path(fields[0]) / path.relative_to(package)), recursive=False, filter=metadata)
+    with tarfile.open(output / filename) as verify:
+        assert f'{fields[0]}/install.sh' in verify.getnames(), 'ipfrepo requires a named package root'
+        assert verify.extractfile(f'{fields[0]}/VERSION').read().decode().strip() == version
     digest = hashlib.sha256((output / filename).read_bytes()).hexdigest()
     fields[1:4] = [version, filename, digest]
     fields[5] = fields[5].replace('Core 204','Core 206')
