@@ -29,19 +29,38 @@ jobs:
           rsync -aL --exclude '.git/' --exclude '.github/' --exclude 'src/' --exclude 'work/' --exclude 'outputs/' --exclude 'tools/' --exclude '_site/' --exclude '.DS_Store' --exclude '._*' ./ _site/
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v5
+      - id: upload
+        uses: actions/upload-pages-artifact@v5
         with:
           path: _site
-      - name: Wait for Pages artifact metadata
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          for attempt in $(seq 1 12); do
-            count=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" --jq '[.artifacts[] | select(.name == "github-pages")] | length')
-            if [ "$count" = "1" ]; then exit 0; fi
-            sleep 5
-          done
-          echo "Pages artifact metadata did not become available" >&2
-          exit 1
       - id: deployment
-        uses: actions/deploy-pages@v5
+        name: Deploy the uploaded artifact by ID
+        uses: actions/github-script@v8
+        env:
+          PAGES_ARTIFACT_ID: ${{ steps.upload.outputs.artifact_id }}
+        with:
+          script: |
+            const artifactId = Number(process.env.PAGES_ARTIFACT_ID);
+            if (!artifactId) throw new Error('No uploaded Pages artifact ID');
+            for (let attempt = 0; attempt < 3; attempt++) {
+              const oidc = await core.getIDToken();
+              const {data: deployment} = await github.request('POST /repos/{owner}/{repo}/pages/deployments', {
+                ...context.repo, artifact_id: artifactId,
+                pages_build_version: context.sha, oidc_token: oidc
+              });
+              core.setOutput('page_url', deployment.page_url);
+              const id = deployment.id || context.sha;
+              for (let poll = 0; poll < 60; poll++) {
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                const {data} = await github.request('GET /repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}', {
+                  ...context.repo, pages_deployment_id: id
+                });
+                core.info(`Deployment attempt ${attempt + 1}: ${data.status}`);
+                if (data.status === 'succeed') return;
+                if (['deployment_failed', 'deployment_attempt_error'].includes(data.status)) break;
+                if (['deployment_content_failed', 'deployment_cancelled', 'deployment_lost'].includes(data.status)) {
+                  throw new Error(`Pages: ${data.status}`);
+                }
+              }
+            }
+            throw new Error('Pages deployment did not succeed after three attempts');
