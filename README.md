@@ -99,3 +99,13 @@ ipfrepo upgrade                    # 升级已安装插件
 ## 免责声明
 
 本项目为社区维护项目，插件大多为借助AI编写，或来源于社区提供，无 IPFire 官方技术支持。安装前，请务必备份配置，并建议优先在测试环境验证。
+
+## 自定义仓库地址
+
+安装器和客户端仅支持 IPFire Core 206、x86_64。安装或重新安装时，可指定自定义仓库根地址：
+
+```sh
+IPFREPO_BASE_URL=https://mirror.example/IPFire-repo sh install-repo.sh
+```
+
+地址保存到 `/opt/ipfrepo/repository.url`，后续执行 `ipfrepo` 或重新安装时会自动使用。读取优先级为环境变量 `IPFREPO_BASE_URL`、已保存地址、默认社区仓库。对单次 `ipfrepo` 命令设置环境变量只临时覆盖，不改写保存的地址。地址支持 HTTP/HTTPS，不包含空白、查询参数或片段。

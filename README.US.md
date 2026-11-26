@@ -104,3 +104,13 @@ This project is community-maintained; the plugins are largely AI-generated or so
 
 Third-party packages may modify firewall, DNS, proxy, or other system services. Please be sure to back up your configuration before installation and, whenever possible, test these packages in a non-production environment.
 
+
+## Custom Repository URL
+
+The installer and client support IPFire Core 206 on x86_64 only. Specify a custom repository root when installing or reinstalling:
+
+```sh
+IPFREPO_BASE_URL=https://mirror.example/IPFire-repo sh install-repo.sh
+```
+
+The URL is saved in `/opt/ipfrepo/repository.url` and reused by subsequent `ipfrepo` commands and reinstalls. Precedence is the `IPFREPO_BASE_URL` environment variable, the saved URL, then the default community repository. An environment override for a single `ipfrepo` command is temporary and does not rewrite the saved URL. HTTP/HTTPS URLs are supported; whitespace, query strings and fragments are not allowed.

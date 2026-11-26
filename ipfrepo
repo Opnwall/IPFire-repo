@@ -1,7 +1,22 @@
 #!/bin/sh
 set -eu
 
-BASE_URL="${IPFREPO_BASE_URL:-https://opnwall.github.io/IPFire-repo}"
+# Plain-text configuration: never source a repository URL as shell code.
+CONFIG_FILE="/opt/ipfrepo/repository.url"
+DEFAULT_BASE_URL="https://opnwall.github.io/IPFire-repo"
+BASE_URL="${IPFREPO_BASE_URL:-}"
+if [ -z "$BASE_URL" ] && [ -f "$CONFIG_FILE" ]; then
+    BASE_URL="$(cat "$CONFIG_FILE")"
+fi
+BASE_URL="${BASE_URL:-$DEFAULT_BASE_URL}"
+BASE_URL="${BASE_URL%/}"
+case "$BASE_URL" in
+    http://?*|https://?*) ;;
+    *) echo "error: repository URL must use http:// or https://" >&2; exit 1 ;;
+esac
+case "$BASE_URL" in
+    *[[:space:]]*|*\?*|*\#*) echo "error: repository URL must not contain whitespace, a query or a fragment" >&2; exit 1 ;;
+esac
 ARCH="$(uname -m)"
 STATE_DIR="/opt/ipfrepo"
 DB_DIR="$STATE_DIR/db"
@@ -12,6 +27,22 @@ CATALOG="$DB_DIR/packages.db"
 die() {
     echo "error: $*" >&2
     exit 1
+}
+
+check_platform() {
+    [ "$(uname -m)" = "x86_64" ] || {
+        echo "error: only x86_64 is supported" >&2
+        exit 1
+    }
+    [ -r /opt/pakfire/db/core/mine ] || {
+        echo "error: IPFire Core version file is missing" >&2
+        exit 1
+    }
+    core_version="$(cat /opt/pakfire/db/core/mine)"
+    [ "$core_version" = "206" ] || {
+        echo "error: IPFire Core 206 is required (detected: $core_version)" >&2
+        exit 1
+    }
 }
 
 need_root() {
@@ -191,6 +222,10 @@ EOF
 }
 
 command="${1:-}"
+case "$command" in
+    -h|--help|help|'') ;;
+    *) check_platform ;;
+esac
 case "$command" in
     update) update_catalog ;;
     list) list_packages ;;
