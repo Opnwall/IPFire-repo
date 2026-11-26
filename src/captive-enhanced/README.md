@@ -1,15 +1,16 @@
 <div align="center">
   <a href="README.md">中文</a> |
-  <a href="README_US.md">English</a>
+  <a href="README.US.md">English</a>
 </div>
 
-# IPFire Captive Portal Enhanced
+# Captive Portal Enhanced for IPFire
+
+<p>
+  <img src="https://img.shields.io/badge/IPFire-2.29%20Core%20206-orange" alt="IPFire">
+  <img src="https://img.shields.io/badge/Platform-x86__64-blue" alt="Platform">
+</p>
 
 > 插件版本：**1.1.13** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
-> 界面语言：English / 简体中文 / 繁體中文；识别 Core 206 的语言代码。
-
-2026-11-25 验证：已完成升级及英、简、繁管理页面、测试上网券 PDF 导出检查；原有 GREEN/BLUE 关闭状态、客户端和上网券数据保留。
-实际接入认证、上网券兑换和 Windows 跳转未在本轮重新验证；升级不会主动开启原本关闭的门户区域。
 
 面向 IPFire 的社区版强制门户增强插件，提供中文界面、多语言访客认证、上网劵、手动客户端授权、品牌徽标、条款展示及中文 PDF 导出。
 
@@ -17,7 +18,7 @@
 
 ![门户设置](image/setting1.png)
 
-## 主要功能
+## 功能
 
 - 支持“条款与条件”和“上网劵”两种访客认证方式。
 - 管理员可按 IP、MAC 和时长直接添加客户端，不消耗上网劵。
@@ -55,7 +56,7 @@
 
 - 安装或升级时自动读取目标设备网络配置。
 - 首次配置且缺少 GREEN 开关键时，存在 GREEN 接口会初始化 `ENABLE_GREEN=on`；升级保留已有开关值。
-- 存在 BLUE 接口时默认设置 `ENABLE_BLUE=on`。
+- 首次配置且缺少 BLUE 开关键时，存在 BLUE 接口会初始化 `ENABLE_BLUE=on`；升级保留已有开关值。
 - 不存在的内部区域保持 `off`，RED 不会作为强制门户接口启用。
 - 管理页面可手动启停 GREEN/BLUE；旧页面提交不会意外覆盖当前状态。
 - 仅允许已启用 GREEN/BLUE 网段内的客户端，排除网关、网络地址和广播地址。
@@ -69,7 +70,7 @@
 - Perl 模块：`CGI`、`HTML::Template`、`PDF::API2`、`File::LibMagic`、`JSON::PP`、`Digest::SHA`。
 - Bash、`flock`、`tar`、Apache 管理命令。Core 206 不要求旧语言缓存程序。
 
-## 安装
+## 安装插件
 
 将完整项目目录复制到 IPFire，以 `root` 执行：
 
@@ -78,7 +79,7 @@ cd captive-enhanced
 bash install.sh
 ```
 
-安装器会检查平台和语法、备份现有程序及门户数据、安装文件、迁移旧数据、更新语言缓存、检查 Apache 配置，并重新加载门户规则。安装失败时会尝试自动恢复本次快照。
+安装器会检查平台和语法、备份现有程序及门户数据、安装文件、迁移旧数据、安装语言资源（仅在旧缓存程序存在时刷新）、检查 Apache 配置，并重新加载门户规则。安装失败时会尝试自动恢复本次快照。
 
 最新备份路径保存在：
 
@@ -169,7 +170,7 @@ bash uninstall.sh /var/backups/captive-enhanced/<日期时间>-<PID>
 
 回退会恢复当时的程序和 Captive Portal 数据，并重新加载 Apache 及门户规则。回退前，脚本会将当前门户数据另存为 `before-restore-*.tar.gz`。
 
-## 测试
+## 验证范围
 
 Core 206 本轮已验证升级、英简繁管理页面和三种语言的测试 PDF 导出；门户区域的关闭状态、客户端及上网券数据保持不变。未开启门户进行真实接入认证、兑换或 Windows 跳转测试。
 
@@ -192,10 +193,7 @@ captive-enhanced/
 ├── install.sh                 # 安装及升级
 ├── uninstall.sh               # 回退
 ├── src/                       # 安装到 IPFire 的文件
-├── tests/                     # 安全、语言、CGI、前端和接口测试
 ├── image/                     # README 截图
-├── Manuale captive-zh-CN.md   # 中文详细手册
-├── Manuale captive-en.md      # 英文详细手册
 ├── MANIFEST.sha256            # 安装文件校验清单
 └── VERSION
 ```
@@ -219,3 +217,7 @@ captive-enhanced/
 
 - [IPFire Captive Portal 官方文档](https://www.ipfire.org/docs/configuration/network/captive)
 - [IPFire 官方网站](https://www.ipfire.org/)
+
+## 免责声明
+
+这是社区维护的非官方项目，与 IPFire 团队没有隶属关系。使用者需自行评估并承担使用风险。

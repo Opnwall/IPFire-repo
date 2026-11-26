@@ -1,14 +1,16 @@
 <div align="center">
   <a href="README.md">中文</a> |
-  <a href="README_US.md">English</a>
+  <a href="README.US.md">English</a>
 </div>
 
 # EasyTier for IPFire
 
-> 插件版本：**1.0.2** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
-> 界面语言：English / 简体中文 / 繁體中文；识别 Core 206 的语言代码。
+<p>
+  <img src="https://img.shields.io/badge/IPFire-2.29%20Core%20206-orange" alt="IPFire">
+  <img src="https://img.shields.io/badge/Platform-x86__64-blue" alt="Platform">
+</p>
 
-2026-11-25 验证：已完成升级及英、简、繁页面检查；保留原配置并恢复运行，5 个对端连接正常。
+> 插件版本：**1.0.2** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
 
 适用于 IPFire 的社区 EasyTier 组网 VPN 插件。通过 Web 管理界面配置网络名称、密码和对端节点，即可连接不同地点的设备，并可选择访问远程局域网。
 
@@ -27,7 +29,7 @@
 
 本说明针对该核心版本和架构。本软件包不适用于 ARM 或其他 Core 版本。
 
-## 功能特性
+## 功能
 
 - 使用网络名称和密码加入私有网络。密码不会显示；保存时留空表示保留原值。
 - 自动或静态虚拟 IPv4、多个对端节点以及可选的 TCP/UDP 监听端口。
@@ -39,7 +41,7 @@
 
 未预置任何共享凭据或公共中继。全新安装后服务处于停止状态；开机自启、WAN 访问、局域网转发和 NAT 均未启用。
 
-## 安装
+## 安装插件
 
 先备份 IPFire；如适用，请创建虚拟机快照，并保留 SSH 或控制台访问方式。在 IPFire 上以 root 身份执行以下命令。
 
@@ -71,11 +73,7 @@ bash install.sh
 
 ## 快速配置
 
-### 1.0.1 版本变更
-
-- 在三种界面语言中新增节点主机名字段。它只更改 EasyTier 节点名称，不会更改系统主机名。保存并重启 EasyTier 进程后生效。
-- 现有设置保持兼容；默认值为 ipfire-easytier，保存旧表单时会保留已配置的名称。
-- 保留 STUN 集成，并动态发现 RED 接口/IPv4，而非硬编码测试设备的 WAN 地址。停止服务时会移除专用 STUN 规则和优先级 8999 的 STUN 路由例外。
+### 升级安装
 
 对于通过仓库安装的现有环境，先运行 `ipfrepo update`，再运行 `ipfrepo install easytier`。升级会停止服务：请先检查设置，之后再启动。插件的「重启」按钮重启的是 EasyTier，而不是 IPFire。
 
@@ -151,7 +149,7 @@ NAT 只匹配本地 GREEN/BLUE 源子网以及实际从 `easytier0` 发出的流
 - Web 管理界面需要已认证的管理员 HTTPS 访问，并提供 POST/CSRF 校验、字段校验和密码脱敏。
 - 配置、日志和卸载备份可能包含敏感信息。请勿公开它们。
 
-## 故障排查
+## 常见问题
 
 ```sh
 /usr/local/sbin/easytierctrl status
@@ -170,7 +168,7 @@ tail -n 80 /var/log/easytier.log
 
 管理恢复后，按需禁用开机自启或相关选项。请勿通过大范围开放防火墙权限来掩盖路由问题。
 
-## 卸载
+## 卸载插件
 
 通过仓库安装的：
 
@@ -192,3 +190,7 @@ bash uninstall.sh
 
 - [EasyTier 项目](https://github.com/EasyTier/EasyTier)
 - [内置的 v2.6.4 版本](https://github.com/EasyTier/EasyTier/releases/tag/v2.6.4)
+
+## 免责声明
+
+这是社区维护的非官方项目，与 IPFire 团队没有隶属关系。使用者需自行评估并承担使用风险。

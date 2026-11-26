@@ -1,159 +1,186 @@
-# IPFire DDNS Provider Patch
+<div align="center">
+  <a href="README.md">中文</a> |
+  <a href="README.US.md">English</a>
+</div>
 
-> Plugin version: **1.0.4** · Target: **IPFire 2.29 Core Update 206 (x86_64)**
-> UI languages: English / Simplified Chinese / Traditional Chinese, including Core 206 locale identifiers.
+# DDNS Provider Patch for IPFire
 
-Validation on 2026-11-25: The patch was applied to Core 206 DDNS source and passed Python compilation; it uses the native English/Simplified/Traditional DDNS UI. Provider API writes were not tested.
+<p>
+  <img src="https://img.shields.io/badge/IPFire-2.29%20Core%20206-orange" alt="IPFire">
+  <img src="https://img.shields.io/badge/Platform-x86__64-blue" alt="Platform">
+</p>
 
-This package adds extra DDNS providers to IPFire's `ddns` package:
+> 插件版本：**1.0.4** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
+
+这个补丁包为 IPFire 的 `ddns` 动态域名组件增加以下服务商支持：
 
 - `cloudflare.com`
 - `alidns.aliyuncs.com`
 - `dnspod.tencentcloudapi.com`
 
-## Files
+## 文件说明
 
 ```text
 ipfire-dyndns/
 ├── install.sh
 ├── uninstall.sh
+├── README.md
+├── README.US.md
 ├── ipfire-ddns-cloudflare.patch
 └── src/patches/ddns-014-dns-provider-support.patch
 ```
 
-## Install
+## 安装插件
 
-Copy this whole folder to the IPFire host, then run as `root`:
+把完整的 `ipfire-dyndns` 插件目录复制到 IPFire 主机上，然后用 `root` 执行：
 
 ```sh
 chmod +x install.sh uninstall.sh
 ./install.sh
 ```
 
-The installer will:
+安装脚本会自动完成：
 
-- back up the current `providers.py` and `system.py`
-- apply `src/patches/ddns-014-dns-provider-support.patch`
-- run Python syntax checks
-- verify the new providers are listed by `/usr/bin/ddns`
+- 备份当前的 `providers.py` 和 `system.py`
+- 应用 `src/patches/ddns-014-dns-provider-support.patch`
+- 执行 Python 语法检查
+- 验证新服务商是否已被 `/usr/bin/ddns` 识别
 
-The installer discovers the active Python `ddns` package automatically. On Core Update 206, the path is:
+安装脚本会通过 Python 自动识别当前 `ddns` 包目录。Core Update 206 的路径为：
 
 ```text
 /usr/lib/python3.10/site-packages/ddns
 ```
 
-To override automatic discovery:
+如需覆盖自动识别结果，可以这样指定：
 
 ```sh
 DDNS_DIR=/path/to/ddns ./install.sh
 ```
 
-## Uninstall
+## 卸载插件
 
-Run as `root`:
+用 `root` 执行：
 
 ```sh
 ./uninstall.sh
 ```
 
-The uninstaller restores the latest `*.bak-cloudflare-*` backups. If backups are missing, it tries to reverse the patch.
+卸载脚本会优先恢复安装时生成的最新 `*.bak-cloudflare-*` 备份。如果找不到备份，则尝试反向应用补丁。
 
-## IPFire Web UI Usage
+## IPFire 页面配置方法
 
-Go to:
+进入：
 
 ```text
-Services -> Dynamic DNS
+服务 -> 动态 DNS
 ```
 
 ### Cloudflare
 
-Select:
+服务选择：
 
 ```text
 cloudflare.com
 ```
 
-Fields:
+填写方式：
 
-- Hostname: full DNS name, for example `test.example.com`
-- Token: Cloudflare API token
+- 主机名：完整域名，例如 `test.example.com`
+- 令牌：Cloudflare API Token
 
-The token should have DNS edit permission for the zone.
+Cloudflare Token 至少需要对应 Zone 的 DNS 编辑权限。
 
-### Alibaba Cloud DNS
+### 阿里云 DNS
 
-Select:
+服务选择：
 
 ```text
 alidns.aliyuncs.com
 ```
 
-Fields:
+填写方式：
 
-- Hostname: full DNS name, for example `test.example.com`
-- Username: Alibaba Cloud `AccessKeyId`
-- Password: Alibaba Cloud `AccessKeySecret`
+- 主机名：完整域名，例如 `test.example.com`
+- 用户名：阿里云 `AccessKeyId`
+- 密码：阿里云 `AccessKeySecret`
 
-The RAM user should have permission to query, add, and update DNS records.
+对应 RAM 用户需要具备查询、新增、更新云解析 DNS 记录的权限。
 
-### Tencent Cloud DNSPod
+### 腾讯云 DNSPod
 
-Select:
+服务选择：
 
 ```text
 dnspod.tencentcloudapi.com
 ```
 
-Fields:
+填写方式：
 
-- Hostname: full DNS name, for example `test.example.com`
-- Username: Tencent Cloud `SecretId`
-- Password: Tencent Cloud `SecretKey`
+- 主机名：完整域名，例如 `test.example.com`
+- 用户名：腾讯云 `SecretId`
+- 密码：腾讯云 `SecretKey`
 
-The CAM user should have permission to query, create, and modify DNSPod records.
+对应 CAM 用户需要具备查询、创建、修改 DNSPod 记录的权限。
 
-## Notes
+## 注意事项
 
-- Cloudflare uses token authentication in the IPFire UI.
-- Alibaba Cloud DNS and Tencent Cloud DNSPod use username/password fields.
-- The providers update `A` and `AAAA` records.
-- Existing DNS record TTL and line settings are preserved when possible.
-- If a DNS record does not exist, the provider API creates the corresponding `A` or `AAAA` record. Verify the hostname carefully before forcing an update.
-- Existing records are not deleted automatically. In particular, an existing `AAAA` record will not be removed just because the IPFire host currently has no usable IPv6 address.
-- If the IPFire page still shows a hostname in red after a successful update, check local DNS cache. The record may already be correct in public DNS while the firewall's resolver still has an old negative cache entry.
+- Cloudflare 使用 IPFire 页面里的“令牌”字段。
+- 阿里云和腾讯云使用 IPFire 页面里的“用户名/密码”字段。
+- 目前支持更新 `A` 和 `AAAA` 记录。
+- 如果记录已经存在，会尽量保留原有 TTL 和线路设置。
+- DNS 记录不存在时，补丁会通过服务商 API 创建对应的 `A` 或 `AAAA` 记录；请先确认主机名填写正确。
+- 补丁默认不会自动删除已有记录。例如当前 IPFire 没有可用 IPv6 地址时，不会自动删除已有的 `AAAA` 记录。
+- 如果更新成功后页面主机名仍显示红色，可能是 IPFire 本机 DNS 缓存了旧的 NXDOMAIN 结果。公网 DNS 可能已经正确，刷新本机 DNS 缓存或等待缓存过期即可。
 
-## Verify
+## 验证
 
-After installing:
+安装后检查服务商列表：
 
 ```sh
 /usr/bin/ddns list-providers | grep -E 'cloudflare.com|alidns.aliyuncs.com|dnspod.tencentcloudapi.com'
 /usr/bin/ddns list-token-providers | grep cloudflare.com
 ```
 
-Force an update:
+手动触发更新：
 
 ```sh
 /usr/local/bin/ddnsctrl update-all
 ```
 
-Check logs:
+查看日志：
 
 ```sh
 grep -i 'Dynamic DNS update' /var/log/messages | tail
 ```
 
-Suggested test cases before submitting or deploying widely:
+建议在正式提交或大范围使用前测试：
 
-- provider registration with `ddns -d list-providers`
-- public IP detection with `ddns -d guess-ip-addresses`
-- forced command-line update with `ddns -d update-all --force`
-- public DNS result through `1.1.1.1` and `8.8.8.8`
-- provider API response for the changed record
-- repeated normal update when the record is already current
-- invalid credentials
-- missing DNS record
-- IPv4-only, IPv6-only, and dual-stack records
-- clean install and uninstall
+- 用 `ddns -d list-providers` 检查服务商是否注册
+- 用 `ddns -d guess-ip-addresses` 检查 IPFire 识别到的公网 IP
+- 用 `ddns -d update-all --force` 强制更新
+- 用 `1.1.1.1` 和 `8.8.8.8` 查询公网 DNS 结果
+- 通过服务商 API 确认记录内容
+- 记录已是最新时重复执行普通更新
+- 错误密钥或 Token
+- 主机名对应记录不存在
+- 仅 IPv4、仅 IPv6、双栈记录
+- 安装和卸载是否干净
+
+## 提交源码补丁
+
+如果要把改动提交到 IPFire 源码树，可以参考：
+
+```text
+ipfire-ddns-cloudflare.patch
+```
+
+核心补丁文件是：
+
+```text
+src/patches/ddns-014-dns-provider-support.patch
+```
+
+## 免责声明
+
+这是社区维护的非官方项目，与 IPFire 团队没有隶属关系。使用者需自行评估并承担使用风险。

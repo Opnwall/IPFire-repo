@@ -1,5 +1,6 @@
 cb4146eb5c6669516e772364687914ceb883476240f8c13f57d4710b2cdd027d  CORE206.md
-41758782034b52183d53bc276ad9d121105cc1f50cc86600f133c34df911eaa0  README.md
+83bf49a13c282b71ce6adb5c442a327a458ee5d60e59d97c43c05b6d81f6b13c  README.US.md
+e367dfe83f5bb261cfb7f5648f33357b2b9a8a86661964a2555a7330e69752dc  README.md
 8c54bfab7f1ae9bd1a7148eae41e7b0a8f4ad3726e0cac70f823a2d45db9e60c  VERSION
 7666e5b62462412426a8b1b7ff7ab29446027f6e27c99085a461736651391ba5  install.sh
 d70b300b67cd992316a303140dd327cfcb061b908aec023aca23f01e9f090823  src/etc/rc.d/init.d/sing-box
@@ -7,9 +8,9 @@ d70b300b67cd992316a303140dd327cfcb061b908aec023aca23f01e9f090823  src/etc/rc.d/i
 6c63d2ee7117554cd8c3277bbaa52281754206ac3e1f78546a52b379c2b254ea  src/srv/web/ipfire/cgi-bin/sing-box.cgi
 1e73b556ea333f6c09056a9237a1d7a4fee1156f3b0040c16767ab49feb09d81  src/usr/local/bin/sing-box
 7106d10fc4c2403fdc898477322ec7303f2782556bf06317dededf8a5a15b258  src/usr/local/etc/sing-box/config.json
+0c8f1ce0373e03d767f505989fabe5a303d7866116fc49f9238ee242a2441c2e  src/var/ipfire/community-lang/sing-box.pl
 c3f57224a051806b9efc3dfc3068abec9224a1498700f879482a25cb3a751ba6  src/var/ipfire/community-lang/sing-box/core.en.pl
 e7d2b214b4590334625e8b59f7c5dbf5d43aff439b1361ad79d2fbc222d09447  src/var/ipfire/community-lang/sing-box/core.tw.pl
 5dbcbfbfb6d939db7c5ab4aaa5f012701dccfc640a4f5a06670b76010046e3a4  src/var/ipfire/community-lang/sing-box/core.zh.pl
-0c8f1ce0373e03d767f505989fabe5a303d7866116fc49f9238ee242a2441c2e  src/var/ipfire/community-lang/sing-box.pl
 b6aa7494ec575ca0a2f4b853d2e8c4c0cfa5c288e961878330fab10ffcfe10b4  src/var/ipfire/menu.d/81-singbox.menu
 547c06c4f29e63f46333f02d1f9ddb151b734ac8b4c1eaad0cbe82130461b3c4  uninstall.sh

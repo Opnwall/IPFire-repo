@@ -1,57 +1,69 @@
 <div align="center">
-  <a href="README.md">English</a> |
-  <a href="README.CN.md">中文</a>
+  <a href="README.md">中文</a> |
+  <a href="README.US.md">English</a>
 </div>
 
 # ZeroTier for IPFire
 
-> Plugin version: **1.0.5** · Target: **IPFire 2.29 Core Update 206 (x86_64)**
-> UI languages: English / Simplified Chinese / Traditional Chinese, including Core 206 locale identifiers.
+<p>
+  <img src="https://img.shields.io/badge/IPFire-2.29%20Core%20206-orange" alt="IPFire">
+  <img src="https://img.shields.io/badge/Platform-x86__64-blue" alt="Platform">
+</p>
 
-Validation on 2026-11-25: Core 206 x86_64 syntax, translation-resource and initial English/Simplified/Traditional CGI checks passed in isolation. Live service connectivity, reboot and complete install/uninstall regression were not repeated in this run.
+> 插件版本：**1.0.5** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
 
-![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
-![Architecture](https://img.shields.io/badge/Arch-x86__64-blue)
-![License](https://img.shields.io/badge/License-GPLv3-green)
+本项目为 IPFire WebUI 添加了一个 ZeroTier VPN 管理页面。
 
-This project adds a ZeroTier VPN management page to the IPFire WebUI. The CGI page directly embeds language packs for English, Simplified Chinese, and Traditional Chinese.
+![](image/zerotier.cn.png)
 
-![](image/zerotier.png)
+## 安装插件
 
-## Install
-
-Run on IPFire as `root`:
+在 IPFire 系统中以 `root` 用户执行：
 
 ```sh
 bash install.sh
 ```
 
-After installation, open the IPFire WebUI and go to:
+安装完成后，打开 IPFire Web 管理界面，进入：
 
 ```text
-Services > ZeroTier VPN
+服务（Services） > ZeroTier VPN
 ```
 
-## Uninstall
+## 卸载插件
 
 ```sh
 bash uninstall.sh
 ```
 
-## Configuration
+## 配置文件
 
-Default settings are installed to:
+默认配置文件安装在：
 
 ```text
 /var/ipfire/zerotier/settings
 ```
 
-`ALLOW_DEFAULT=on` allows ZeroTier-managed default routes. Keep it off unless
-you intentionally want the ZeroTier network to provide default routing.
+其中：
 
-## Setup
+```text
+ALLOW_DEFAULT=on
+```
 
-Click "Start," enter the Network ID, save, and then click "Join." Then, go to the ZeroTier console to authorize the connection.
+表示允许使用 ZeroTier 管理的默认路由。
 
-## Disclaimer
-This is an unofficial community project with no affiliation to the IPFire team; use it at your own risk.
+除非你明确希望通过 ZeroTier 网络提供默认路由（即让所有互联网流量经过 ZeroTier 网络），否则建议保持关闭状态。
+
+## 加入网络
+
+1. 点击 启动
+2. 输入 Network ID
+3. 点击 保存
+4. 点击 加入
+5. 登录 ZeroTier 控制台，对该节点进行授权（Authorize）
+
+完成授权后，设备即可加入 ZeroTier 网络。
+
+## 免责声明
+
+这是一个非官方社区项目，与 IPFire 团队没有任何关联，自行承担使用过程中可能产生的风险。

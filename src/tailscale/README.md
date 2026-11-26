@@ -1,87 +1,83 @@
 <div align="center">
-  <a href="README.md">English</a> |
-  <a href="README.CN.md">中文</a>
+  <a href="README.md">中文</a> |
+  <a href="README.US.md">English</a>
 </div>
 
 # Tailscale for IPFire
 
-> Plugin version: **1.0.5** · Target: **IPFire 2.29 Core Update 206 (x86_64)**
-> UI languages: English / Simplified Chinese / Traditional Chinese, including Core 206 locale identifiers.
+<p>
+  <img src="https://img.shields.io/badge/IPFire-2.29%20Core%20206-orange" alt="IPFire">
+  <img src="https://img.shields.io/badge/Platform-x86__64-blue" alt="Platform">
+</p>
 
-Validation on 2026-11-25: Core 206 x86_64 syntax, translation-resource and initial English/Simplified/Traditional CGI checks passed in isolation. Live service connectivity, reboot and complete install/uninstall regression were not repeated in this run.
+> 插件版本：**1.0.5** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
 
-![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
-![Architecture](https://img.shields.io/badge/Arch-x86__64-blue)
-![License](https://img.shields.io/badge/License-GPLv3-green)
+Tailscale for IPFire 为 IPFire 提供原生 Web 管理界面，可直接在 IPFire 管理后台中完成 Tailscale 的配置与管理。
 
-Tailscale for IPFire provides a native Web UI for managing Tailscale directly from the IPFire administration interface.
+![Screenshot](image/tailscale.cn.png)
 
-![Screenshot](image/tailscale.png)
+## 功能
 
-## Features
+- 原生 IPFire Web UI 集成
+- 使用认证密钥加入 Tailscale 网络
+- 可以自定义主机名
+- 支持配置子网路由、出口节点
+- 自动识别平台架构，自动下载官方 Tailscale 静态二进制文件
+- 支持英文、简体中文和繁体中文，其他语言自动回退到英文界面
 
-- Native IPFire Web UI integration
-- Join Tailscale networks using authentication keys
-- Supports custom hostnames, subnet routing, and exit node configuration
-- Automatically detects platform architecture and downloads official Tailscale static binaries
-- Supports English, Simplified Chinese, and Traditional Chinese; defaults to English for other languages
+## 支持平台
 
-## Tested Platforms
-
-| Platform | Version |
-|----------|----------|
+| 平台 | 版本 |
+|------|------|
 | IPFire | 2.29 Core Update 206 |
-| Architecture | x86_64 / amd64 |
+| 架构 | x86_64 / amd64 |
 
-## Installation
+## 安装插件
 
 ```bash
 sh install.sh
 ```
-
-## Uninstallation
+## 卸载插件
 
 ```bash
 sh uninstall.sh
 ```
+## 配置
 
-## Configuration
-
-After installation, open:
-
-```text
-Services > Tailscale
-```
-
-First, click Start and enter the authentication key, then configure the following items as needed:
-
-- Hostname
-- Accept Routes
-- Advertised Routes
-- Exit Node
-
-Click "Save Settings," then click:
+安装完成后进入：
 
 ```text
-Join Network
+服务> Tailscale
 ```
+先点击启动，输入认证密钥，然后根据需要配置以下项目：
 
-Once completed:
-1. Open the Tailscale admin console.
-2. Select the corresponding IPFire device.
-3. Configure the settings to disable key expiry and enable advertised routes or exit node options.
+- 主机名
+- 接受路由
+- 通告路由
+- 出口节点
 
-## Tailscale Binaries
+保存选项后再点击：
 
-The installer downloads official static binaries from:
+```text
+加入网络
+```
+完成后：
 
+1. 打开 Tailscale 管理后台
+2. 选择对应的 IPFire 设备
+3. 设置禁用密钥过期、启用通告路由或出口节点选项
+
+## Tailscale 二进制文件
+
+安装程序会自动下载官方静态二进制文件：
 https://pkgs.tailscale.com/stable/#static
 
-## Notes
+## 注意事项
 
-- Automatic deployment via the plugin settings page requires an authentication key.
-- Route advertisements and exit nodes must be manually approved in the Tailscale admin console.
-- DNS takeover is disabled by default (`--accept-dns=false`) to avoid overwriting the local IPFire DNS configuration.
+- 插件设置页面只能使用认证密钥进行自动部署。
+- 通告路由和出口节点需要在 Tailscale 管理后台手动批准。
+- 默认禁用 DNS 接管（`--accept-dns=false`），避免覆盖 IPFire 本地 DNS 配置。
 
-## Disclaimer
-This is an unofficial community project with no affiliation to the IPFire team; use it at your own risk.
+## 免责声明
+
+这是一个非官方社区项目，与 IPFire 团队没有任何关联，自行承担使用过程中可能产生的风险。

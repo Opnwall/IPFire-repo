@@ -1,20 +1,46 @@
-# IPFire 汉化补丁 1.0.8
+<div align="center">
+  <a href="README.md">中文</a> |
+  <a href="README.US.md">English</a>
+</div>
+
+# Localization Patch for IPFire
+
+<p>
+  <img src="https://img.shields.io/badge/IPFire-2.29%20Core%20206-orange" alt="IPFire">
+  <img src="https://img.shields.io/badge/Platform-x86__64-blue" alt="Platform">
+</p>
 
 > 插件版本：**1.0.8** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
-> 界面语言：English / 简体中文 / 繁體中文；识别 Core 206 的语言代码。
 
-2026-11-25 验证：已在设备上完成升级；英、简、繁页面和远程词库安装输出验证通过，简繁各保留 2589 个词条。
+本插件面向 Core 206 的 GNU gettext 机制，从页面保存的下载地址获取新版 `IPFire_lang.zip`，读取简繁 JSON 词库并合并安装。系统页面不再使用旧的 `langs/zh.pl`、`addon-lang/*.zh.pl` 和语言缓存更新程序。
 
-Core 206 改用 GNU gettext，原来的 `langs/zh.pl`、`addon-lang/*.zh.pl` 和语言缓存更新程序不再用于系统页面。本插件面向 Core 206 gettext，从页面保存的地址下载新版 IPFire_lang.zip，读取简繁 JSON 词库并合并安装。旧格式 ZIP 会被明确拒绝。
+## 翻译文件
 
-`src/usr/local/share/ipfire-lang/zh_CN.json` 及 `zh_TW.json` 是可审阅的补充翻译。安装时合并到设备现有 `/usr/share/locale/zh_CN/LC_MESSAGES/ipfire.mo`，保留原有上下文、复数和元数据，校验后原子替换。首次安装保留 `ipfire.mo.before-community-zh`。国家/地区译名依据 Babel 的 CLDR 简体中文地区数据，并补充旧代码和特殊区域。
+`src/usr/local/share/ipfire-lang/zh_CN.json` 和 `zh_TW.json` 是可审阅的补充翻译。安装时合并到对应语言的 `/usr/share/locale/<语言>/LC_MESSAGES/ipfire.mo`，保留原有上下文、复数和元数据，校验后原子替换。首次安装保留 `ipfire.mo.before-community-zh`。
 
-`core206-compat.json` 为没有经过 gettext 的显示标签补充翻译调用，并修复 EasyTier/Mihomo 对 `zh_CN`、`zh-CN` 等语言代码的识别。已提供自身 Core 206 语言适配的社区插件会跳过旧源码替换规则；其余文件仅匹配已知片段，未知版本明确报错。每个修改过的文件旁保留 `.before-community-zh` 备份，替换前运行 Perl 语法检查。适配这些文件需要其所属插件已安装；未安装的文件跳过。
+国家和地区译名依据 Babel 的 CLDR 简体中文地区数据，并补充旧代码和特殊区域。
 
-安装：以 root 执行 `bash install.sh`，再在“系统 > 汉化补丁”中点击“立即汉化”。Core 206 请先上传新版 IPFire_lang.zip，然后在插件页面保存其 HTTPS 直接下载地址（目前限定 cloud.pfchina.org）。插件不执行下载包中的脚本，不直接覆盖下载包提供的任意路径。繁体中文补充词库 `zh_TW.json` 与简体词库同步提供 532 项补充（含六项菜单名称），使用繁体用语并保留已有上游译文；安装日志也按界面语言显示。上游系统更新可能覆盖词库及显示适配，需要重新安装；如源码变更，先重新核对匹配片段。
+## 安装插件
 
-本机 2026-11-25 验证：简繁词库各 532 个补充条目，设备词库各 2589 项；2142 个静态 gettext 字符串无缺失；74 个菜单入口生成中文页面，无超时。PPP 设置页因 RED 接口非 PPPoE 正常输出中文限制说明并以状态 1 退出。验证包括 Web 用户 nobody 的 sudo 安装路径、页面输出、Perl 语法及 GNU msgfmt 检查；没有遍历所有表单操作、错误分支或浏览器交互。协议名、产品名、用户配置值和原始诊断日志保留原文。
+在完整插件目录中，以 root 执行：
 
-恢复：以 root 将 `/usr/share/locale/zh_CN/LC_MESSAGES/ipfire.mo.before-community-zh` 复制回 `ipfire.mo`，按需将各文件旁的 `.before-community-zh` 备份恢复到原路径。只在设备文件仍对应本次版本时恢复；系统或插件更新后不要盲目覆盖。卸载脚本只删除安装入口和辅助文件，保留词库及备份，和此前版本的补丁保留行为一致。
+```sh
+bash install.sh
+```
 
-远程下载会为分享链接和每次重定向后的文件链接附加请求时间参数，以避开 Cloudflare 缓存的旧版同名文件；页面保存的原始 URL 不变。
+## 使用
+
+1. 将新版 `IPFire_lang.zip` 上传到云盘。
+2. 打开 **系统 > 汉化补丁**。
+3. 保存汉化包的 HTTPS 直接下载地址，目前限定 `cloud.pfchina.org`。
+4. 点击“立即汉化”，检查安装日志。
+
+## 注意事项
+
+- 插件不执行下载包中的脚本，不直接覆盖下载包提供的任意路径。
+- 上游系统更新可能覆盖词库及显示适配，需要重新安装。
+- 如系统源码变更，应先重新核对显示适配的匹配片段。
+
+## 免责声明
+
+这是社区维护的非官方项目，与 IPFire 团队没有隶属关系。使用者需自行评估并承担使用风险。

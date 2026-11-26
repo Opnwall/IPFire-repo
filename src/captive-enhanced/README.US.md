@@ -1,15 +1,16 @@
 <div align="center">
   <a href="README.md">中文</a> |
-  <a href="README_US.md">English</a>
+  <a href="README.US.md">English</a>
 </div>
 
-# IPFire Captive Portal Enhanced
+# Captive Portal Enhanced for IPFire
+
+<p>
+  <img src="https://img.shields.io/badge/IPFire-2.29%20Core%20206-orange" alt="IPFire">
+  <img src="https://img.shields.io/badge/Platform-x86__64-blue" alt="Platform">
+</p>
 
 > Plugin version: **1.1.13** · Target: **IPFire 2.29 Core Update 206 (x86_64)**
-> UI languages: English / Simplified Chinese / Traditional Chinese, including Core 206 locale identifiers.
-
-Validation on 2026-11-25: Upgraded and checked in all three management languages, including test coupon PDF export; disabled GREEN/BLUE state, clients and coupon data were retained.
-Live portal authentication, coupon redemption and Windows redirects were not retested; upgrading does not enable explicitly disabled portal zones.
 
 A community-maintained enhanced Captive Portal plugin for IPFire, featuring a Chinese interface, multilingual guest authentication, coupons, manual client authorization, custom branding, terms and conditions, and Chinese PDF export.
 
@@ -55,7 +56,7 @@ Coupon redemption and manual client authorization both write to the same authori
 
 - The installer automatically reads the target device's network configuration during installation or upgrade.
 - On initial setup, a missing GREEN setting is initialized to `ENABLE_GREEN=on` when that interface exists; upgrades preserve existing selections.
-- `ENABLE_BLUE=on` is set by default when a BLUE interface exists.
+- On initial setup, a missing BLUE setting is initialized to `ENABLE_BLUE=on` when that interface exists; upgrades preserve existing selections.
 - Missing internal zones remain `off`; RED is never enabled as a Captive Portal interface.
 - GREEN and BLUE can be enabled or disabled manually from the administration page. Submissions from older pages do not accidentally overwrite the current state.
 - Only clients within enabled GREEN/BLUE subnets are accepted; gateway, network, and broadcast addresses are excluded.
@@ -77,7 +78,7 @@ cd captive-enhanced
 bash install.sh
 ```
 
-The installer checks the platform and syntax, backs up existing programs and portal data, installs the files, migrates legacy data, updates the language cache, validates the Apache configuration, and reloads the portal rules. If installation fails, it attempts to restore the snapshot created for that run.
+The installer checks the platform and syntax, backs up existing programs and portal data, installs the files, migrates legacy data, installs language resources (updating the legacy cache only when available), validates the Apache configuration, and reloads the portal rules. If installation fails, it attempts to restore the snapshot created for that run.
 
 The latest backup path is recorded in:
 
@@ -101,7 +102,7 @@ https://IPFire-address:444/cgi-bin/captive.cgi
 
 ## Basic Usage
 
-### Terms & Conditions
+### Terms and Conditions
 
 1. Enable the required GREEN and/or BLUE interfaces.
 2. Set the access type to **Terms & Conditions**.
@@ -116,7 +117,7 @@ https://IPFire-address:444/cgi-bin/captive.cgi
 3. After generation, coupons can be viewed, deleted, or exported as a PDF.
 4. A guest receives network access after entering an unused coupon code.
 
-### Add Client
+### Add Clients
 
 Enter the client's MAC address, IP address, allowed duration, and optional remark. The IP address must belong to an enabled GREEN/BLUE subnet, and the MAC address must be a valid unicast address. This function directly authorizes a client and does not require a coupon to be generated or consumed.
 
@@ -169,7 +170,7 @@ bash uninstall.sh /var/backups/captive-enhanced/<date-time>-<PID>
 
 Rollback restores the programs and Captive Portal data from the selected snapshot, then reloads Apache and the portal rules. Before restoring, the script saves the current portal data as `before-restore-*.tar.gz`.
 
-## Testing
+## Validation Scope
 
 This Core 206 run checked upgrade, management pages in all three languages and three test PDF exports. Disabled portal zones, clients and coupons were retained. Live portal authentication, redemption and Windows redirects were not exercised.
 
@@ -192,10 +193,7 @@ captive-enhanced/
 ├── install.sh                 # Installation and upgrade
 ├── uninstall.sh               # Rollback
 ├── src/                       # Files installed on IPFire
-├── tests/                     # Security, language, CGI, front-end, and interface tests
 ├── image/                     # README screenshots
-├── Manuale captive-zh-CN.md   # Detailed Chinese manual
-├── Manuale captive-en.md      # Detailed English manual
 ├── MANIFEST.sha256            # Installation file checksums
 └── VERSION
 ```
@@ -220,3 +218,7 @@ Thanks to the IPFire project, the original author **tratru**, and everyone who c
 
 - [Official IPFire Captive Portal documentation](https://www.ipfire.org/docs/configuration/network/captive)
 - [IPFire official website](https://www.ipfire.org/)
+
+## Disclaimer
+
+This is an unofficial community-maintained project with no affiliation to the IPFire team. Users are responsible for assessing and accepting the risks of use.

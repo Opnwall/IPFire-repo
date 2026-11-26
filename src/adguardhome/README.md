@@ -1,33 +1,26 @@
 <div align="center">
   <a href="README.md">中文</a> |
-  <a href="README.en.md">English</a>
+  <a href="README.US.md">English</a>
 </div>
 
-# Tailscale for IPFire
-
-> 插件版本：**1.0.5** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
-> 界面语言：English / 简体中文 / 繁體中文；识别 Core 206 的语言代码。
-
-2026-11-25 验证：本轮通过 Core 206 x86_64 的语法、翻译资源和英、简、繁初始页面隔离检查；未在本轮执行该服务的真实联网、重启及完整安装卸载回归。
-
-        
 # AdGuard Home for IPFire
 
 <p>
   <img src="https://img.shields.io/badge/IPFire-2.29%20Core%20206-orange" alt="IPFire">
   <img src="https://img.shields.io/badge/Platform-x86__64-blue" alt="Platform">
-  <img src="https://img.shields.io/badge/AdGuard%20Home-Supported-67b279" alt="AdGuard Home">
 </p>
+
+> 插件版本：**1.0.5** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
 
 AdGuard Home 是一个基于 DNS 的全网广告拦截和隐私保护解决方案，可为家庭和企业网络中的所有设备提供统一的 DNS 过滤服务。所有客户端（如手机、电脑、智能电视和 IoT 设备）的域名请求都会先经过 AdGuard Home，由其负责拦截广告、跟踪器、恶意域名，并提供安全、可控的 DNS 解析能力。
 
 本项目是专为 IPFire 防火墙打造的集成项目，提供 AdGuard Home 的一键部署与管理能力。项目包含服务管理脚本、IPFire Web UI 菜单入口、CGI 管理页面以及持久化配置目录，实现与 IPFire 系统的深度集成，让用户能够像管理原生组件一样安装、配置和维护 AdGuard Home。
 
-## 设置界面
+## 界面预览
 
 ![](image/AdGuardHome.cn.png)
 
-## 推荐DNS链路
+## 推荐 DNS 链路
 
 在 IPFire Core 206中，系统 DNS 解析器由 Knot Resolver 提供，默认监听 `53` 端口。如果希望 AdGuard Home 对局域网客户端生效，推荐把链路调整为：
 
@@ -58,7 +51,7 @@ http://<ipfire-host>:3000/
 
 如果 Knot Resolver 仍在占用 `53` 端口，首次初始化 AdGuard Home 时可以先把 DNS 监听端口设置为 `5353` 或其他空闲端口，待初始化完成后再按下面步骤切换为正式链路。
 
-## 接管53端口
+## 接管 53 端口
 
 以下步骤会把 Knot Resolver 从 `53` 端口移动到 `5353`，再让 AdGuard Home 接管 `53` 端口。
 

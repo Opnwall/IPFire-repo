@@ -1,28 +1,22 @@
 <div align="center">
   <a href="README.md">中文</a> |
-  <a href="README.en.md">English</a>
+  <a href="README.US.md">English</a>
 </div>
-
-# Tailscale for IPFire
-
-> Plugin version: **1.0.5** · Target: **IPFire 2.29 Core Update 206 (x86_64)**
-> UI languages: English / Simplified Chinese / Traditional Chinese, including Core 206 locale identifiers.
-
-Validation on 2026-11-25: Core 206 x86_64 syntax, translation-resource and initial English/Simplified/Traditional CGI checks passed in isolation. Live service connectivity, reboot and complete install/uninstall regression were not repeated in this run.
 
 # AdGuard Home for IPFire
 
 <p>
   <img src="https://img.shields.io/badge/IPFire-2.29%20Core%20206-orange" alt="IPFire">
   <img src="https://img.shields.io/badge/Platform-x86__64-blue" alt="Platform">
-  <img src="https://img.shields.io/badge/AdGuard%20Home-Supported-67b279" alt="AdGuard Home">
 </p>
+
+> Plugin version: **1.0.5** · Target: **IPFire 2.29 Core Update 206 (x86_64)**
 
 AdGuard Home is a network-wide DNS filtering solution that provides ad blocking and privacy protection for all devices on your home or business network. All DNS requests from clients, including smartphones, computers, smart TVs and IoT devices, are routed through AdGuard Home, which can block advertisements, trackers and malicious domains while providing secure and controllable DNS resolution.
 
 This project integrates AdGuard Home with the IPFire firewall and provides a native management experience on IPFire. It includes service management scripts, an IPFire Web UI menu entry, CGI management pages and a persistent configuration directory, allowing users to install, configure and maintain AdGuard Home as if it were a built-in IPFire component.
 
-## screenshot
+## Screenshots
 
 ![](image/AdGuardHome.png)
 
@@ -41,7 +35,7 @@ This means:
 - Knot Resolver is moved to `127.0.0.1:5353` and continues to act as IPFire's local recursive/forwarding resolver.
 - AdGuard Home uses `127.0.0.1:5353` as its upstream DNS server.
 
-## Install
+## Installation
 
 ```sh
 sh install.sh
@@ -93,7 +87,7 @@ Restart the services:
 /etc/rc.d/init.d/adguardhome start
 ```
 
-## Verify
+## Verification
 
 Check listening ports:
 
@@ -124,6 +118,7 @@ dig @127.0.0.1 -p 5353 example.com
 Port `53` should be answered by AdGuard Home, and port `5353` should be answered by Knot Resolver.
 
 ## Notes
+
 The file `/etc/knot-resolver/config.yaml` contains `DO NOT EDIT as any changes will be overwritten` in its header. This means future IPFire updates may overwrite the Knot Resolver listen-port change. After upgrading IPFire, if AdGuard Home no longer takes over port `53`, check and restore this line:
 
 ```yaml
@@ -137,7 +132,8 @@ upstream_dns:
   - 127.0.0.1:5353
 ```
 
-## Roll Back
+## Rollback
+
 To restore the default IPFire DNS behavior, stop AdGuard Home and move Knot Resolver back to port `53`:
 
 ```sh
@@ -153,11 +149,12 @@ cp -a /etc/knot-resolver/config.yaml.bak.<timestamp> /etc/knot-resolver/config.y
 /etc/rc.d/init.d/knot-resolver restart
 ```
 
-## Uninstall
+## Uninstallation
 
 ```sh
 sh uninstall.sh
 ```
 
 ## Disclaimer
+
 This is an unofficial community project with no affiliation to the IPFire team; use it at your own risk.

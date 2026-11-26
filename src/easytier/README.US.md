@@ -1,14 +1,16 @@
 <div align="center">
   <a href="README.md">中文</a> |
-  <a href="README_US.md">English</a>
+  <a href="README.US.md">English</a>
 </div>
 
 # EasyTier for IPFire
 
-> Plugin version: **1.0.2** · Target: **IPFire 2.29 Core Update 206 (x86_64)**
-> UI languages: English / Simplified Chinese / Traditional Chinese, including Core 206 locale identifiers.
+<p>
+  <img src="https://img.shields.io/badge/IPFire-2.29%20Core%20206-orange" alt="IPFire">
+  <img src="https://img.shields.io/badge/Platform-x86__64-blue" alt="Platform">
+</p>
 
-Validation on 2026-11-25: Upgraded and checked in all three UI languages; original configuration was retained and five peers reconnected.
+> Plugin version: **1.0.2** · Target: **IPFire 2.29 Core Update 206 (x86_64)**
 
 A community EasyTier mesh VPN plugin for IPFire. Configure a network name, password and peers through the Web UI to connect devices across locations and optionally access remote LANs.
 
@@ -69,9 +71,9 @@ bash install.sh
 
 Open **Services → EasyTier** after confirming installation. Unmanaged conflicting files are not overwritten. Upgrades retain plugin settings but stop the service.
 
-## Quick setup
+## Quick Setup
 
-### Changes in 1.0.1
+### Upgrade Installation
 
 - Added a node hostname field in all three UI languages. It changes only the EasyTier node name, not the system hostname. Save and restart the EasyTier process to apply.
 - Existing settings remain compatible; the default stays ipfire-easytier, and saving an older form preserves a configured name.
@@ -107,7 +109,7 @@ Automatic addresses may change after a restart. Use a verified unused static add
 
 **Save does not restart the process, but applies firewall options immediately.** Restart after changing network identity, virtual addressing, peers, listener port or advertised subnets.
 
-## WAN access
+## WAN Access
 
 An outbound-only node can generally leave listeners and WAN access disabled. To accept connections, set a nonzero listener port and enable WAN access.
 
@@ -122,7 +124,7 @@ They match the RED interface, firewall RED address and configured port. Saving, 
 
 If IPFire is behind another router, configure upstream port forwarding as required. The management RPC is not exposed by this option.
 
-## LAN forwarding
+## LAN Forwarding
 
 To preserve client addresses, enable LAN forwarding without NAT and ensure:
 
@@ -132,7 +134,7 @@ To preserve client addresses, enable LAN forwarding without NAT and ensure:
 
 Advertising a subnet does not configure client/upstream routes or grant firewall permission.
 
-### Remote access
+### Remote Access
 
 If IPFire can access a remote website but LAN clients cannot, try enabling both **LAN forwarding** and **LAN source NAT**.
 
@@ -142,7 +144,7 @@ Remote devices see IPFire's VPN address instead of the original client address. 
 
 LAN/NAT use dedicated ETIER_FORWARD and ETIER_NAT chains, restored through a managed block in /etc/sysconfig/firewall.local. They do not appear as separate native firewall entries. Disabling the options, stopping or uninstalling cleans up the corresponding rules.
 
-## Important notes
+## Important Notes
 
 - Avoid overlapping networks: remote advertisements must not duplicate local GREEN/BLUE subnets, and virtual addresses must not conflict with existing LANs or VPNs.
 - LAN forwarding grants trusted VPN members bidirectional access to local GREEN/BLUE; it does not automatically include ORANGE/RED forwarding.
@@ -170,7 +172,7 @@ If SSH/Web management becomes unreachable, stop the service from the local conso
 
 Once management is restored, disable automatic startup or relevant options as needed. Do not mask routing problems by broadly opening firewall permissions.
 
-## Uninstall
+## Uninstallation
 
 For repository-managed installations:
 
@@ -186,9 +188,13 @@ bash uninstall.sh
 
 Uninstall stops the service, backs up settings to /root/easytier-uninstall.XXXXXX/config/, and removes plugin programs, menu, sudo rules, startup entries, managed firewall rules and hooks. Root-only /var/log/easytier.log and configuration backups are retained. Shared TUN modules are not unloaded.
 
-## Upstream and license
+## Upstream and License
 
 The upstream LGPL-3.0 license is included as [LICENSE.EasyTier](LICENSE.EasyTier).
 
 - [EasyTier project](https://github.com/EasyTier/EasyTier)
 - [Bundled v2.6.4 release](https://github.com/EasyTier/EasyTier/releases/tag/v2.6.4)
+
+## Disclaimer
+
+This is an unofficial community-maintained project with no affiliation to the IPFire team. Users are responsible for assessing and accepting the risks of use.

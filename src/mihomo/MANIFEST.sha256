@@ -1,5 +1,6 @@
 cb4146eb5c6669516e772364687914ceb883476240f8c13f57d4710b2cdd027d  CORE206.md
-8e41a3de234be3239996412c9bb59514092739fd9c80740b19970463ac6f8d17  README.md
+a91470a47b0d50be93a7098eec1ac71dbc5de4241de27edc77f140fcba2c62ad  README.US.md
+024d8191b1d119f22057df00a01ed7f04423d803176adca35fafe2bc248890cd  README.md
 8c54bfab7f1ae9bd1a7148eae41e7b0a8f4ad3726e0cac70f823a2d45db9e60c  VERSION
 8a48d84cf73d5077d91554e1544b9ef48baf01df8e821d529d79894210c41e78  install.sh
 b903484b4159258ab91cee99000a73c74cf906a734dcfbc8aa0535dccecab620  src/etc/rc.d/init.d/mihomo
@@ -321,9 +322,9 @@ ceb00eb50e8bf9bb3d23826f69f8f937ed8f7eaec6ca2ee67cc1d9f04d03422e  src/usr/local/
 e12c8db54e3cc247034427f2b661b305a78fea7e7cdec1eac179fecec3da0fc7  src/usr/local/etc/mihomo/ui/registerSW.js
 21b85f006e6847d0a9b324e54ab0c02e9ae2660542ecc4c978cb6c4c29932187  src/usr/local/etc/mihomo/ui/sw.js
 5d6d993b663efd8a90b17a86aba1a2addea4bb20a682f8f8de97ac57b7bd28c7  src/usr/local/etc/mihomo/ui/workbox-3e8df8c8.js
+0c8f1ce0373e03d767f505989fabe5a303d7866116fc49f9238ee242a2441c2e  src/var/ipfire/community-lang/mihomo.pl
 c3f57224a051806b9efc3dfc3068abec9224a1498700f879482a25cb3a751ba6  src/var/ipfire/community-lang/mihomo/core.en.pl
 e7d2b214b4590334625e8b59f7c5dbf5d43aff439b1361ad79d2fbc222d09447  src/var/ipfire/community-lang/mihomo/core.tw.pl
 5dbcbfbfb6d939db7c5ab4aaa5f012701dccfc640a4f5a06670b76010046e3a4  src/var/ipfire/community-lang/mihomo/core.zh.pl
-0c8f1ce0373e03d767f505989fabe5a303d7866116fc49f9238ee242a2441c2e  src/var/ipfire/community-lang/mihomo.pl
 09e6ab0908042416123908479c6ea6e17eaf8ebc97a43d1e1907104e52fa862a  src/var/ipfire/menu.d/82-mihomo.menu
 2c2ce03bcef6613b6412d1d1c3e7fcba66833ca4aaec801f37cff257afd6a715  uninstall.sh

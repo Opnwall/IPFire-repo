@@ -1,13 +1,16 @@
+<div align="center">
+  <a href="README.md">中文</a> |
+  <a href="README.US.md">English</a>
+</div>
+
 # Reports for IPFire
 
+<p>
+  <img src="https://img.shields.io/badge/IPFire-2.29%20Core%20206-orange" alt="IPFire">
+  <img src="https://img.shields.io/badge/Platform-x86__64-blue" alt="Platform">
+</p>
+
 > 插件版本：**1.0.7** · 适用系统：**IPFire 2.29 Core Update 206（x86_64）**
-> 界面语言：English / 简体中文 / 繁體中文；识别 Core 206 的语言代码。
-
-2026-11-25 验证：已完成升级及英、简、繁页面检查；使用隔离的样例配置验证三种语言的报告生成，未启用邮件发送。
-
-![IPFire](https://img.shields.io/badge/IPFire-2.29-orange)
-![Core Update](https://img.shields.io/badge/Core_Update-206-red)
-![Reports](https://img.shields.io/badge/Reports-WebUI-blue)
 
 本项目将 Reports 集成到 IPFire WebUI 中，用于生成和查看防火墙、IDS、URL Filter、DNS Firewall 等报告。
 
@@ -23,7 +26,7 @@
 - 按小时、每日、每周、每月执行的计划任务
 - 多语言文件集成，包含适配 IPFire `LANGUAGE=zh` 的完整简体中文报告翻译
 
-## 安装命令
+## 安装插件
 
 以 root 用户登录终端，在项目目录中运行：
 
@@ -31,7 +34,7 @@
 bash install.sh
 ```
 
-## 卸载命令
+## 卸载插件
 
 以 root 用户登录终端，在项目目录中运行：
 
@@ -47,7 +50,7 @@ bash uninstall.sh
 服务 > Reports
 ```
 
-## 目录结构
+## 项目结构
 
 ```text
 src/
@@ -56,3 +59,7 @@ uninstall.sh
 ```
 
 安装脚本会将 `src/` 下的文件复制到 IPFire 系统根目录，并设置 CGI、计划任务、报告目录和语言文件所需的权限。
+
+## 免责声明
+
+这是社区维护的非官方项目，与 IPFire 团队没有隶属关系。使用者需自行评估并承担使用风险。
